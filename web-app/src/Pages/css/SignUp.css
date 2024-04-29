@@ -1,0 +1,129 @@
+/* SignUp.css */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's above other items */
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  position: relative;
+  max-width: 500px;
+  width: 90%; /* Adjust width to fit mobile screens */
+  box-sizing: border-box; /* Added to include padding in width */
+}
+
+.close-modal {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.google-signup-btn {
+  background-color: #4285F4;
+  color: white;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  display: block;
+  width: 100%; /* Stretch to full width */
+  box-sizing: border-box; /* Added to include padding in width */
+}
+
+.divider-or {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.or-text {
+  margin: 0 15px; /* Increase margin to give 'or' text some space */
+}
+
+/* Form input styles */
+form input {
+  display: block;
+  width: calc(100% - 20px); /* Adjust width to account for padding */
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Added to include padding in width */
+}
+
+/* Sign up button style, distinct from the Google button */
+form .submit-signup-btn {
+  background-color: #f3ab03; /* Brighter shade for main action */
+  color: white;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold; /* Added for consistency with Google button */
+}
+
+/* Add this at the bottom of your SignUp.css */
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+}
+
+.apple-signup-btn {
+  background-color: #000; /* Apple's brand color is black */
+  color: white;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  display: block;
+  width: 100%; /* Stretch to full width */
+  box-sizing: border-box; /* Added to include padding in width */
+  text-align: center;
+}
+
+/* Login.css and SignUp.css */
+.modal-footer {
+  text-align: center;
+  margin-top: 20px; /* Adjust as needed for spacing */
+}
+
+.switch-to-signup,
+.switch-to-login {
+  background: none;
+  border: none;
+  color: blue; 
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* Apply styles for hover effect */
+.switch-to-signup:hover,
+.switch-to-login:hover {
+  text-decoration: underline;
+}

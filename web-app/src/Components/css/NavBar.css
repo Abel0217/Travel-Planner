@@ -1,0 +1,63 @@
+/* NavBar.css */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #222946; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+  }
+  
+  .navbar-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  
+  .logo-img {
+    height: 40px; /* Adjust size as needed */
+  }
+  
+  .navbar-links {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Log-In button */
+  .navbar-item {
+    display: inline-block;
+    background-color: #222946; 
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    text-decoration: none;
+    color: white;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  /* Log-In button HOVER */
+  .navbar-item:hover,
+  .navbar-item:focus {
+    background-color: transparent; 
+    border-color: #f3ab03;
+    color: white; 
+  }
+  
+  /* sign-up button */
+  .navbar-item-signup {
+    background-color: #f3ab03;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* Hover sign-up button */
+  .navbar-item-signup:hover,
+  .navbar-item-signup:focus {
+    background-color: #f3ab03; /* Darker shade use '#c48800' */
+    color: #222946;
+  }
+  

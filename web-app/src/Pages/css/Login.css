@@ -111,3 +111,8 @@ form input {
 .switch-to-login:hover {
   text-decoration: underline;
 }
+
+.login-error {
+  color: red;
+  margin-top: 10px;
+}

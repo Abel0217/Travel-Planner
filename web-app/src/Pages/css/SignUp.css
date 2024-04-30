@@ -127,3 +127,34 @@ form .submit-signup-btn {
 .switch-to-login:hover {
   text-decoration: underline;
 }
+
+.requirement-met {
+  color: green;
+  display: flex;
+  align-items: center;
+}
+
+.requirement-unmet {
+  color: red;
+  display: flex;
+  align-items: center;
+}
+
+.password-requirements {
+  margin-top: 10px;
+}
+
+.password-requirements ul {
+  list-style: none;
+  padding: 0;
+}
+
+.password-requirements li {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.password-error {
+  color: red;
+  margin-top: 10px;
+}

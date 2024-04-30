@@ -21,8 +21,15 @@ function App() {
     if(isSignUpOpen) setSignUpOpen(false);
   };
 
+  // Define openLogin function to open the login modal
+  const openLogin = () => {
+    setLoginOpen(true);
+    setSignUpOpen(false);
+  };
+
+  // Now pass both openLogin and switchToLogin to SignUp as props
   return (
-    <AuthContextProvider> {/* Wrap your component tree with AuthContextProvider */}
+    <AuthContextProvider>
       <Router>
         <NavBar openSignUp={toggleSignUp} openLogin={toggleLogin} />
         <Routes>
@@ -41,6 +48,7 @@ function App() {
             isOpen={isSignUpOpen} 
             closeSignUp={() => setSignUpOpen(false)} 
             switchToLogin={toggleLogin} 
+            openLogin={openLogin}  // Add this line
           />
         )}
       </Router>

@@ -1,16 +1,29 @@
-// Login.js
 import React, { useState } from 'react';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
 import './css/Login.css'; // Ensure this path is correct
 
 function Login({ isOpen, closeLogin, switchToSignUp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
-    console.log('Login attempt with:', email, password);
-    closeLogin(); // Close the modal upon successful login
+    const auth = getAuth();
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      closeLogin(); // Close the modal upon successful login
+    } catch (error) {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        setLoginError("Incorrect email or password.");
+      } else if (error.code === 'auth/too-many-requests') {
+        setLoginError("Too many failed login attempts. Please try again later.");
+      } else {
+        setLoginError(error.message);
+      }
+      console.error('Error during login:', error);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -19,6 +32,7 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
       closeLogin(); // Close the modal upon successful login
     } catch (error) {
       console.error('Error during Google login:', error);
+      setLoginError(error.message);
     }
   };
 
@@ -28,6 +42,7 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
       closeLogin(); // Close the modal upon successful login
     } catch (error) {
       console.error('Error during Apple login:', error);
+      setLoginError(error.message);
     }
   };
 
@@ -64,6 +79,7 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
           />
           <button type="submit" className="login-button">Log in</button>
         </form>
+        {loginError && <p className="login-error">{loginError}</p>}
         <div className="modal-footer">
           Don't have an account yet? <button onClick={switchToSignUp} className="switch-to-signup">Sign up</button>
         </div>

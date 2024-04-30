@@ -4,6 +4,7 @@ import Home from './Pages/Home';
 import Login from './Pages/Login';
 import SignUp from './Pages/SignUp';
 import NavBar from './Components/NavBar';
+import { AuthContextProvider } from './Contexts/AuthContext';
 import './App.css'; 
 
 function App() {
@@ -21,29 +22,29 @@ function App() {
   };
 
   return (
-    <Router>
-      <NavBar openSignUp={toggleSignUp} openLogin={toggleLogin} />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        // These routes below might not be necessary if you're using modals instead of separate pages.
-        // <Route path="/login" element={<Login isOpen={isLoginOpen} closeLogin={() => setLoginOpen(false)} switchToSignUp={toggleSignUp} />} />
-        // <Route path="/signup" element={<SignUp isOpen={isSignUpOpen} closeSignUp={() => setSignUpOpen(false)} switchToLogin={toggleLogin} />} />
-      </Routes>
-      {isLoginOpen && (
-        <Login 
-          isOpen={isLoginOpen} 
-          closeLogin={() => setLoginOpen(false)} 
-          switchToSignUp={toggleSignUp} 
-        />
-      )}
-      {isSignUpOpen && (
-        <SignUp 
-          isOpen={isSignUpOpen} 
-          closeSignUp={() => setSignUpOpen(false)} 
-          switchToLogin={toggleLogin} 
-        />
-      )}
-    </Router>
+    <AuthContextProvider> {/* Wrap your component tree with AuthContextProvider */}
+      <Router>
+        <NavBar openSignUp={toggleSignUp} openLogin={toggleLogin} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* Your existing routes */}
+        </Routes>
+        {isLoginOpen && (
+          <Login 
+            isOpen={isLoginOpen} 
+            closeLogin={() => setLoginOpen(false)} 
+            switchToSignUp={toggleSignUp} 
+          />
+        )}
+        {isSignUpOpen && (
+          <SignUp 
+            isOpen={isSignUpOpen} 
+            closeSignUp={() => setSignUpOpen(false)} 
+            switchToLogin={toggleLogin} 
+          />
+        )}
+      </Router>
+    </AuthContextProvider>
   );
 }
 

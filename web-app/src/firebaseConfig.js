@@ -1,6 +1,14 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  OAuthProvider, 
+  setPersistence, 
+  browserLocalPersistence
+} from "firebase/auth";
+// import { getAnalytics } from "firebase/analytics"; // If you're not using Analytics, you can comment this out
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-1JxrE5TZD0Vh5nSASAFaGw1Wr2P-Q8c",
@@ -14,11 +22,15 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// const analytics = getAnalytics(app); // If you're not using Analytics, you can comment this out
 
 const auth = getAuth(app); 
+// Set the persistence to LOCAL to keep the user logged in across sessions
+setPersistence(auth, browserLocalPersistence);
+
 const googleProvider = new GoogleAuthProvider();
 const appleProvider = new OAuthProvider('apple.com');
+
 
 // Here you can set custom parameters for Google, like forcing account selection.
 googleProvider.setCustomParameters({ prompt: 'select_account' });
@@ -30,4 +42,4 @@ appleProvider.addScope('name');
 export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const signInWithApple = () => signInWithPopup(auth, appleProvider);
 
-export { auth, googleProvider, appleProvider }; // Export the auth object and providers
+export { auth, googleProvider, appleProvider };

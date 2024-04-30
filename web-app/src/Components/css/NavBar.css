@@ -61,3 +61,34 @@
     color: #222946;
   }
   
+  .profile-img {
+    border-radius: 50%; /* Makes the image round */
+    width: 40px; /* Example size, adjust as needed */
+    height: 40px; /* Example size, adjust as needed */
+    object-fit: cover; /* Ensures the image covers the area without distortion */
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dropdown-menu a,
+  .dropdown-menu button {
+    padding: 8px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .dropdown-menu button:hover,
+  .dropdown-menu a:hover {
+    background-color: #f6f6f6;
+  }

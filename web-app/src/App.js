@@ -4,6 +4,8 @@ import Home from './Pages/Home';
 import Login from './Pages/Login';
 import SignUp from './Pages/SignUp';
 import NavBar from './Components/NavBar';
+import ItineraryList from './features/Itinerary/components/ItineraryList'; // Correct component for itineraries
+import ItineraryForm from './features/Itinerary/components/ItineraryForm';
 import { AuthContextProvider } from './Contexts/AuthContext';
 import './App.css'; 
 
@@ -21,20 +23,20 @@ function App() {
     if(isSignUpOpen) setSignUpOpen(false);
   };
 
-  // Define openLogin function to open the login modal
   const openLogin = () => {
     setLoginOpen(true);
     setSignUpOpen(false);
   };
 
-  // Now pass both openLogin and switchToLogin to SignUp as props
   return (
     <AuthContextProvider>
       <Router>
         <NavBar openSignUp={toggleSignUp} openLogin={toggleLogin} />
         <Routes>
           <Route path="/" element={<Home />} />
-          {/* Your existing routes */}
+          <Route path="/itineraries" element={<ItineraryList />} />
+          <Route path="/itineraries/new" element={<ItineraryForm />} />
+          {/* Ensure each path is unique and properly defined */}
         </Routes>
         {isLoginOpen && (
           <Login 
@@ -48,7 +50,7 @@ function App() {
             isOpen={isSignUpOpen} 
             closeSignUp={() => setSignUpOpen(false)} 
             switchToLogin={toggleLogin} 
-            openLogin={openLogin}  // Add this line
+            openLogin={openLogin}
           />
         )}
       </Router>

@@ -1,1 +1,1 @@
-# SoftwareEngProject
+# Collaborating Travel Planner

@@ -10,11 +10,11 @@ app.use(express.json());
 // Fetch all itineraries
 app.get('/itineraries', async (req, res) => {
   try {
-    const itineraries = await db.fetchAllItineraries();
+    const itineraries = await db.fetchAllItineraries(); // Ensure this method is defined in your DB operations
     res.json(itineraries);
   } catch (error) {
-    console.error("Server error when fetching itineraries:", error.message);
-    res.status(500).json({ error: 'Failed to retrieve itineraries', details: error.message });
+    console.error("Failed to fetch itineraries:", error);
+    res.status(500).json({ error: 'Failed to retrieve itineraries' });
   }
 });
 

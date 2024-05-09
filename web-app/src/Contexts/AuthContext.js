@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 
-// Create a context for auth state
-const AuthContext = React.createContext();
+// Create and export a context for auth state
+export const AuthContext = React.createContext();
 
 // Hook for child components to get the auth object ...
 // ... and re-render when it changes.
@@ -20,13 +20,22 @@ export const AuthContextProvider = ({ children }) => {
   // Listen for changes on the authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
-      console.log("Auth state changed. User:", user);
-      setCurrentUser(user);
-      setLoading(false);
+        if (user) {
+            // Ensure that you are capturing the right user attributes, such as displayName
+            setCurrentUser({
+                name: user.displayName, // Or whatever attribute holds the name
+                email: user.email,
+                uid: user.uid
+            });
+        } else {
+            setCurrentUser(null);
+        }
+        setLoading(false);
     });
-  
+
     return () => unsubscribe();
-  }, []);
+}, []);
+
 
   const value = {
     currentUser,

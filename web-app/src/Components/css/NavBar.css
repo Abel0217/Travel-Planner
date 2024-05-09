@@ -70,25 +70,35 @@
   
   .dropdown-menu {
     position: absolute;
-    right: 0;
+    top: 40px;  
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 8px;
     display: flex;
     flex-direction: column;
-  }
-  
-  .dropdown-menu a,
-  .dropdown-menu button {
+    z-index: 100;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
     padding: 8px;
     border: none;
     background: none;
     text-align: left;
     cursor: pointer;
-  }
+    color: #333;  
+}
+
+.dropdown-menu button:hover,
+.dropdown-menu a:hover {
+    background-color: #f6f6f6;
+}
+
   
   .dropdown-menu button:hover,
   .dropdown-menu a:hover {
     background-color: #f6f6f6;
   }
+
+  

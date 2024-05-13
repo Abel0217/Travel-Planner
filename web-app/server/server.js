@@ -1,63 +1,62 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./database/dbOperations');  // Ensure this path is correct
-
 const app = express();
+
+// Route imports
+const itineraryRoutes = require('./routes/itineraryRoutes');
+const dayRoutes = require('./routes/dayRoutes');
+const activityRoutes = require('./routes/activityRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
+const flightRoutes = require('./routes/flightRoutes');
+const hotelRoutes = require('./routes/hotelRoutes');
+const restaurantRoutes = require('./routes/restaurantRoutes');
+const transportRoutes = require('./routes/transportRoutes');
 
 app.use(cors());
 app.use(express.json());
 
-// Fetch all itineraries
-app.get('/itineraries', async (req, res) => {
-  try {
-    const itineraries = await db.fetchAllItineraries(); // Ensure this method is defined in your DB operations
-    res.json(itineraries);
-  } catch (error) {
-    console.error("Failed to fetch itineraries:", error);
-    res.status(500).json({ error: 'Failed to retrieve itineraries' });
-  }
-});
+// Itinerary related routes
+app.use('/itineraries', itineraryRoutes);
 
-// Add a new itinerary
-app.post('/itineraries', async (req, res) => {
-  const { title, description, start_date, end_date, owner_id } = req.body;
-  try {
-    const newItinerary = await db.addItinerary(title, description, start_date, end_date, owner_id);
-    res.status(201).json(newItinerary);
-  } catch (error) {
-    console.error("Server error when adding an itinerary:", error.message);
-    res.status(500).json({ error: 'Failed to add itinerary', details: error.message });
-  }
-});
+// Day related routes
+app.use('/days', dayRoutes);
 
-// Update an existing itinerary
-app.put('/itineraries/:id', async (req, res) => {
-  const { title, description, start_date, end_date, owner_id } = req.body;
-  const { id } = req.params;
-  try {
-    const updatedItinerary = await db.updateItinerary(id, title, description, start_date, end_date, owner_id);
-    res.json(updatedItinerary);
-  } catch (error) {
-    console.error("Server error when updating an itinerary:", error.message);
-    res.status(500).json({ error: 'Failed to update itinerary', details: error.message });
-  }
-});
+// Activity related routes for specific days
+app.use('/day/:dayId/activities', (req, res, next) => {
+    req.dayId = req.params.dayId; 
+    next();
+}, activityRoutes);
 
-// Delete an itinerary
-app.delete('/itineraries/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const deletedItinerary = await db.deleteItinerary(id);
-    res.json(deletedItinerary);
-  } catch (error) {
-    console.error("Server error when deleting an itinerary:", error.message);
-    res.status(500).json({ error: 'Failed to delete itinerary', details: error.message });
-  }
-});
+// Expense related routes for specific itineraries
+app.use('/itineraries/:itineraryId/expenses', expenseRoutes);
 
+// Flight related routes for specific itineraries
+app.use('/itineraries/:itineraryId/flights', (req, res, next) => {
+    req.itineraryId = req.params.itineraryId;
+    next();
+}, flightRoutes);
+
+// Hotel related routes for specific itineraries
+app.use('/itineraries/:itineraryId/hotels', hotelRoutes);
+
+// Restaurant related routes for specific days & itineraries
+app.use('/day/:dayId/restaurants', (req, res, next) => {
+    req.dayId = req.params.dayId; 
+    next();
+}, restaurantRoutes);
+
+// Transport related routes for specific itineraries
+app.use('/day/:dayId/transport', (req, res, next) => {
+    req.dayId = req.params.dayId; 
+    next();
+}, transportRoutes);
+
+
+// Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
+
 
 module.exports = app;

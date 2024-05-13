@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import apiClient from '../../../api/apiClient';  
-import '../css/ItineraryForm.css';
+import './css/ItineraryForm.css';
 
 const ItineraryForm = () => {
     const [itinerary, setItinerary] = useState({

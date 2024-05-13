@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../../api/apiClient'; // Ensure the import path is correct
 import ItineraryControls from '../../../Components/ItineraryControls'; // Verify the import path
+import { Link } from 'react-router-dom';
 
 const ItineraryList = () => {
     const [itineraries, setItineraries] = useState([]);
@@ -9,7 +10,8 @@ const ItineraryList = () => {
     useEffect(() => {
         apiClient.get('/itineraries')
             .then(response => {
-                console.log('Fetched data:', response.data);  
+                console.log('Fetched data:', response.data);
+                response.data.forEach(itinerary => console.log(itinerary.itinerary_id)); // Confirm IDs are logging correctly
                 setItineraries(response.data);
                 setFilteredItineraries(response.data);
             })
@@ -55,9 +57,14 @@ const ItineraryList = () => {
             <h1>Itineraries</h1>
             <ItineraryControls onSearch={handleSearch} onSort={handleSort} onFilter={handleFilter} />
             <ul>
-                {filteredItineraries.map(itinerary => (
-                    <li key={itinerary.itinerary_id}>{itinerary.title}</li>
-                ))}
+                {filteredItineraries.map(itinerary => {
+                    console.log(itinerary.itinerary_id); // Check if any IDs are undefined
+                    return (
+                        <li key={itinerary.itinerary_id}>
+                            <Link to={`/itineraries/${itinerary.itinerary_id}`}>{itinerary.title}</Link>
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );

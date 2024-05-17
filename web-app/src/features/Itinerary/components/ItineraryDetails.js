@@ -5,12 +5,17 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import './css/ItineraryDetails.css';
 
+import FlightDetails from './FlightDetails';
+import HotelDetails from './HotelDetails';
+import ActivityDetails from './ActivityDetails';
+import RestaurantDetails from './RestaurantDetails';
+import TransportDetails from './TransportDetails';
+
 const ItineraryDetails = () => {
     const { itineraryId } = useParams();
     const [itinerary, setItinerary] = useState({ title: '', start_date: '', end_date: '' });
 
     useEffect(() => {
-        console.log("Attempting to fetch details for ID:", itineraryId); // Added log to check the ID
         if (itineraryId) {
             apiClient.get(`/itineraries/${itineraryId}`)
                 .then(response => {
@@ -19,8 +24,6 @@ const ItineraryDetails = () => {
                 .catch(error => {
                     console.error('Failed to fetch itinerary details', error);
                 });
-        } else {
-            console.error('Itinerary ID is undefined');
         }
     }, [itineraryId]);
 
@@ -32,19 +35,19 @@ const ItineraryDetails = () => {
             <Tabs>
                 <TabList>
                     <Tab>Overview</Tab>
-                    <Tab>Flight</Tab>
-                    <Tab>Hotel</Tab>
+                    <Tab>Flights</Tab>
+                    <Tab>Hotels</Tab>
                     <Tab>Activities</Tab>
                     <Tab>Restaurants</Tab>
                     <Tab>Transportation</Tab>
                 </TabList>
 
                 <TabPanel><h2>Overview</h2></TabPanel>
-                <TabPanel><h2>Flights</h2></TabPanel>
-                <TabPanel><h2>Hotels</h2></TabPanel>
-                <TabPanel><h2>Activities</h2></TabPanel>
-                <TabPanel><h2>Restaurants</h2></TabPanel>
-                <TabPanel><h2>Transportation</h2></TabPanel>
+                <TabPanel><FlightDetails itineraryId={itineraryId} /></TabPanel>
+                <TabPanel><HotelDetails itineraryId={itineraryId} /></TabPanel>
+                <TabPanel><ActivityDetails itineraryId={itineraryId} /></TabPanel>
+                <TabPanel><RestaurantDetails itineraryId={itineraryId} /></TabPanel>
+                <TabPanel><TransportDetails itineraryId={itineraryId} /></TabPanel>
             </Tabs>
         </div>
     );

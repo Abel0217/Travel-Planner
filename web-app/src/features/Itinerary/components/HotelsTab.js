@@ -1,7 +1,8 @@
 import React from 'react';
 import './css/HotelsTab.css';
+import HotelForm from './HotelForm';  
 
-const HotelTab = () => {
+const HotelsTab = () => {
   return (
     <div>
       <h2>Hotel Information</h2>
@@ -10,4 +11,4 @@ const HotelTab = () => {
   );
 };
 
-export default HotelTab;
+export default HotelsTab;

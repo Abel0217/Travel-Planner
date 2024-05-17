@@ -8,6 +8,8 @@ import ItineraryOverview from './features/Itinerary/components/ItineraryOverview
 import FlightsTab from './features/Itinerary/components/FlightsTab';
 import HotelTab from './features/Itinerary/components/HotelsTab';
 import RestaurantsTab from './features/Itinerary/components/RestaurantsTab';
+import TransportTab from './features/Itinerary/components/TransportTab';
+import ActivitiesTab from './features/Itinerary/components/ActivitiesTab';
 import HomePage from './features/HomePage';
 import Login from './Pages/Login';
 import SignUp from './Pages/SignUp';
@@ -45,8 +47,9 @@ function App() {
           <Route path="/itineraries/:id/overview" element={<ItineraryOverview />} />  
           <Route path="/itineraries/:id/flights" element={<FlightsTab />} />
           <Route path="/itineraries/:id/hotels" element={<HotelTab />} />
-          <Route path="/itineraries/:id/restaurants" element={<RestaurantsTab />} />  
-          <Route path="/login" element={<Login />} />
+          <Route path="/itineraries/:itineraryId/restaurants" element={<RestaurantsTab />} />
+          <Route path="/itineraries/:itineraryId/transport" element={<TransportTab />} />
+          <Route path="/itineraries/:itineraryId/activities" element={<ActivitiesTab />} />          <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
         </Routes>
         {isLoginOpen && (

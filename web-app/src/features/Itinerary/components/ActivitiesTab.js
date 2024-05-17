@@ -1,6 +1,7 @@
 // src/features/Itinerary/components/ActivitiesTab.js
 import React from 'react';
-import './css/ActivitiesTab.css'; // Make sure to create this CSS file
+import './css/ActivitiesTab.css'; 
+import ActivitiesForm from './ActivityForm';  
 
 const ActivitiesTab = () => {
   return (

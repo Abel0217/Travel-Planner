@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient'; 
 import './css/FlightsTab.css';
+import FlightForm from './FlightForm';  
 
 const FlightsTab = ({ itineraryId }) => {
     const [flights, setFlights] = useState([]);

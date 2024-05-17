@@ -22,8 +22,11 @@ app.use('/itineraries', itineraryRoutes);
 app.use('/days', dayRoutes);
 
 // Activity related routes for specific days
-app.use('/day/:dayId/activities', (req, res, next) => {
-    req.dayId = req.params.dayId; 
+app.use('/itineraries/:itineraryId/activities', (req, res, next) => {
+    req.itineraryId = req.params.itineraryId;
+    if (req.params.dayId) { 
+        req.dayId = req.params.dayId;
+    }
     next();
 }, activityRoutes);
 
@@ -40,14 +43,20 @@ app.use('/itineraries/:itineraryId/flights', (req, res, next) => {
 app.use('/itineraries/:itineraryId/hotels', hotelRoutes);
 
 // Restaurant related routes for specific days & itineraries
-app.use('/day/:dayId/restaurants', (req, res, next) => {
-    req.dayId = req.params.dayId; 
+app.use('/itineraries/:itineraryId/restaurants', (req, res, next) => {
+    req.itineraryId = req.params.itineraryId;
+    if (req.params.dayId) {  
+        req.dayId = req.params.dayId;
+    }
     next();
 }, restaurantRoutes);
 
 // Transport related routes for specific itineraries
-app.use('/day/:dayId/transport', (req, res, next) => {
-    req.dayId = req.params.dayId; 
+app.use('/itineraries/:itineraryId/transport', (req, res, next) => {
+    req.itineraryId = req.params.itineraryId;
+    if (req.params.dayId) {  // Ensure this line is in place to capture dayId if not already
+        req.dayId = req.params.dayId;
+    }
     next();
 }, transportRoutes);
 

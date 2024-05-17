@@ -1,44 +1,70 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database/dbOperations');
+const db = require('../database/dbOperations'); // Ensure correct path to dbOperations
 
-// Fetch all restaurants for a specific day
+// Fetch all restaurants for a specific itinerary
 router.get('/', async (req, res) => {
     try {
-        const restaurants = await db.fetchRestaurantsByDayId(req.dayId); // req.dayId is passed through middleware
+        const restaurants = await db.fetchAllRestaurants(req.itineraryId);
         res.json(restaurants);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Add a new restaurant entry
-router.post('/', async (req, res) => {
-    const { day_id, restaurant_name, reservation_time, reservation_number, address, reservation_date } = req.body;
+// Fetch restaurants for a specific day and itinerary
+router.get('/day/:dayId', async (req, res) => {
     try {
-        const newRestaurant = await db.addRestaurant(day_id, restaurant_name, reservation_time, reservation_number, address, reservation_date);
+        const restaurants = await db.fetchRestaurantsById(req.itineraryId, req.params.dayId);
+        res.json(restaurants);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add a new restaurant
+router.post('/day/:dayId', async (req, res) => {
+    const itineraryId = req.itineraryId;  // From middleware
+    const dayId = req.params.dayId;  // Correctly using params to fetch dayId
+    const { restaurantName, reservationDate, reservationTime, guestNumber, address, bookingConfirmation } = req.body;
+
+    try {
+        const newRestaurant = await db.addRestaurant(
+            itineraryId,
+            dayId,
+            restaurantName,
+            reservationDate,
+            reservationTime,
+            guestNumber,
+            address,
+            bookingConfirmation
+        );
         res.status(201).json(newRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Update an existing restaurant entry
+
+
+// Update an existing restaurant
 router.put('/:reservationId', async (req, res) => {
     const { reservationId } = req.params;
-    const { day_id, restaurant_name, reservation_time, reservation_number, address, reservation_date } = req.body;
+    const { itineraryId, dayId } = req;
+    const { restaurantName, reservationDate, reservationTime, guestNumber, address, bookingConfirmation } = req.body;
     try {
-        const updatedRestaurant = await db.updateRestaurant(reservationId, day_id, restaurant_name, reservation_time, reservation_number, address, reservation_date);
+        const updatedRestaurant = await db.updateRestaurant(reservationId, itineraryId, dayId, restaurantName, reservationDate, reservationTime, guestNumber, address, bookingConfirmation);
         res.json(updatedRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Delete a restaurant entry
+// Delete a restaurant
 router.delete('/:reservationId', async (req, res) => {
+    const { reservationId } = req.params;
     try {
-        const deletedRestaurant = await db.deleteRestaurant(req.params.reservationId);
+        const deletedRestaurant = await db.deleteRestaurant(reservationId);
         res.json(deletedRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });

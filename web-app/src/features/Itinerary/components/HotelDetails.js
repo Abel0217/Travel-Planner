@@ -49,7 +49,7 @@ function HotelDetails({ itineraryId }) {
                         <p className="details-card-info"><span className="field-title">Check-in Date:</span> {formatDate(hotel.check_in_date)}</p>
                         <p className="details-card-info"><span className="field-title">Check-out Date:</span> {formatDate(hotel.check_out_date)}</p>
                         <p className="details-card-info"><span className="field-title">Address:</span> {hotel.address}</p>
-                        <p className="details-card-info"><span className="field-title">Booking Reference:</span> {hotel.booking_reference}</p>
+                        <p className="details-card-info"><span className="field-title">Booking Confirmation:</span> {hotel.booking_confirmation}</p>
                     </div>
                 ))}
                 <div className="add-card" onClick={() => setIsModalOpen(true)}>

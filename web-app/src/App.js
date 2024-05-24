@@ -22,12 +22,12 @@ function App() {
 
   const toggleSignUp = () => {
     setSignUpOpen(!isSignUpOpen);
-    if(isLoginOpen) setLoginOpen(false);
+    if (isLoginOpen) setLoginOpen(false);
   };
 
   const toggleLogin = () => {
     setLoginOpen(!isLoginOpen);
-    if(isSignUpOpen) setSignUpOpen(false);
+    if (isSignUpOpen) setSignUpOpen(false);
   };
 
   const openLogin = () => {
@@ -44,12 +44,13 @@ function App() {
           <Route path="/itineraries" element={<ItineraryList />} />
           <Route path="/itineraries/create" element={<ItineraryForm />} />
           <Route path="/itineraries/:itineraryId" element={<ItineraryDetails />} />
-          <Route path="/itineraries/:id/overview" element={<ItineraryOverview />} />  
-          <Route path="/itineraries/:id/flights" element={<FlightsTab />} />
-          <Route path="/itineraries/:id/hotels" element={<HotelTab />} />
+          <Route path="/itineraries/:itineraryId/overview" element={<ItineraryOverview />} />  
+          <Route path="/itineraries/:itineraryId/flights" element={<FlightsTab />} />
+          <Route path="/itineraries/:itineraryId/hotels" element={<HotelTab />} />
           <Route path="/itineraries/:itineraryId/restaurants" element={<RestaurantsTab />} />
           <Route path="/itineraries/:itineraryId/transport" element={<TransportTab />} />
-          <Route path="/itineraries/:itineraryId/activities" element={<ActivitiesTab />} />          <Route path="/login" element={<Login />} />
+          <Route path="/itineraries/:itineraryId/activities" element={<ActivitiesTab />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
         </Routes>
         {isLoginOpen && (

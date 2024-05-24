@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import apiClient from '../../../api/apiClient';
-import './css/Forms.css'; // Specific CSS for forms
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import './css/Forms.css';
 
-function RestaurantForm({ itineraryId, onClose, onRestaurantAdded }) {
+function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurantAdded }) {
+    const initialDate = startDate ? new Date(startDate) : new Date();
     const [restaurantName, setRestaurantName] = useState('');
-    const [reservationDate, setReservationDate] = useState('');
+    const [reservationDate, setReservationDate] = useState(initialDate);
     const [reservationTime, setReservationTime] = useState('');
     const [guestNumber, setGuestNumber] = useState('');
     const [address, setAddress] = useState('');
@@ -12,10 +15,9 @@ function RestaurantForm({ itineraryId, onClose, onRestaurantAdded }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const newRestaurant = {
             restaurant_name: restaurantName,
-            reservation_date: reservationDate,
+            reservation_date: reservationDate.toISOString().slice(0, 10),
             reservation_time: reservationTime,
             guest_number: guestNumber,
             address: address,
@@ -34,7 +36,7 @@ function RestaurantForm({ itineraryId, onClose, onRestaurantAdded }) {
 
     const handleClear = () => {
         setRestaurantName('');
-        setReservationDate('');
+        setReservationDate(initialDate);
         setReservationTime('');
         setGuestNumber('');
         setAddress('');
@@ -48,28 +50,34 @@ function RestaurantForm({ itineraryId, onClose, onRestaurantAdded }) {
                 <button className="close-button" onClick={onClose}>×</button>
                 <form onSubmit={handleSubmit}>
                     <label>Restaurant Name:
-                        <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} required />
+                        <input type="text" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} required />
                     </label>
                     <div className="date-fields">
                         <label>Reservation Date:
-                            <input type="date" value={reservationDate} onChange={(e) => setReservationDate(e.target.value)} required />
+                            <DatePicker
+                                selected={reservationDate}
+                                onChange={date => setReservationDate(date)}
+                                minDate={startDate ? new Date(startDate) : null}
+                                maxDate={endDate ? new Date(endDate) : null}
+                                dateFormat="yyyy-MM-dd"
+                            />
                         </label>
                         <label>Reservation Time:
-                            <input type="time" value={reservationTime} onChange={(e) => setReservationTime(e.target.value)} required />
-                        </label>
-                        <label>Number of Guests:
-                            <input type="number" value={guestNumber} onChange={(e) => setGuestNumber(e.target.value)} required />
+                            <input type="time" value={reservationTime} onChange={e => setReservationTime(e.target.value)} required />
                         </label>
                     </div>
+                    <label>Number of Guests:
+                        <input type="number" value={guestNumber} onChange={e => setGuestNumber(e.target.value)} required />
+                    </label>
                     <label>Address:
-                        <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                        <input type="text" value={address} onChange={e => setAddress(e.target.value)} required />
                     </label>
                     <label>Booking Confirmation:
-                        <input type="text" value={bookingConfirmation} onChange={(e) => setBookingConfirmation(e.target.value)} required />
+                        <input type="text" value={bookingConfirmation} onChange={e => setBookingConfirmation(e.target.value)} required />
                     </label>
                     <div className="form-buttons">
-                        <button type="submit">Add Restaurant</button>
                         <button type="button" onClick={handleClear}>Clear</button>
+                        <button type="submit">Add Restaurant</button>
                     </div>
                 </form>
             </div>

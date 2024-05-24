@@ -33,6 +33,14 @@ function ActivityDetails({ itineraryId }) {
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
+    const formatTime = (timeString) => {
+        if (!timeString) {
+            return 'Invalid Time';
+        }
+        const [hours, minutes] = timeString.split(':');
+        return `${hours}:${minutes}`;
+    };
+
     const handleActivityAdded = (newActivity) => {
         setActivities([...activities, newActivity]);
     };
@@ -48,8 +56,8 @@ function ActivityDetails({ itineraryId }) {
                         <h3 className="details-card-title">{activity.title}</h3>
                         <p className="details-card-info"><span className="field-title">Location:</span> {activity.location}</p>
                         <p className="details-card-info"><span className="field-title">Date:</span> {formatDate(activity.activity_date)}</p>
-                        <p className="details-card-info"><span className="field-title">Start Time:</span> {activity.start_time}</p>
-                        <p className="details-card-info"><span className="field-title">End Time:</span> {activity.end_time}</p>
+                        <p className="details-card-info"><span className="field-title">Start Time:</span> {formatTime(activity.start_time)}</p>
+                        <p className="details-card-info"><span className="field-title">End Time:</span> {formatTime(activity.end_time)}</p>
                     </div>
                 ))}
                 <div className="add-card" onClick={() => setIsModalOpen(true)}>

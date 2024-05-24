@@ -9,6 +9,7 @@ import HotelDetails from './HotelDetails';
 import RestaurantDetails from './RestaurantDetails';
 import TransportDetails from './TransportDetails';
 import ActivityDetails from './ActivityDetails';
+import DailyOverview from './DailyOverview'; // Import DailyOverview component
 import './css/ItineraryOverview.css';
 
 const localizer = momentLocalizer(moment);
@@ -19,11 +20,11 @@ const ItineraryOverview = () => {
     const [loading, setLoading] = useState(true);
     const [events, setEvents] = useState([]);
     const [activeTab, setActiveTab] = useState('overview');
-    
 
     useEffect(() => {
         if (itineraryId) {
-            apiClient.get(`/itineraries/${itineraryId}`)                .then(response => {
+            apiClient.get(`/itineraries/${itineraryId}`)
+                .then(response => {
                     setItinerary(response.data);
                     setEvents(convertItineraryToEvents(response.data));
                     setLoading(false);
@@ -36,6 +37,7 @@ const ItineraryOverview = () => {
     }, [itineraryId]);
 
     const convertItineraryToEvents = (itineraryData) => {
+        // Conversion logic here
         return [];
     };
 
@@ -53,12 +55,12 @@ const ItineraryOverview = () => {
                 <button onClick={() => setActiveTab('transport')}>Transport</button>
                 <button onClick={() => setActiveTab('activities')}>Activities</button>
             </div>
-            {activeTab === 'overview' && <Calendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" style={{ height: 500 }} />}
-            {activeTab === 'flights' && <FlightDetails itineraryId={id} />}
-            {activeTab === 'hotels' && <HotelDetails itineraryId={id} />}
-            {activeTab === 'restaurants' && <RestaurantDetails itineraryId={itineraryId} dayId={selectedDayId} />}
-            {activeTab === 'transport' && <TransportDetails itineraryId={id} />}
-            {activeTab === 'activities' && <ActivityDetails itineraryId={id} />}
+            {activeTab === 'overview' && <DailyOverview itineraryId={itineraryId} />}
+            {activeTab === 'flights' && <FlightDetails itineraryId={itineraryId} />}
+            {activeTab === 'hotels' && <HotelDetails itineraryId={itineraryId} />}
+            {activeTab === 'restaurants' && <RestaurantDetails itineraryId={itineraryId} />}
+            {activeTab === 'transport' && <TransportDetails itineraryId={itineraryId} />}
+            {activeTab === 'activities' && <ActivityDetails itineraryId={itineraryId} />}
         </div>
     );
 };

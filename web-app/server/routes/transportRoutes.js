@@ -5,17 +5,18 @@ const db = require('../database/dbOperations');
 // Fetch all transports for a specific itinerary
 router.get('/', async (req, res) => {
     try {
-        const transports = await db.fetchAllTransports(req.itineraryId);
+        const transports = await db.fetchTransportsByItineraryId(req.itineraryId);
         res.json(transports);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Fetch transports for a specific day and itinerary
-router.get('/day/:dayId', async (req, res) => {
+// Fetch transports by date range
+router.get('/date-range', async (req, res) => {
+    const { startDate, endDate } = req.query;
     try {
-        const transports = await db.fetchTransportsById(req.itineraryId, req.params.dayId);
+        const transports = await db.fetchTransportsByDateRange(req.itineraryId, startDate, endDate);
         res.json(transports);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -23,28 +24,17 @@ router.get('/day/:dayId', async (req, res) => {
 });
 
 // Add a new transport
-router.post('/day/:dayId', async (req, res) => {
-    const itineraryId = req.itineraryId;  
-    const dayId = req.params.dayId; 
-    const {
-        type, 
-        pickupTime, 
-        dropoffTime, 
-        pickupLocation, 
-        dropoffLocation, 
-        bookingReference 
-    } = req.body;
-
+router.post('/', async (req, res) => {
+    const { type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference } = req.body;
     try {
         const newTransport = await db.addTransport(
             req.itineraryId,
-            req.params.dayId,
             type,
-            pickupTime,
-            dropoffTime,
-            pickupLocation,
-            dropoffLocation,
-            bookingReference
+            pickup_time,
+            dropoff_time,
+            pickup_location,
+            dropoff_location,
+            booking_reference
         );
         res.status(201).json(newTransport);
     } catch (error) {
@@ -55,10 +45,18 @@ router.post('/day/:dayId', async (req, res) => {
 // Update an existing transport
 router.put('/:transportId', async (req, res) => {
     const { transportId } = req.params;
-    const { itineraryId, dayId } = req;
     const { type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference } = req.body;
     try {
-        const updatedTransport = await db.updateTransport(transportId, itineraryId, dayId, type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference);
+        const updatedTransport = await db.updateTransport(
+            transportId,
+            req.itineraryId,
+            type,
+            pickup_time,
+            dropoff_time,
+            pickup_location,
+            dropoff_location,
+            booking_reference
+        );
         res.json(updatedTransport);
     } catch (error) {
         res.status(500).json({ error: error.message });

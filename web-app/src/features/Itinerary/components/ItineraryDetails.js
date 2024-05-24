@@ -5,6 +5,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import './css/ItineraryDetails.css';
 
+import DailyOverview from './DailyOverview';
 import FlightDetails from './FlightDetails';
 import HotelDetails from './HotelDetails';
 import ActivityDetails from './ActivityDetails';
@@ -27,7 +28,7 @@ const ItineraryDetails = () => {
         }
     }, [itineraryId]);
 
-    if (!itinerary) return <div>No itinerary found.</div>;
+    if (!itinerary.title) return <div>No itinerary found.</div>;
 
     return (
         <div>
@@ -42,7 +43,13 @@ const ItineraryDetails = () => {
                     <Tab>Transportation</Tab>
                 </TabList>
 
-                <TabPanel><h2>Overview</h2></TabPanel>
+                <TabPanel>
+                    <DailyOverview
+                        itineraryId={itineraryId}
+                        startDate={itinerary.start_date}
+                        endDate={itinerary.end_date}
+                    />
+                </TabPanel>
                 <TabPanel><FlightDetails itineraryId={itineraryId} /></TabPanel>
                 <TabPanel><HotelDetails itineraryId={itineraryId} /></TabPanel>
                 <TabPanel><ActivityDetails itineraryId={itineraryId} /></TabPanel>

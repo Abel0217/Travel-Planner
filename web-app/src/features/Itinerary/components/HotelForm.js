@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
 
-function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded }) {
+function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded, hotelToEdit }) {
     const initialDate = startDate ? new Date(startDate) : new Date();
     const [hotelName, setHotelName] = useState('');
     const [checkInDate, setCheckInDate] = useState(initialDate);
@@ -12,23 +12,38 @@ function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded }) {
     const [address, setAddress] = useState('');
     const [bookingConfirmation, setBookingConfirmation] = useState('');
 
+    useEffect(() => {
+        if (hotelToEdit) {
+            setHotelName(hotelToEdit.hotel_name);
+            setCheckInDate(new Date(hotelToEdit.check_in_date));
+            setCheckOutDate(new Date(hotelToEdit.check_out_date));
+            setAddress(hotelToEdit.address);
+            setBookingConfirmation(hotelToEdit.booking_confirmation);
+        }
+    }, [hotelToEdit]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const newHotel = {
+        const updatedHotel = {
             hotel_name: hotelName,
             check_in_date: checkInDate.toISOString().slice(0, 10),
             check_out_date: checkOutDate.toISOString().slice(0, 10),
-            address: address,
+            address,
             booking_confirmation: bookingConfirmation,
             itinerary_id: itineraryId
         };
 
         try {
-            const response = await apiClient.post(`/itineraries/${itineraryId}/hotels`, newHotel);
-            onHotelAdded(response.data);
+            if (hotelToEdit) {
+                const response = await apiClient.put(`/itineraries/${itineraryId}/hotels/${hotelToEdit.hotel_id}`, updatedHotel);
+                onHotelAdded(response.data);
+            } else {
+                const response = await apiClient.post(`/itineraries/${itineraryId}/hotels`, updatedHotel);
+                onHotelAdded(response.data);
+            }
             onClose();
         } catch (error) {
-            console.error('Failed to add hotel:', error);
+            console.error('Failed to save hotel:', error);
         }
     };
 
@@ -43,7 +58,7 @@ function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded }) {
     return (
         <div className="form-modal">
             <div className="form-container">
-                <h2 className="form-title">Add Hotel</h2>
+                <h2 className="form-title">{hotelToEdit ? 'Edit Hotel' : 'Add Hotel'}</h2>
                 <button className="close-button" onClick={onClose}>×</button>
                 <form onSubmit={handleSubmit}>
                     <label>Hotel Name:
@@ -77,7 +92,7 @@ function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded }) {
                     </label>
                     <div className="form-buttons">
                         <button type="button" onClick={handleClear}>Clear</button>
-                        <button type="submit">Add Hotel</button>
+                        <button type="submit">{hotelToEdit ? 'Save Changes' : 'Add Hotel'}</button>
                     </div>
                 </form>
             </div>

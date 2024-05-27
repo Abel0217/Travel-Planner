@@ -15,13 +15,13 @@ const transportRoutes = require('./routes/transportRoutes');
 app.use(cors());
 app.use(express.json());
 
-// Itinerary related routes
+// Itinerary routes
 app.use('/itineraries', itineraryRoutes);
 
-// Day related routes
+// Day routes
 app.use('/days', dayRoutes);
 
-// Activity related routes 
+// Activity related routes for specific itineraries
 app.use('/itineraries/:itineraryId/activities', (req, res, next) => {
     req.itineraryId = req.params.itineraryId;
     next();

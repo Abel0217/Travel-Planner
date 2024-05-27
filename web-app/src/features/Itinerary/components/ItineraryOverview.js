@@ -9,7 +9,7 @@ import HotelDetails from './HotelDetails';
 import RestaurantDetails from './RestaurantDetails';
 import TransportDetails from './TransportDetails';
 import ActivityDetails from './ActivityDetails';
-import DailyOverview from './DailyOverview'; // Import DailyOverview component
+import DailyOverview from './DailyOverview'; 
 import './css/ItineraryOverview.css';
 
 const localizer = momentLocalizer(moment);
@@ -37,7 +37,6 @@ const ItineraryOverview = () => {
     }, [itineraryId]);
 
     const convertItineraryToEvents = (itineraryData) => {
-        // Conversion logic here
         return [];
     };
 

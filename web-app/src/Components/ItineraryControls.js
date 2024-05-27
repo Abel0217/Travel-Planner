@@ -1,4 +1,3 @@
-// src/Components/ItineraryControls.js
 import React, { useState } from 'react';
 
 const ItineraryControls = ({ onSearch, onSort, onFilter }) => {

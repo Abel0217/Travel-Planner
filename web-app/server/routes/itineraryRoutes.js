@@ -53,26 +53,20 @@ router.get('/:itineraryId/days/details', async (req, res) => {
 
 // Create a new itinerary
 router.post('/', async (req, res) => {
-    const { name, start_date, end_date } = req.body;
+    const { title, start_date, end_date } = req.body;
 
     try {
-        // Create the itinerary
-        const newItinerary = await db.addItinerary({ name, start_date, end_date });
+        console.log('Creating itinerary with data:', { title, start_date, end_date });
 
-        // Generate day entries for each date in the itinerary
-        const startDate = new Date(start_date);
-        const endDate = new Date(end_date);
-        let currentDate = startDate;
-        let dayId = 1;
-
-        while (currentDate <= endDate) {
-            await db.addDay({
-                itinerary_id: newItinerary.id,
-                date: currentDate.toISOString().split('T')[0], // Only date part
-                day_id: dayId++
-            });
-            currentDate.setDate(currentDate.getDate() + 1);
+        // Validate the required fields
+        if (!title || !start_date || !end_date) {
+            console.log('Validation failed: Missing required fields');
+            return res.status(400).json({ error: 'Title, start date, and end date are required' });
         }
+
+        // Create the itinerary
+        const newItinerary = await db.addItinerary({ title, start_date, end_date });
+        console.log('New itinerary created:', newItinerary);
 
         res.status(201).json(newItinerary);
     } catch (error) {
@@ -80,6 +74,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // Update an existing itinerary
 router.put('/:itineraryId', async (req, res) => {

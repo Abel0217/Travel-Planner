@@ -16,10 +16,14 @@ form {
     border-radius: 8px;
 }
 
+h2 {
+    margin-bottom: 10px;
+    color: #222946;
+}
+
 button {
     padding: 8px 16px;
     border: none;
-    background-color: #222946;
     color: white;
     cursor: pointer;
     border-radius: 4px;
@@ -27,6 +31,14 @@ button {
 
 button:hover {
     background-color: #f3ab03;
+}
+
+.primary-button {
+    background-color: #222946;
+}
+
+.secondary-button {
+    background-color: #222946;
 }
 
 label {
@@ -44,4 +56,43 @@ input[type="text"]:focus,
 input[type="date"]:focus {
     border-color: #007BFF;
     box-shadow: 0 0 5px rgba(0,123,255,0.5);
+}
+
+.destination-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.add-destination,
+.remove-destination {
+    background-color: #222946;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 18px;
+    border: none;
+}
+
+.remove-destination {
+    background-color: red;
+}
+
+.add-destination:hover,
+.remove-destination:hover {
+    background-color: #f3ab03;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.form-buttons button {
+    flex: 1;
 }

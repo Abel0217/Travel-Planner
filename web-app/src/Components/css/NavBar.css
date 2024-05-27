@@ -5,7 +5,7 @@
     align-items: center;
     padding: 0.5rem 1rem;
     background-color: #222946; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
   }
   
   .navbar-logo {
@@ -15,7 +15,7 @@
   }
   
   .logo-img {
-    height: 40px; /* Adjust size as needed */
+    height: 40px; 
   }
   
   .navbar-links {
@@ -57,15 +57,15 @@
   /* Hover sign-up button */
   .navbar-item-signup:hover,
   .navbar-item-signup:focus {
-    background-color: #f3ab03; /* Darker shade use '#c48800' */
+    background-color: #f3ab03; /* Darker shade: '#c48800' */
     color: #222946;
   }
   
   .profile-img {
-    border-radius: 50%; /* Makes the image round */
-    width: 40px; /* Example size, adjust as needed */
-    height: 40px; /* Example size, adjust as needed */
-    object-fit: cover; /* Ensures the image covers the area without distortion */
+    border-radius: 50%; 
+    width: 40px; 
+    height: 40px; 
+    object-fit: cover; 
   }
   
   .dropdown-menu {

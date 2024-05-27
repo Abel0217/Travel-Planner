@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:3001' // Ensure this is the correct port and host for your backend
+    baseURL: 'http://localhost:3001' 
 });
 
 export default apiClient;

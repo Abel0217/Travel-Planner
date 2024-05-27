@@ -22,7 +22,7 @@ const ListItineraries = () => {
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <ul>
                 {itineraries.map(itinerary => (
-                    <li key={itinerary.itinerary_id}>{itinerary.title}</li>  // Changed from itinerary.id to itinerary.itinerary_id
+                    <li key={itinerary.itinerary_id}>{itinerary.title}</li>  
                 ))}
             </ul>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth'; // Ensure signOut is imported here
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth'; 
 import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
 import './css/SignUp.css';
 

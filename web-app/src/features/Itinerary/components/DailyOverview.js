@@ -153,8 +153,7 @@ const DailyOverview = ({ itineraryId }) => {
                                                     <div key={activity.activity_id} className="booking-item">
                                                         <h4>{activity.title}</h4>
                                                         <p><strong>Location:</strong> {activity.location}</p>
-                                                        <p><strong>Time:</strong> {activity.start_time} - {activity.end_time}</p>
-                                                        <p><strong>Reservation:</strong> {activity.reservation_number}</p>
+                                                        <p><strong>Time:</strong> {activity.start_time}</p>
                                                     </div>
                                                 ))}
                                             </>
@@ -196,7 +195,6 @@ const DailyOverview = ({ itineraryId }) => {
                                                         <p><strong>Reservation Date:</strong> {restaurant.reservation_date}</p>
                                                         <p><strong>Reservation Time:</strong> {new Date(restaurant.reservation_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                                         <p><strong>Address:</strong> {restaurant.address}</p>
-                                                        <p><strong>Booking Confirmation:</strong> {restaurant.booking_confirmation}</p>
                                                     </div>
                                                 ))}
                                             </>

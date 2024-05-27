@@ -7,7 +7,6 @@ import {
   setPersistence, 
   browserLocalPersistence
 } from "firebase/auth";
-// import { getAnalytics } from "firebase/analytics"; // If you're not using Analytics, you can comment this out
 
 
 const firebaseConfig = {
@@ -22,20 +21,16 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app); // If you're not using Analytics, you can comment this out
 
 const auth = getAuth(app); 
-// Set the persistence to LOCAL to keep the user logged in across sessions
 setPersistence(auth, browserLocalPersistence);
 
 const googleProvider = new GoogleAuthProvider();
 const appleProvider = new OAuthProvider('apple.com');
 
 
-// Here you can set custom parameters for Google, like forcing account selection.
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// You can set custom parameters for Apple as well, like requested scopes.
 appleProvider.addScope('email');
 appleProvider.addScope('name');
 

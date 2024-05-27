@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
-// Defining routes 
+// Defining Routes 
 app.get('/itineraries', async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM core.itineraries');

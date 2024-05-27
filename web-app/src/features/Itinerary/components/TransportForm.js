@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
 
-function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAdded }) {
+function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAdded, transportToEdit }) {
     const initialDate = startDate ? new Date(startDate) : new Date();
     const [type, setType] = useState('');
     const [pickupTime, setPickupTime] = useState(initialDate);
@@ -13,10 +13,21 @@ function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAd
     const [dropoffLocation, setDropoffLocation] = useState('');
     const [bookingReference, setBookingReference] = useState('');
 
+    useEffect(() => {
+        if (transportToEdit) {
+            setType(transportToEdit.type);
+            setPickupTime(new Date(transportToEdit.pickup_time));
+            setDropoffTime(new Date(transportToEdit.dropoff_time));
+            setPickupLocation(transportToEdit.pickup_location);
+            setDropoffLocation(transportToEdit.dropoff_location);
+            setBookingReference(transportToEdit.booking_reference);
+        }
+    }, [transportToEdit]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const newTransport = {
+        const updatedTransport = {
             type,
             pickup_time: pickupTime.toISOString(),
             dropoff_time: dropoffTime.toISOString(),
@@ -24,15 +35,20 @@ function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAd
             dropoff_location: dropoffLocation,
             booking_reference: bookingReference,
             itinerary_id: itineraryId,
-            day_id: null // Assuming you have dayId logic similar to restaurant logic
+            day_id: null 
         };
 
         try {
-            const response = await apiClient.post(`/itineraries/${itineraryId}/transport`, newTransport);
-            onTransportAdded(response.data);
+            if (transportToEdit) {
+                const response = await apiClient.put(`/itineraries/${itineraryId}/transport/${transportToEdit.transport_id}`, updatedTransport);
+                onTransportAdded(response.data);
+            } else {
+                const response = await apiClient.post(`/itineraries/${itineraryId}/transport`, updatedTransport);
+                onTransportAdded(response.data);
+            }
             onClose();
         } catch (error) {
-            console.error('Failed to add transport:', error);
+            console.error('Failed to save transport:', error);
         }
     };
 
@@ -48,10 +64,10 @@ function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAd
     return (
         <div className="form-modal">
             <div className="form-container">
-                <h2 className="form-title">Add Transport</h2>
+                <h2 className="form-title">{transportToEdit ? 'Edit Transport' : 'Add Transport'}</h2>
                 <button className="close-button" onClick={onClose}>×</button>
                 <form onSubmit={handleSubmit}>
-                    <label>Type:
+                    <label>Method of Transportation:
                         <input type="text" value={type} onChange={e => setType(e.target.value)} required />
                     </label>
                     <div className="date-fields">
@@ -92,8 +108,8 @@ function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAd
                         <input type="text" value={bookingReference} onChange={e => setBookingReference(e.target.value)} required />
                     </label>
                     <div className="form-buttons">
-                        <button type="submit">Add Transport</button>
                         <button type="button" onClick={handleClear}>Clear</button>
+                        <button type="submit">{transportToEdit ? 'Save Changes' : 'Add Transport'}</button>
                     </div>
                 </form>
             </div>

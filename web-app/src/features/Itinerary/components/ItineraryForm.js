@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import apiClient from '../../../api/apiClient';  
+import apiClient from '../../../api/apiClient';
 import './css/ItineraryForm.css';
 
 const ItineraryForm = () => {
     const [itinerary, setItinerary] = useState({
         title: '',
-        description: '',
+        destinations: [''],
         start_date: '',
         end_date: ''
     });
@@ -18,18 +18,49 @@ const ItineraryForm = () => {
         }));
     };
 
+    const handleDestinationChange = (index, value) => {
+        const newDestinations = [...itinerary.destinations];
+        newDestinations[index] = value;
+        setItinerary(prev => ({
+            ...prev,
+            destinations: newDestinations
+        }));
+    };
+
+    const addDestination = () => {
+        setItinerary(prev => ({
+            ...prev,
+            destinations: [...prev.destinations, '']
+        }));
+    };
+
+    const removeDestination = (index) => {
+        const newDestinations = [...itinerary.destinations];
+        newDestinations.splice(index, 1);
+        setItinerary(prev => ({
+            ...prev,
+            destinations: newDestinations
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!itinerary.title || !itinerary.start_date || !itinerary.end_date) {
-            // Handle error state if needed
+        if (!itinerary.title || !itinerary.start_date || !itinerary.end_date || itinerary.destinations.some(dest => !dest)) {
             return;
         }
         try {
-            await apiClient.post('/itineraries', itinerary);
+            const { title, start_date, end_date, destinations } = itinerary;
+            const payload = {
+                title,
+                start_date,
+                end_date,
+                destinations: destinations.filter(dest => dest) 
+            };
+            await apiClient.post('/itineraries', payload);
             alert('Itinerary created successfully!');
             setItinerary({
                 title: '',
-                description: '',
+                destinations: [''],
                 start_date: '',
                 end_date: ''
             });
@@ -38,11 +69,12 @@ const ItineraryForm = () => {
             alert('Failed to create itinerary');
         }
     };
+    
 
     const handleClear = () => {
         setItinerary({
             title: '',
-            description: '',
+            destinations: [''],
             start_date: '',
             end_date: ''
         });
@@ -50,6 +82,7 @@ const ItineraryForm = () => {
 
     return (
         <form onSubmit={handleSubmit} noValidate>
+            <h2>Create New Itinerary</h2>
             <label htmlFor="title">Title</label>
             <input
                 type="text"
@@ -60,15 +93,25 @@ const ItineraryForm = () => {
                 required
             />
 
-            <label htmlFor="description">Description</label>
-            <input
-                type="text"
-                id="description"
-                name="description"
-                value={itinerary.description}
-                onChange={handleChange}
-                placeholder="Optional"
-            />
+            {itinerary.destinations.map((destination, index) => (
+                <div key={index} className="destination-field">
+                    <label htmlFor={`destination-${index}`}>{index === 0 ? 'Destination' : `Destination ${index + 1}`}</label>
+                    <input
+                        type="text"
+                        id={`destination-${index}`}
+                        name={`destination-${index}`}
+                        value={destination}
+                        onChange={e => handleDestinationChange(index, e.target.value)}
+                        required={index === 0}
+                    />
+                    {index > 0 && (
+                        <button type="button" className="remove-destination" onClick={() => removeDestination(index)}>-</button>
+                    )}
+                    {index === itinerary.destinations.length - 1 && (
+                        <button type="button" className="add-destination" onClick={addDestination}>+</button>
+                    )}
+                </div>
+            ))}
 
             <label htmlFor="start_date">Start Date</label>
             <input
@@ -92,8 +135,10 @@ const ItineraryForm = () => {
                 required
             />
 
-            <button type="submit">Create Itinerary</button>
-            <button type="button" onClick={handleClear}>Clear</button>
+            <div className="form-buttons">
+                <button type="submit" className="primary-button">Create Itinerary</button>
+                <button type="button" className="secondary-button" onClick={handleClear}>Clear</button>
+            </div>
         </form>
     );
 };

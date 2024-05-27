@@ -1,4 +1,4 @@
-const pool = require('./db');  // Ensure this is the correct path to your pool configuration
+const pool = require('./db');  
 
 // Itinerary Operations
 const fetchAllItineraries = async (owner_id = null) => {
@@ -36,16 +36,16 @@ const fetchDaysByItineraryId = async (itinerary_id) => {
     return rows;
 };
 
-
 // Add itinerary
 const addItinerary = async (data) => {
-    const { name, start_date, end_date } = data;
-    const query = 'INSERT INTO core.itinerary (name, start_date, end_date) VALUES ($1, $2, $3) RETURNING *';
-    const values = [name, start_date, end_date];
+    const { title, start_date, end_date } = data;
+    const query = 'INSERT INTO core.itineraries (title, start_date, end_date) VALUES ($1, $2, $3) RETURNING *';
+    const values = [title, start_date, end_date];
     const { rows } = await pool.query(query, values);
     return rows[0];
 };
 
+// Update itinerary
 const updateItinerary = async (itinerary_id, data) => {
     const { title, description, start_date, end_date, visibility, status } = data;
     const query = 'UPDATE core.itineraries SET title = $1, description = $2, start_date = $3, end_date = $4, visibility = $5, status = $6 WHERE itinerary_id = $7 RETURNING *';
@@ -54,6 +54,7 @@ const updateItinerary = async (itinerary_id, data) => {
     return rows[0];
 };
 
+// Delete itinerary
 const deleteItinerary = async (itinerary_id) => {
     const query = 'DELETE FROM core.itineraries WHERE itinerary_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [itinerary_id]);
@@ -70,7 +71,6 @@ const generateDaysForItinerary = async (itinerary_id, start_date, end_date) => {
     await pool.query(query, values);
 };
 
-// Fetch day_id by date
 const fetchDayIdByDate = async (itinerary_id, date) => {
     const query = 'SELECT day_id FROM core.daily WHERE itinerary_id = $1 AND date = $2';
     const values = [itinerary_id, date];
@@ -96,7 +96,7 @@ const fetchDayById = async (dayId) => {
     return rows[0];
 };
 
-// Add a new day entry
+// Add New Day 
 const addDay = async (data) => {
     const { itinerary_id, date, day_id } = data;
     const query = 'INSERT INTO core.daily (itinerary_id, date, day_id) VALUES ($1, $2, $3) RETURNING *';
@@ -105,6 +105,7 @@ const addDay = async (data) => {
     return rows[0];
 };
 
+// update Day 
 const updateDay = async (dayId, data) => {
     const { itinerary_id, date, summary, notes, weather } = data;
     const query = 'UPDATE core.daily SET itinerary_id = $1, date = $2, summary = $3, notes = $4, weather = $5 WHERE day_id = $6 RETURNING *';
@@ -113,6 +114,7 @@ const updateDay = async (dayId, data) => {
     return rows[0];
 };
 
+// Delete Day 
 const deleteDay = async (dayId) => {
     const query = 'DELETE FROM core.daily WHERE day_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [dayId]);
@@ -138,6 +140,7 @@ const fetchActivitiesByDateRange = async (itineraryId, startDate, endDate) => {
     return rows;
 };
 
+// Add Activity 
 const addActivity = async (itineraryId, title, description, location, activityDate, startTime, endTime, reservationNumber) => {
     const query = `
         INSERT INTO core.activities (itinerary_id, title, description, location, activity_date, start_time, end_time, reservation_number)
@@ -148,6 +151,7 @@ const addActivity = async (itineraryId, title, description, location, activityDa
     return rows[0];
 };
 
+// Update Activity 
 const updateActivity = async (activityId, itineraryId, title, description, location, activityDate, startTime, endTime, reservationNumber) => {
     const query = `
         UPDATE core.activities
@@ -160,6 +164,7 @@ const updateActivity = async (activityId, itineraryId, title, description, locat
     return rows[0];
 };
 
+// Delete Activity 
 const deleteActivity = async (activityId) => {
     const query = 'DELETE FROM core.activities WHERE activity_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [activityId]);
@@ -174,6 +179,7 @@ const fetchExpensesByItineraryId = async (itinerary_id) => {
     return rows;
 };
 
+// Add Expense 
 const addExpense = async (itinerary_id, data) => {
     const { category, amount, description, expense_date } = data;
     const query = 'INSERT INTO core.expenses (itinerary_id, category, amount, description, expense_date) VALUES ($1, $2, $3, $4, $5) RETURNING *';
@@ -182,6 +188,7 @@ const addExpense = async (itinerary_id, data) => {
     return rows[0];
 };
 
+// Update Expense 
 const updateExpense = async (expense_id, data) => {
     const { category, amount, description, expense_date } = data;
     const query = 'UPDATE core.expenses SET category = $1, amount = $2, description = $3, expense_date = $4 WHERE expense_id = $5 RETURNING *';
@@ -190,11 +197,13 @@ const updateExpense = async (expense_id, data) => {
     return rows[0];
 };
 
+// Delete Expense 
 const deleteExpense = async (expense_id) => {
     const query = 'DELETE FROM core.expenses WHERE expense_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [expense_id]);
     return rows[0];
 };
+
 
 // Flight Operations
 const fetchFlightsByItineraryId = async (itineraryId) => {
@@ -214,6 +223,7 @@ const fetchFlightsByDateRange = async (itineraryId, startDate, endDate) => {
     return rows;
 };
 
+// Add Flight
 const addFlight = async (itineraryId, airline, flight_number, departure_airport, arrival_airport, departure_time, arrival_time, booking_reference) => {
     const query = `
         INSERT INTO core.flights (itinerary_id, airline, flight_number, departure_airport, arrival_airport, departure_time, arrival_time, booking_reference)
@@ -224,6 +234,7 @@ const addFlight = async (itineraryId, airline, flight_number, departure_airport,
     return rows[0];
 };
 
+// Update Flight
 const updateFlight = async (flightId, itineraryId, airline, flight_number, departure_airport, arrival_airport, departure_time, arrival_time, booking_reference) => {
     const query = `
         UPDATE core.flights
@@ -236,11 +247,13 @@ const updateFlight = async (flightId, itineraryId, airline, flight_number, depar
     return rows[0];
 };
 
+// Delete Flight
 const deleteFlight = async (flightId) => {
     const query = 'DELETE FROM core.flights WHERE flight_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [flightId]);
     return rows[0];
 };
+
 
 // Hotel Operations
 const fetchHotelsByItineraryId = async (itineraryId) => {
@@ -260,6 +273,7 @@ const fetchHotelsByDateRange = async (itineraryId, startDate, endDate) => {
     return rows;
 };
 
+// Add Hotel
 const addHotel = async (itineraryId, hotel_name, check_in_date, check_out_date, address, booking_confirmation) => {
     const query = `
         INSERT INTO core.hotels (itinerary_id, hotel_name, check_in_date, check_out_date, address, booking_confirmation)
@@ -270,6 +284,7 @@ const addHotel = async (itineraryId, hotel_name, check_in_date, check_out_date, 
     return rows[0];
 };
 
+// Update Hotel
 const updateHotel = async (hotelId, itineraryId, hotel_name, check_in_date, check_out_date, address, booking_confirmation) => {
     const query = `
         UPDATE core.hotels
@@ -282,6 +297,7 @@ const updateHotel = async (hotelId, itineraryId, hotel_name, check_in_date, chec
     return rows[0];
 };
 
+// Delete Hotel
 const deleteHotel = async (hotelId) => {
     const query = 'DELETE FROM core.hotels WHERE hotel_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [hotelId]);
@@ -306,6 +322,7 @@ const fetchRestaurantsByDateRange = async (itineraryId, startDate, endDate) => {
     return rows;
 };
 
+// Add Restaurant
 const addRestaurant = async (itineraryId, restaurant_name, reservation_date, reservation_time, guest_number, address, booking_confirmation) => {
     const query = `
         INSERT INTO core.restaurant (itinerary_id, restaurant_name, reservation_date, reservation_time, guest_number, address, booking_confirmation)
@@ -316,6 +333,7 @@ const addRestaurant = async (itineraryId, restaurant_name, reservation_date, res
     return rows[0];
 };
 
+// Update Restaurant
 const updateRestaurant = async (reservationId, itineraryId, restaurant_name, reservation_date, reservation_time, guest_number, address, booking_confirmation) => {
     const query = `
         UPDATE core.restaurant 
@@ -328,6 +346,7 @@ const updateRestaurant = async (reservationId, itineraryId, restaurant_name, res
     return rows[0];
 };
 
+// Delete Restaurant
 const deleteRestaurant = async (reservationId) => {
     const query = 'DELETE FROM core.restaurant WHERE reservation_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [reservationId]);
@@ -352,6 +371,7 @@ const fetchTransportsByDateRange = async (itineraryId, startDate, endDate) => {
     return rows;
 };
 
+// Add Transport
 const addTransport = async (itineraryId, type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference) => {
     const query = `
         INSERT INTO core.transport (itinerary_id, type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference)
@@ -362,6 +382,7 @@ const addTransport = async (itineraryId, type, pickup_time, dropoff_time, pickup
     return rows[0];
 };
 
+// Update Transport
 const updateTransport = async (transportId, itineraryId, type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference) => {
     const query = `
         UPDATE core.transport 
@@ -374,6 +395,7 @@ const updateTransport = async (transportId, itineraryId, type, pickup_time, drop
     return rows[0];
 };
 
+// Delete Transport
 const deleteTransport = async (transportId) => {
     const query = 'DELETE FROM core.transport WHERE transport_id = $1 RETURNING *';
     const { rows } = await pool.query(query, [transportId]);

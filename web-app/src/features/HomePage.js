@@ -39,7 +39,7 @@ const HomePage = () => {
     }, []); 
 
     useEffect(() => {
-        filterItineraries();  // Call filterItineraries whenever itineraries or filter changes
+        filterItineraries();  
     }, [itineraries, filter, filterItineraries]);
 
     const calculateCountdown = (startDate) => {
@@ -54,7 +54,7 @@ const HomePage = () => {
 
     const handleItineraryClick = (itineraryId) => {
         navigate(`/itineraries/${itineraryId}`);
-        console.log('Navigating to:', itineraryId); // Add this log to confirm the value
+        console.log('Navigating to:', itineraryId); 
     };
     
 

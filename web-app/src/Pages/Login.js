@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
-import './css/Login.css'; // Ensure this path is correct
+import './css/Login.css'; 
 
 function Login({ isOpen, closeLogin, switchToSignUp }) {
   const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
     const auth = getAuth();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      closeLogin(); // Close the modal upon successful login
+      closeLogin(); 
     } catch (error) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         setLoginError("Incorrect email or password.");
@@ -29,7 +29,7 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
   const handleGoogleLogin = async () => {
     try {
       await signInWithGoogle();
-      closeLogin(); // Close the modal upon successful login
+      closeLogin(); 
     } catch (error) {
       console.error('Error during Google login:', error);
       setLoginError(error.message);
@@ -39,7 +39,7 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
   const handleAppleLogin = async () => {
     try {
       await signInWithApple();
-      closeLogin(); // Close the modal upon successful login
+      closeLogin(); 
     } catch (error) {
       console.error('Error during Apple login:', error);
       setLoginError(error.message);

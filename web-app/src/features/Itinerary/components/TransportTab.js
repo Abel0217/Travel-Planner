@@ -3,7 +3,7 @@ import TransportForm from './TransportForm';
 
 const TransportTabTab = () => {
   const { itineraryId, dayId } = useParams();
-  console.log("Itinerary ID:", itineraryId, "Day ID:", dayId);  // Log to check values
+  console.log("Itinerary ID:", itineraryId, "Day ID:", dayId); 
 
   return (
     <div>

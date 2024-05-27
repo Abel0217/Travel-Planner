@@ -8,7 +8,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-// Search path for every client connection
+// Search path (every client connection)
 pool.on('connect', (client) => {
   client.query('SET search_path TO core, public');
 });

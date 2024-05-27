@@ -1,10 +1,10 @@
 .itinerary-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Ensuring three cards in a row */
+    grid-template-columns: repeat(3, 1fr); /* Three cards Per row */
     gap: 20px;
     padding: 20px;
-    background-color: #f9f9f9; /* Subtle background color for better contrast */
-    margin-top: 50px; /* Space below the greeting and filter */
+    background-color: #f9f9f9; 
+    margin-top: 50px; 
 }
 
 .itinerary-card {
@@ -17,7 +17,7 @@
 }
 
 .itinerary-card:hover {
-    transform: scale(1.05); /* Slightly increased for a better effect */
+    transform: scale(1.05); 
 }
 
 .itinerary-image {
@@ -28,7 +28,7 @@
 
 .itinerary-info {
     padding: 15px;
-    background-color: white; /* Ensuring consistent background across the card */
+    background-color: white; 
 }
 
 .itinerary-info h3 {
@@ -47,27 +47,27 @@
     color: #2a7;
 }
 
-/* Styles for the greeting and filter section */
+/* Greeting and filter section */
 .header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    background-color: #f4f4f4; /* Light grey background for header */
+    background-color: #f4f4f4; 
 }
 
 .greeting {
-    font-size: 24px; /* Larger font size for visibility */
+    font-size: 24px; /* Font size */
     color: #333;
-    flex-grow: 1; /* Ensures it takes necessary space */
+    flex-grow: 1; 
 }
 
 .filter-dropdown {
-    padding: 8px 15px; /* Smaller and more proportionate padding */
-    font-size: 14px; /* Smaller font size */
+    padding: 8px 15px; 
+    font-size: 14px; 
     border: 1px solid #ccc;
     border-radius: 5px;
     cursor: pointer;
-    background-color: white; /* Ensure dropdown stands out */
-    margin-right: 20px; /* Right margin for positioning */
+    background-color: white; 
+    margin-right: 20px; 
 }

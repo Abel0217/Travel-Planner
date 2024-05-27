@@ -6,7 +6,6 @@ const HotelsTab = () => {
   return (
     <div>
       <h2>Hotel Information</h2>
-      {/* Hotel details and CRUD operations will go here */}
     </div>
   );
 };

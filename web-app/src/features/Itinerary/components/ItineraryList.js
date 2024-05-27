@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import apiClient from '../../../api/apiClient'; // Ensure the import path is correct
-import ItineraryControls from '../../../Components/ItineraryControls'; // Verify the import path
+import apiClient from '../../../api/apiClient'; 
+import ItineraryControls from '../../../Components/ItineraryControls'; 
 import { Link } from 'react-router-dom';
 
 const ItineraryList = () => {
@@ -11,7 +11,7 @@ const ItineraryList = () => {
         apiClient.get('/itineraries')
             .then(response => {
                 console.log('Fetched data:', response.data);
-                response.data.forEach(itinerary => console.log(itinerary.itinerary_id)); // Confirm IDs are logging correctly
+                response.data.forEach(itinerary => console.log(itinerary.itinerary_id)); 
                 setItineraries(response.data);
                 setFilteredItineraries(response.data);
             })
@@ -31,7 +31,7 @@ const ItineraryList = () => {
         const sorted = [...filteredItineraries].sort((a, b) => {
             if (sortKey === 'date') {
                 return new Date(a.start_date) - new Date(b.start_date);
-            } else { // Default to sorting by title
+            } else {
                 return a.title.localeCompare(b.title);
             }
         });
@@ -46,7 +46,7 @@ const ItineraryList = () => {
             } else if (filterKey === 'past') {
                 return new Date(itinerary.end_date) < now;
             } else {
-                return true; // 'all'
+                return true; 
             }
         });
         setFilteredItineraries(filtered);
@@ -58,7 +58,7 @@ const ItineraryList = () => {
             <ItineraryControls onSearch={handleSearch} onSort={handleSort} onFilter={handleFilter} />
             <ul>
                 {filteredItineraries.map(itinerary => {
-                    console.log(itinerary.itinerary_id); // Check if any IDs are undefined
+                    console.log(itinerary.itinerary_id); 
                     return (
                         <li key={itinerary.itinerary_id}>
                             <Link to={`/itineraries/${itinerary.itinerary_id}`}>{itinerary.title}</Link>

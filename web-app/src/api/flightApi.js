@@ -1,4 +1,3 @@
-// /web-app/src/api/flightApi.js
 import axios from 'axios';
 
 const API_KEY = 'ybe16af465fmshbc4872b3e31a437p1aeb85jsnd7763af531f3';

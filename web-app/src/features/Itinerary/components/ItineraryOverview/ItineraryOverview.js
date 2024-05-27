@@ -19,7 +19,6 @@ const ItineraryOverview = () => {
             apiClient.get(`/itineraries/${id}`)
                 .then(response => {
                     setItinerary(response.data);
-                    // Convert your itinerary details into calendar events here
                     setEvents(convertItineraryToEvents(response.data));
                     setLoading(false);
                 })
@@ -30,10 +29,9 @@ const ItineraryOverview = () => {
         }
     }, [id]);
 
-    // Function to convert itinerary data into calendar events
+    // Convert itinerary data into calendar 
     const convertItineraryToEvents = (itineraryData) => {
-        // Implement conversion logic based on your data structure
-        return []; // return an array of event objects
+        return []; 
     };
 
     if (loading) return <div>Loading...</div>;

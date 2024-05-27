@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
 
-function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurantAdded }) {
+function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurantAdded, restaurantToEdit }) {
     const initialDate = startDate ? new Date(startDate) : new Date();
     const [restaurantName, setRestaurantName] = useState('');
     const [reservationDate, setReservationDate] = useState(initialDate);
@@ -13,9 +13,20 @@ function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurant
     const [address, setAddress] = useState('');
     const [bookingConfirmation, setBookingConfirmation] = useState('');
 
+    useEffect(() => {
+        if (restaurantToEdit) {
+            setRestaurantName(restaurantToEdit.restaurant_name);
+            setReservationDate(new Date(restaurantToEdit.reservation_date));
+            setReservationTime(restaurantToEdit.reservation_time);
+            setGuestNumber(restaurantToEdit.guest_number);
+            setAddress(restaurantToEdit.address);
+            setBookingConfirmation(restaurantToEdit.booking_confirmation);
+        }
+    }, [restaurantToEdit]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const newRestaurant = {
+        const updatedRestaurant = {
             restaurant_name: restaurantName,
             reservation_date: reservationDate.toISOString().slice(0, 10),
             reservation_time: reservationTime,
@@ -26,11 +37,16 @@ function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurant
         };
 
         try {
-            const response = await apiClient.post(`/itineraries/${itineraryId}/restaurants`, newRestaurant);
-            onRestaurantAdded(response.data);
+            if (restaurantToEdit) {
+                const response = await apiClient.put(`/itineraries/${itineraryId}/restaurants/${restaurantToEdit.reservation_id}`, updatedRestaurant);
+                onRestaurantAdded(response.data);
+            } else {
+                const response = await apiClient.post(`/itineraries/${itineraryId}/restaurants`, updatedRestaurant);
+                onRestaurantAdded(response.data);
+            }
             onClose();
         } catch (error) {
-            console.error('Failed to add restaurant:', error);
+            console.error('Failed to save restaurant:', error);
         }
     };
 
@@ -46,7 +62,7 @@ function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurant
     return (
         <div className="form-modal">
             <div className="form-container">
-                <h2 className="form-title">Add Restaurant</h2>
+                <h2 className="form-title">{restaurantToEdit ? 'Edit Restaurant' : 'Add Restaurant'}</h2>
                 <button className="close-button" onClick={onClose}>×</button>
                 <form onSubmit={handleSubmit}>
                     <label>Restaurant Name:
@@ -67,7 +83,7 @@ function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurant
                         </label>
                     </div>
                     <label>Number of Guests:
-                        <input type="number" value={guestNumber} onChange={e => setGuestNumber(e.target.value)} required />
+                        <input type="number" value={guestNumber} onChange={e => setGuestNumber(e.target.value)} />
                     </label>
                     <label>Address:
                         <input type="text" value={address} onChange={e => setAddress(e.target.value)} required />
@@ -77,7 +93,7 @@ function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurant
                     </label>
                     <div className="form-buttons">
                         <button type="button" onClick={handleClear}>Clear</button>
-                        <button type="submit">Add Restaurant</button>
+                        <button type="submit">{restaurantToEdit ? 'Save Changes' : 'Add Restaurant'}</button>
                     </div>
                 </form>
             </div>

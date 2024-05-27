@@ -7,7 +7,6 @@ const FlightsTab = ({ itineraryId }) => {
     const [flights, setFlights] = useState([]);
 
     useEffect(() => {
-        // Fetch flights related to the itinerary
         apiClient.get(`/itineraries/${itineraryId}/flights`)
             .then(response => {
                 setFlights(response.data);
@@ -18,17 +17,14 @@ const FlightsTab = ({ itineraryId }) => {
     }, [itineraryId]);
 
     const handleAddFlight = () => {
-        // Logic to add a new flight
         console.log('Adding new flight');
     };
 
     const handleEditFlight = (flightId) => {
-        // Logic to edit an existing flight
         console.log('Editing flight:', flightId);
     };
 
     const handleDeleteFlight = (flightId) => {
-        // Logic to delete a flight
         console.log('Deleting flight:', flightId);
     };
 

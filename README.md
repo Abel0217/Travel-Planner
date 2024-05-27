@@ -3,7 +3,7 @@
 
 ## Project Description
 
-The Collaborative Travel Planner Application is designed to help users plan their trips collaboratively, manage itineraries, and track expenses seamlessly. This application aims to provide a comprehensive solution for travel planning, offering features like itinerary management, real-time collaboration, and integration with various third-party services for enhanced functionality. The application will be accessible via web and mobile platforms, ensuring a consistent and user-friendly experience.
+The Collaborative Travel Planner Application is designed to help users plan their trips collaboratively, manage itineraries, and track expenses. This application offers features like itinerary management, real-time collaboration, and integration with third-party services. The application will be accessible via web and mobile platforms, ensuring a user-friendly experience.
 
 ## Technology Stack
 

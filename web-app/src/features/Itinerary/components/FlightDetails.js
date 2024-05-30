@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import './css/DetailsCard.css';
 import FlightForm from './FlightForm';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function FlightDetails({ itineraryId }) {
     const [flights, setFlights] = useState([]);
@@ -18,6 +20,7 @@ function FlightDetails({ itineraryId }) {
             return;
         }
         fetchFlights();
+        setupFirestoreListeners();
     }, [itineraryId]);
 
     const fetchFlights = async () => {
@@ -29,6 +32,15 @@ function FlightDetails({ itineraryId }) {
             console.error('Failed to fetch flights:', error);
             setError('Failed to fetch flights');
         }
+    };
+
+    const setupFirestoreListeners = () => {
+        const flightsQuery = query(collection(db, 'flights'), where('itineraryId', '==', itineraryId));
+        
+        onSnapshot(flightsQuery, (snapshot) => {
+            const flights = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setFlights(flights);
+        });
     };
 
     const formatDate = (dateString) => {

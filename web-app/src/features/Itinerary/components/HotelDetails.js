@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import './css/DetailsCard.css';
 import HotelForm from './HotelForm';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function HotelDetails({ itineraryId }) {
     const [hotels, setHotels] = useState([]);
@@ -18,6 +20,7 @@ function HotelDetails({ itineraryId }) {
             return;
         }
         fetchHotels();
+        setupFirestoreListeners();
     }, [itineraryId]);
 
     const fetchHotels = async () => {
@@ -29,6 +32,15 @@ function HotelDetails({ itineraryId }) {
             console.error('Failed to fetch hotels', error);
             setError('Failed to fetch hotels');
         }
+    };
+
+    const setupFirestoreListeners = () => {
+        const hotelsQuery = query(collection(db, 'hotels'), where('itineraryId', '==', itineraryId));
+        
+        onSnapshot(hotelsQuery, (snapshot) => {
+            const hotels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setHotels(hotels);
+        });
     };
 
     const formatDate = (dateString) => {

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/dbOperations');
+const firestoreDb = require('../firebaseAdmin'); // Correct import
 
 // Fetch all flights for a specific itinerary
 router.get('/', async (req, res) => {
@@ -37,6 +38,20 @@ router.post('/', async (req, res) => {
             arrival_time,
             booking_reference
         );
+
+        // Add to Firestore
+        const flightRef = firestoreDb.collection('flights').doc(newFlight.flight_id.toString());
+        await flightRef.set({
+            itinerary_id: req.itineraryId,
+            airline,
+            flight_number,
+            departure_airport,
+            arrival_airport,
+            departure_time,
+            arrival_time,
+            booking_reference
+        });
+
         res.status(201).json(newFlight);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -59,6 +74,20 @@ router.put('/:flightId', async (req, res) => {
             arrival_time,
             booking_reference
         );
+
+        // Update Firestore
+        const flightRef = firestoreDb.collection('flights').doc(flightId);
+        await flightRef.set({
+            itinerary_id: req.itineraryId,
+            airline,
+            flight_number,
+            departure_airport,
+            arrival_airport,
+            departure_time,
+            arrival_time,
+            booking_reference
+        });
+
         res.json(updatedFlight);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -70,6 +99,11 @@ router.delete('/:flightId', async (req, res) => {
     const { flightId } = req.params;
     try {
         const deletedFlight = await db.deleteFlight(flightId);
+
+        // Delete from Firestore
+        const flightRef = firestoreDb.collection('flights').doc(flightId);
+        await flightRef.delete();
+
         res.json(deletedFlight);
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -6,6 +6,8 @@ import HotelForm from './HotelForm';
 import FlightForm from './FlightForm';
 import RestaurantForm from './RestaurantForm';
 import TransportForm from './TransportForm';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 const DailyOverview = ({ itineraryId }) => {
     const [days, setDays] = useState([]);
@@ -27,6 +29,7 @@ const DailyOverview = ({ itineraryId }) => {
                 const { start_date, end_date } = response.data;
                 generateDays(start_date, end_date);
                 await fetchAllData();
+                setupFirestoreListeners();
             } catch (error) {
                 console.error('Failed to fetch itinerary data', error);
             }
@@ -67,6 +70,94 @@ const DailyOverview = ({ itineraryId }) => {
         } catch (error) {
             console.error('Failed to fetch all data', error);
         }
+    };
+
+    const setupFirestoreListeners = () => {
+        const activitiesQuery = query(collection(db, 'activities'), where('itineraryId', '==', itineraryId));
+        const hotelsQuery = query(collection(db, 'hotels'), where('itineraryId', '==', itineraryId));
+        const flightsQuery = query(collection(db, 'flights'), where('itineraryId', '==', itineraryId));
+        const restaurantsQuery = query(collection(db, 'restaurants'), where('itineraryId', '==', itineraryId));
+        const transportQuery = query(collection(db, 'transport'), where('itineraryId', '==', itineraryId));
+
+        onSnapshot(activitiesQuery, (snapshot) => {
+            const activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAllActivities(prevActivities => {
+                const newActivities = [...prevActivities];
+                activities.forEach(activity => {
+                    const index = newActivities.findIndex(a => a.activity_id === activity.activity_id);
+                    if (index === -1) {
+                        newActivities.push(activity);
+                    } else {
+                        newActivities[index] = activity;
+                    }
+                });
+                return newActivities;
+            });
+        });
+
+        onSnapshot(hotelsQuery, (snapshot) => {
+            const hotels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAllHotels(prevHotels => {
+                const newHotels = [...prevHotels];
+                hotels.forEach(hotel => {
+                    const index = newHotels.findIndex(h => h.hotel_id === hotel.hotel_id);
+                    if (index === -1) {
+                        newHotels.push(hotel);
+                    } else {
+                        newHotels[index] = hotel;
+                    }
+                });
+                return newHotels;
+            });
+        });
+
+        onSnapshot(flightsQuery, (snapshot) => {
+            const flights = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAllFlights(prevFlights => {
+                const newFlights = [...prevFlights];
+                flights.forEach(flight => {
+                    const index = newFlights.findIndex(f => f.flight_id === flight.flight_id);
+                    if (index === -1) {
+                        newFlights.push(flight);
+                    } else {
+                        newFlights[index] = flight;
+                    }
+                });
+                return newFlights;
+            });
+        });
+
+        onSnapshot(restaurantsQuery, (snapshot) => {
+            const restaurants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAllRestaurants(prevRestaurants => {
+                const newRestaurants = [...prevRestaurants];
+                restaurants.forEach(restaurant => {
+                    const index = newRestaurants.findIndex(r => r.reservation_id === restaurant.reservation_id);
+                    if (index === -1) {
+                        newRestaurants.push(restaurant);
+                    } else {
+                        newRestaurants[index] = restaurant;
+                    }
+                });
+                return newRestaurants;
+            });
+        });
+
+        onSnapshot(transportQuery, (snapshot) => {
+            const transport = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAllTransport(prevTransport => {
+                const newTransport = [...prevTransport];
+                transport.forEach(t => {
+                    const index = newTransport.findIndex(tr => tr.transport_id === t.transport_id);
+                    if (index === -1) {
+                        newTransport.push(t);
+                    } else {
+                        newTransport[index] = t;
+                    }
+                });
+                return newTransport;
+            });
+        });
     };
 
     const fetchBookingsForDay = (date) => {

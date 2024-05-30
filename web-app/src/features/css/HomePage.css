@@ -14,6 +14,7 @@
     overflow: hidden;
     cursor: pointer;
     background-color: white;
+    position: relative; /* Add position relative for dropdown positioning */
 }
 
 .itinerary-card:hover {
@@ -66,8 +67,71 @@
     padding: 8px 15px; 
     font-size: 14px; 
     border: 1px solid #ccc;
+    border: 1px solid #ccc;
     border-radius: 5px;
     cursor: pointer;
     background-color: white; 
     margin-right: 20px; 
+}
+
+/* Dropdown button and menu */
+.dropdown {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+}
+
+.dropdown-button {
+    background-color: white; /* Button color */
+    color: black;
+    border: none;
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px; /* Increase the font size for bigger dots */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dropdown-button:hover {
+    transform: scale(1.4); /* Enlarge on hover */
+    background-color: white;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: rgba(236, 234, 234, 0.1);
+    box-shadow: 0 5px 10px rgba(73, 72, 72, 0.331);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 1;
+    color: black; /* Change the font color to black */
+    border: 1px solid #ccc; /* Add a light border for visibility */
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    color: black;
+}
+
+.dropdown-content button:hover {
+    background-color: #f3ab03; 
+    color: white;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dialog-button:hover {
+    background-color: #ddd;
+    color: black;
 }

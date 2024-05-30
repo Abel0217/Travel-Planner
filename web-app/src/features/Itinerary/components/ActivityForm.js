@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
+import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function ActivityForm({ itineraryId, startDate, endDate, onClose, onActivityAdded, activityToEdit }) {
     const [title, setTitle] = useState('');
@@ -50,14 +52,22 @@ function ActivityForm({ itineraryId, startDate, endDate, onClose, onActivityAdde
             if (activityToEdit) {
                 const response = await apiClient.put(`/itineraries/${itineraryId}/activities/${activityToEdit.activity_id}`, updatedActivity);
                 onActivityAdded(response.data);
+                
+                // Update Firestore
+                const activityRef = doc(db, 'activities', activityToEdit.id);
+                await updateDoc(activityRef, updatedActivity);
             } else {
                 const response = await apiClient.post(`/itineraries/${itineraryId}/activities`, updatedActivity);
                 onActivityAdded(response.data);
+                
+                // Add to Firestore
+                const newDocRef = doc(collection(db, 'activities'));
+                await setDoc(newDocRef, updatedActivity);
             }
-            onClose();
         } catch (error) {
             console.error('Failed to save activity:', error);
         }
+        onClose();  // Ensure the form closes after saving
     };
 
     const handleClear = () => {

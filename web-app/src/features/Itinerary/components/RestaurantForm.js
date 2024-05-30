@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
+import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurantAdded, restaurantToEdit }) {
     const initialDate = startDate ? new Date(startDate) : new Date();
@@ -40,14 +42,22 @@ function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurant
             if (restaurantToEdit) {
                 const response = await apiClient.put(`/itineraries/${itineraryId}/restaurants/${restaurantToEdit.reservation_id}`, updatedRestaurant);
                 onRestaurantAdded(response.data);
+
+                // Update Firestore
+                const restaurantRef = doc(db, 'restaurants', restaurantToEdit.id);
+                await updateDoc(restaurantRef, updatedRestaurant);
             } else {
                 const response = await apiClient.post(`/itineraries/${itineraryId}/restaurants`, updatedRestaurant);
                 onRestaurantAdded(response.data);
+
+                // Add to Firestore
+                const newDocRef = doc(collection(db, 'restaurants'));
+                await setDoc(newDocRef, updatedRestaurant);
             }
-            onClose();
         } catch (error) {
             console.error('Failed to save restaurant:', error);
         }
+        onClose();  // Ensure the form closes after saving
     };
 
     const handleClear = () => {

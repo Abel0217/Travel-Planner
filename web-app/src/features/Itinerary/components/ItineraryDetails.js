@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig'; // Adjust the path as necessary
 import apiClient from '../../../api/apiClient';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -18,6 +20,7 @@ const ItineraryDetails = () => {
 
     useEffect(() => {
         if (itineraryId) {
+            // Fetch itinerary from your existing API
             apiClient.get(`/itineraries/${itineraryId}`)
                 .then(response => {
                     setItinerary(response.data);
@@ -25,6 +28,18 @@ const ItineraryDetails = () => {
                 .catch(error => {
                     console.error('Failed to fetch itinerary details', error);
                 });
+
+            // Fetch itinerary from Firestore for real-time updates
+            const docRef = doc(db, 'itineraries', itineraryId);
+            const unsubscribe = onSnapshot(docRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    setItinerary(snapshot.data());
+                } else {
+                    console.error('No such document!');
+                }
+            });
+
+            return () => unsubscribe();
         }
     }, [itineraryId]);
 

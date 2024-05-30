@@ -3,11 +3,12 @@ import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
+import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded, hotelToEdit }) {
-    const initialDate = startDate ? new Date(startDate) : new Date();
     const [hotelName, setHotelName] = useState('');
-    const [checkInDate, setCheckInDate] = useState(initialDate);
+    const [checkInDate, setCheckInDate] = useState(startDate ? new Date(startDate) : new Date());
     const [checkOutDate, setCheckOutDate] = useState(new Date());
     const [address, setAddress] = useState('');
     const [bookingConfirmation, setBookingConfirmation] = useState('');
@@ -26,8 +27,8 @@ function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded, hot
         e.preventDefault();
         const updatedHotel = {
             hotel_name: hotelName,
-            check_in_date: checkInDate.toISOString().slice(0, 10),
-            check_out_date: checkOutDate.toISOString().slice(0, 10),
+            check_in_date: checkInDate.toISOString().split('T')[0],
+            check_out_date: checkOutDate.toISOString().split('T')[0],
             address,
             booking_confirmation: bookingConfirmation,
             itinerary_id: itineraryId
@@ -37,19 +38,27 @@ function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded, hot
             if (hotelToEdit) {
                 const response = await apiClient.put(`/itineraries/${itineraryId}/hotels/${hotelToEdit.hotel_id}`, updatedHotel);
                 onHotelAdded(response.data);
+
+                // Update Firestore
+                const hotelRef = doc(db, 'hotels', hotelToEdit.id);
+                await updateDoc(hotelRef, updatedHotel);
             } else {
                 const response = await apiClient.post(`/itineraries/${itineraryId}/hotels`, updatedHotel);
                 onHotelAdded(response.data);
+
+                // Add to Firestore
+                const newDocRef = doc(collection(db, 'hotels'));
+                await setDoc(newDocRef, updatedHotel);
             }
-            onClose();
         } catch (error) {
             console.error('Failed to save hotel:', error);
         }
+        onClose();  // Ensure the form closes after saving
     };
 
     const handleClear = () => {
         setHotelName('');
-        setCheckInDate(initialDate);
+        setCheckInDate(startDate ? new Date(startDate) : new Date());
         setCheckOutDate(new Date());
         setAddress('');
         setBookingConfirmation('');
@@ -91,8 +100,8 @@ function HotelForm({ itineraryId, startDate, endDate, onClose, onHotelAdded, hot
                         <input type="text" value={bookingConfirmation} onChange={e => setBookingConfirmation(e.target.value)} required />
                     </label>
                     <div className="form-buttons">
-                        <button type="button" onClick={handleClear}>Clear</button>
                         <button type="submit">{hotelToEdit ? 'Save Changes' : 'Add Hotel'}</button>
+                        <button type="button" onClick={handleClear}>Clear</button>
                     </div>
                 </form>
             </div>

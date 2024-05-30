@@ -13,24 +13,23 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for changes of the authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
-        if (user) {
-            setCurrentUser({
-                name: user.displayName, 
-                email: user.email,
-                uid: user.uid
-            });
-        } else {
-            setCurrentUser(null);
-        }
-        setLoading(false);
+      if (user) {
+        setCurrentUser({
+          name: user.displayName,
+          email: user.email,
+          uid: user.uid,
+          photoURL: user.photoURL,
+        });
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
     });
 
     return () => unsubscribe();
-}, []);
-
+  }, []);
 
   const value = {
     currentUser,

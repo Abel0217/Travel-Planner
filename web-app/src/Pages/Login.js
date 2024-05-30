@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
-import './css/Login.css'; 
+import './css/Login.css';
 
 function Login({ isOpen, closeLogin, switchToSignUp }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (event) => {
     event.preventDefault();
     const auth = getAuth();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      closeLogin(); 
+      closeLogin();
+      navigate('/');
     } catch (error) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        setLoginError("Incorrect email or password.");
+        setLoginError('Incorrect email or password.');
       } else if (error.code === 'auth/too-many-requests') {
-        setLoginError("Too many failed login attempts. Please try again later.");
+        setLoginError('Too many failed login attempts. Please try again later.');
       } else {
         setLoginError(error.message);
       }
@@ -29,7 +32,8 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
   const handleGoogleLogin = async () => {
     try {
       await signInWithGoogle();
-      closeLogin(); 
+      closeLogin();
+      navigate('/');
     } catch (error) {
       console.error('Error during Google login:', error);
       setLoginError(error.message);
@@ -39,7 +43,8 @@ function Login({ isOpen, closeLogin, switchToSignUp }) {
   const handleAppleLogin = async () => {
     try {
       await signInWithApple();
-      closeLogin(); 
+      closeLogin();
+      navigate('/');
     } catch (error) {
       console.error('Error during Apple login:', error);
       setLoginError(error.message);

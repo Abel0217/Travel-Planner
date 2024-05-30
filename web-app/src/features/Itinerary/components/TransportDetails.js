@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import './css/DetailsCard.css';
 import TransportForm from './TransportForm';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function TransportDetails({ itineraryId }) {
     const [transports, setTransports] = useState([]);
@@ -18,6 +20,7 @@ function TransportDetails({ itineraryId }) {
             return;
         }
         fetchTransports();
+        setupFirestoreListeners();
     }, [itineraryId]);
 
     const fetchTransports = async () => {
@@ -29,6 +32,15 @@ function TransportDetails({ itineraryId }) {
             console.error('Failed to fetch transports:', error);
             setError('Failed to fetch transports');
         }
+    };
+
+    const setupFirestoreListeners = () => {
+        const transportsQuery = query(collection(db, 'transports'), where('itineraryId', '==', itineraryId));
+        
+        onSnapshot(transportsQuery, (snapshot) => {
+            const transports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setTransports(transports);
+        });
     };
 
     const formatDate = (dateString) => {

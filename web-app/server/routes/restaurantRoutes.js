@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/dbOperations');
+const firestoreDb = require('../firebaseAdmin'); // Correct import
 
 // Fetch all restaurants for a specific itinerary
 router.get('/', async (req, res) => {
@@ -36,6 +37,19 @@ router.post('/', async (req, res) => {
             address,
             booking_confirmation
         );
+
+        // Add to Firestore
+        const restaurantRef = firestoreDb.collection('restaurants').doc(newRestaurant.reservation_id.toString());
+        await restaurantRef.set({
+            itinerary_id: req.itineraryId,
+            restaurant_name,
+            reservation_date,
+            reservation_time,
+            guest_number,
+            address,
+            booking_confirmation
+        });
+
         res.status(201).json(newRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -57,6 +71,19 @@ router.put('/:reservationId', async (req, res) => {
             address,
             booking_confirmation
         );
+
+        // Update Firestore
+        const restaurantRef = firestoreDb.collection('restaurants').doc(reservationId);
+        await restaurantRef.set({
+            itinerary_id: req.itineraryId,
+            restaurant_name,
+            reservation_date,
+            reservation_time,
+            guest_number,
+            address,
+            booking_confirmation
+        });
+
         res.json(updatedRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -68,6 +95,11 @@ router.delete('/:reservationId', async (req, res) => {
     const { reservationId } = req.params;
     try {
         const deletedRestaurant = await db.deleteRestaurant(reservationId);
+
+        // Delete from Firestore
+        const restaurantRef = firestoreDb.collection('restaurants').doc(reservationId);
+        await restaurantRef.delete();
+
         res.json(deletedRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });

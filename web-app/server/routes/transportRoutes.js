@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/dbOperations');
+const firestoreDb = require('../firebaseAdmin'); // Correct import
 
 // Fetch all transports for a specific itinerary
 router.get('/', async (req, res) => {
@@ -36,6 +37,19 @@ router.post('/', async (req, res) => {
             dropoff_location,
             booking_reference
         );
+
+        // Add to Firestore
+        const transportRef = firestoreDb.collection('transports').doc(newTransport.transport_id.toString());
+        await transportRef.set({
+            itinerary_id: req.itineraryId,
+            type,
+            pickup_time,
+            dropoff_time,
+            pickup_location,
+            dropoff_location,
+            booking_reference
+        });
+
         res.status(201).json(newTransport);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -57,6 +71,19 @@ router.put('/:transportId', async (req, res) => {
             dropoff_location,
             booking_reference
         );
+
+        // Update Firestore
+        const transportRef = firestoreDb.collection('transports').doc(transportId);
+        await transportRef.set({
+            itinerary_id: req.itineraryId,
+            type,
+            pickup_time,
+            dropoff_time,
+            pickup_location,
+            dropoff_location,
+            booking_reference
+        });
+
         res.json(updatedTransport);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -68,6 +95,11 @@ router.delete('/:transportId', async (req, res) => {
     const { transportId } = req.params;
     try {
         const deletedTransport = await db.deleteTransport(transportId);
+
+        // Delete from Firestore
+        const transportRef = firestoreDb.collection('transports').doc(transportId);
+        await transportRef.delete();
+
         res.json(deletedTransport);
     } catch (error) {
         res.status(500).json({ error: error.message });

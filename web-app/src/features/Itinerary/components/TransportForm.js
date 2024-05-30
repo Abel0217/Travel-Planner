@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
+import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAdded, transportToEdit }) {
     const initialDate = startDate ? new Date(startDate) : new Date();
@@ -34,22 +36,29 @@ function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAd
             pickup_location: pickupLocation,
             dropoff_location: dropoffLocation,
             booking_reference: bookingReference,
-            itinerary_id: itineraryId,
-            day_id: null 
+            itinerary_id: itineraryId
         };
 
         try {
             if (transportToEdit) {
                 const response = await apiClient.put(`/itineraries/${itineraryId}/transport/${transportToEdit.transport_id}`, updatedTransport);
                 onTransportAdded(response.data);
+
+                // Update Firestore
+                const transportRef = doc(db, 'transports', transportToEdit.id);
+                await updateDoc(transportRef, updatedTransport);
             } else {
                 const response = await apiClient.post(`/itineraries/${itineraryId}/transport`, updatedTransport);
                 onTransportAdded(response.data);
+
+                // Add to Firestore
+                const newDocRef = doc(collection(db, 'transports'));
+                await setDoc(newDocRef, updatedTransport);
             }
-            onClose();
         } catch (error) {
             console.error('Failed to save transport:', error);
         }
+        onClose();  // Ensure the form closes after saving
     };
 
     const handleClear = () => {

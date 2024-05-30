@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
+import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function FlightForm({ itineraryId, onClose, onFlightAdded, flightToEdit }) {
     const [airline, setAirline] = useState('');
@@ -43,14 +45,22 @@ function FlightForm({ itineraryId, onClose, onFlightAdded, flightToEdit }) {
             if (flightToEdit) {
                 const response = await apiClient.put(`/itineraries/${itineraryId}/flights/${flightToEdit.flight_id}`, updatedFlight);
                 onFlightAdded(response.data);
+                
+                // Update Firestore
+                const flightRef = doc(db, 'flights', flightToEdit.id);
+                await updateDoc(flightRef, updatedFlight);
             } else {
                 const response = await apiClient.post(`/itineraries/${itineraryId}/flights`, updatedFlight);
                 onFlightAdded(response.data);
+                
+                // Add to Firestore
+                const newDocRef = doc(collection(db, 'flights'));
+                await setDoc(newDocRef, updatedFlight);
             }
-            onClose();
         } catch (error) {
             console.error('Failed to save flight:', error);
         }
+        onClose();  // Ensure the form closes after saving
     };
 
     const handleClear = () => {
@@ -110,8 +120,8 @@ function FlightForm({ itineraryId, onClose, onFlightAdded, flightToEdit }) {
                         <input type="text" value={bookingReference} onChange={(e) => setBookingReference(e.target.value)} required />
                     </label>
                     <div className="form-buttons">
-                        <button type="button" onClick={handleClear}>Clear</button>
                         <button type="submit">{flightToEdit ? 'Save Changes' : 'Add Flight'}</button>
+                        <button type="button" onClick={handleClear}>Clear</button>
                     </div>
                 </form>
             </div>

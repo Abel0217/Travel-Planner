@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import './css/DetailsCard.css';
 import ActivityForm from './ActivityForm';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function ActivityDetails({ itineraryId }) {
     const [activities, setActivities] = useState([]);
@@ -18,6 +20,7 @@ function ActivityDetails({ itineraryId }) {
             return;
         }
         fetchActivities();
+        setupFirestoreListeners();
     }, [itineraryId]);
 
     const fetchActivities = async () => {
@@ -29,6 +32,15 @@ function ActivityDetails({ itineraryId }) {
             console.error('Failed to fetch activities:', error);
             setError('Failed to fetch activities');
         }
+    };
+
+    const setupFirestoreListeners = () => {
+        const activitiesQuery = query(collection(db, 'activities'), where('itineraryId', '==', itineraryId));
+        
+        onSnapshot(activitiesQuery, (snapshot) => {
+            const activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setActivities(activities);
+        });
     };
 
     const formatDate = (dateString) => {

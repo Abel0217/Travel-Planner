@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/dbOperations');
+const firestoreDb = require('../firebaseAdmin'); // Correct import
 
 // Fetch all hotels for a specific itinerary
 router.get('/', async (req, res) => {
@@ -35,6 +36,18 @@ router.post('/', async (req, res) => {
             address,
             booking_confirmation
         );
+
+        // Add to Firestore
+        const hotelRef = firestoreDb.collection('hotels').doc(newHotel.hotel_id.toString());
+        await hotelRef.set({
+            itinerary_id: req.itineraryId,
+            hotel_name,
+            check_in_date,
+            check_out_date,
+            address,
+            booking_confirmation
+        });
+
         res.status(201).json(newHotel);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -55,6 +68,18 @@ router.put('/:hotelId', async (req, res) => {
             address,
             booking_confirmation
         );
+
+        // Update Firestore
+        const hotelRef = firestoreDb.collection('hotels').doc(hotelId);
+        await hotelRef.set({
+            itinerary_id: req.itineraryId,
+            hotel_name,
+            check_in_date,
+            check_out_date,
+            address,
+            booking_confirmation
+        });
+
         res.json(updatedHotel);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -66,6 +91,11 @@ router.delete('/:hotelId', async (req, res) => {
     const { hotelId } = req.params;
     try {
         const deletedHotel = await db.deleteHotel(hotelId);
+
+        // Delete from Firestore
+        const hotelRef = firestoreDb.collection('hotels').doc(hotelId);
+        await hotelRef.delete();
+
         res.json(deletedHotel);
     } catch (error) {
         res.status(500).json({ error: error.message });

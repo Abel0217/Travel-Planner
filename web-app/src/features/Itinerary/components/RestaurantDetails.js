@@ -3,6 +3,8 @@ import apiClient from '../../../api/apiClient';
 import './css/DetailsCard.css';
 import RestaurantForm from './RestaurantForm';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from '../../../firebaseConfig';
 
 function RestaurantDetails({ itineraryId }) {
     const [restaurants, setRestaurants] = useState([]);
@@ -18,6 +20,7 @@ function RestaurantDetails({ itineraryId }) {
             return;
         }
         fetchRestaurants();
+        setupFirestoreListeners();
     }, [itineraryId]);
 
     const fetchRestaurants = async () => {
@@ -29,6 +32,15 @@ function RestaurantDetails({ itineraryId }) {
             console.error('Failed to fetch restaurants:', error);
             setError('Failed to fetch restaurants');
         }
+    };
+
+    const setupFirestoreListeners = () => {
+        const restaurantsQuery = query(collection(db, 'restaurants'), where('itineraryId', '==', itineraryId));
+        
+        onSnapshot(restaurantsQuery, (snapshot) => {
+            const restaurants = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setRestaurants(restaurants);
+        });
     };
 
     const formatDate = (dateString) => {

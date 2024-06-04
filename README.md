@@ -79,7 +79,7 @@ The Collaborative Travel Planner Application is designed to help users plan thei
   - Responsive design for web platforms.
   - Created forms for creating, editing, and deleting itineraries.
 - Basic CSS styling.
-- Frontend functionalities to add, edit, and delete activities, hotels, flights, and transportations.
+- Frontend functionalities to add, edit, and delete itineraries, activities, restaurants, hotels, flights, and transportations.
 
 ## On-Going Tasks
 

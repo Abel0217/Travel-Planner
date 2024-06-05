@@ -1,6 +1,6 @@
 .itinerary-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Three cards Per row */
+    grid-template-columns: repeat(3, 1fr); /* Three cards per row */
     gap: 20px;
     padding: 20px;
     background-color: #f9f9f9; 
@@ -14,7 +14,7 @@
     overflow: hidden;
     cursor: pointer;
     background-color: white;
-    position: relative; /* Add position relative for dropdown positioning */
+    position: relative; 
 }
 
 .itinerary-card:hover {
@@ -24,7 +24,7 @@
 .itinerary-image {
     width: 100%;
     height: 200px;
-    object-fit: cover;
+    object-fit:cover;
 }
 
 .itinerary-info {
@@ -33,7 +33,8 @@
 }
 
 .itinerary-info h3 {
-    margin-top: 0;
+    text-align: center;
+    margin-top: -10px;
     color: #333;
 }
 
@@ -58,7 +59,7 @@
 }
 
 .greeting {
-    font-size: 24px; /* Font size */
+    font-size: 24px; 
     color: #333;
     flex-grow: 1; 
 }
@@ -82,7 +83,7 @@
 }
 
 .dropdown-button {
-    background-color: white; /* Button color */
+    background-color: transparent; /* Button color */
     color: black;
     border: none;
     padding: 3px 6px;
@@ -96,20 +97,20 @@
 
 .dropdown-button:hover {
     transform: scale(1.4); /* Enlarge on hover */
-    background-color: white;
+    background-color: transparent;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     right: 0;
-    background-color: rgba(236, 234, 234, 0.1);
+    background-color: white;
     box-shadow: 0 5px 10px rgba(73, 72, 72, 0.331);
     border-radius: 4px;
     overflow: hidden;
     z-index: 1;
-    color: black; /* Change the font color to black */
-    border: 1px solid #ccc; /* Add a light border for visibility */
+    color: black; 
+    border: 1px solid #ccc; /* light border for visibility */
 }
 
 .dropdown-content button {

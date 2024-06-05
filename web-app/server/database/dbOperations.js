@@ -1,6 +1,8 @@
 const pool = require('./db');  
 
 // Itinerary Operations
+
+// Fetch all itineraries
 const fetchAllItineraries = async (owner_id = null) => {
     const query = owner_id ? 'SELECT * FROM core.itineraries WHERE owner_id = $1 ORDER BY created_at DESC' : 'SELECT * FROM core.itineraries ORDER BY created_at DESC';
     const values = owner_id ? [owner_id] : [];
@@ -12,7 +14,7 @@ const fetchItineraryById = async (itinerary_id) => {
     const query = 'SELECT * FROM core.itineraries WHERE itinerary_id = $1';
     const { rows } = await pool.query(query, [itinerary_id]);
     return rows[0];
-}
+};
 
 const fetchDaysByItineraryId = async (itinerary_id) => {
     const query = `
@@ -38,18 +40,18 @@ const fetchDaysByItineraryId = async (itinerary_id) => {
 
 // Add itinerary
 const addItinerary = async (data) => {
-    const { title, start_date, end_date } = data;
-    const query = 'INSERT INTO core.itineraries (title, start_date, end_date) VALUES ($1, $2, $3) RETURNING *';
-    const values = [title, start_date, end_date];
+    const { title, start_date, end_date, destinations } = data;
+    const query = 'INSERT INTO core.itineraries (title, start_date, end_date, destinations) VALUES ($1, $2, $3, $4) RETURNING *';
+    const values = [title, start_date, end_date, destinations];
     const { rows } = await pool.query(query, values);
     return rows[0];
 };
 
 // Update itinerary
 const updateItinerary = async (itinerary_id, data) => {
-    const { title, description, start_date, end_date, visibility, status } = data;
-    const query = 'UPDATE core.itineraries SET title = $1, description = $2, start_date = $3, end_date = $4, visibility = $5, status = $6 WHERE itinerary_id = $7 RETURNING *';
-    const values = [title, description, start_date, end_date, visibility, status, itinerary_id];
+    const { title, destinations, start_date, end_date, visibility, status } = data;
+    const query = 'UPDATE core.itineraries SET title = $1, destinations = $2, start_date = $3, end_date = $4, visibility = $5, status = $6 WHERE itinerary_id = $7 RETURNING *';
+    const values = [title, destinations, start_date, end_date, visibility, status, itinerary_id];
     const { rows } = await pool.query(query, values);
     return rows[0];
 };
@@ -81,7 +83,6 @@ const fetchDayIdByDate = async (itinerary_id, date) => {
         throw new Error('Failed to fetch day ID');
     }
 };
-
 // Day Operations
 const fetchAllDays = async (itinerary_id = null) => {
     const query = itinerary_id ? 'SELECT * FROM core.daily WHERE itinerary_id = $1 ORDER BY date' : 'SELECT * FROM core.daily ORDER BY date';

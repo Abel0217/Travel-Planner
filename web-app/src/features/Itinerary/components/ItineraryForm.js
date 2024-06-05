@@ -2,22 +2,25 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import './css/ItineraryForm.css';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import AutoComplete from './AutoComplete'; // Import the AutoComplete component
 
 const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
     const [itinerary, setItinerary] = useState({
         title: '',
-        destinations: [''],
+        destination: '',
         start_date: '',
         end_date: ''
     });
 
     const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (itineraryToEdit) {
             setItinerary({
                 title: itineraryToEdit.title,
-                destinations: itineraryToEdit.destinations || [''],
+                destination: itineraryToEdit.destinations ? itineraryToEdit.destinations.trim() : '',
                 start_date: itineraryToEdit.start_date,
                 end_date: itineraryToEdit.end_date
             });
@@ -32,68 +35,67 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
         }));
     };
 
-    const handleDestinationChange = (index, value) => {
-        const newDestinations = [...itinerary.destinations];
-        newDestinations[index] = value;
+    const handleDestinationChange = (value) => {
         setItinerary(prev => ({
             ...prev,
-            destinations: newDestinations
-        }));
-    };
-
-    const addDestination = () => {
-        setItinerary(prev => ({
-            ...prev,
-            destinations: [...prev.destinations, '']
-        }));
-    };
-
-    const removeDestination = (index) => {
-        const newDestinations = [...itinerary.destinations];
-        newDestinations.splice(index, 1);
-        setItinerary(prev => ({
-            ...prev,
-            destinations: newDestinations
+            destination: value
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setIsSaveDialogOpen(true);
+        if (itineraryToEdit) {
+            setIsSaveDialogOpen(true);
+        } else {
+            handleSave();
+        }
     };
 
     const handleSave = async () => {
         try {
-            const { title, start_date, end_date, destinations } = itinerary;
+            const { title, start_date, end_date, destination } = itinerary;
             const payload = {
                 title,
                 start_date,
                 end_date,
-                destinations: destinations.filter(dest => dest)
+                destinations: destination // Only one destination
             };
 
             if (itineraryToEdit) {
                 await apiClient.put(`/itineraries/${itineraryToEdit.itinerary_id}`, payload);
             } else {
                 await apiClient.post('/itineraries', payload);
+                setIsSuccessDialogOpen(true);
             }
 
-            onItinerarySaved();
+            if (onItinerarySaved) {
+                onItinerarySaved();
+            }
+
             setIsSaveDialogOpen(false);
-            onClose();
+            if (onClose) {
+                onClose();
+            }
         } catch (error) {
             console.error('Failed to save itinerary:', error);
-            alert('Failed to save itinerary');
+            setError('Failed to create itinerary. Please try again.');
         }
     };
 
     const handleClear = () => {
         setItinerary({
             title: '',
-            destinations: [''],
+            destination: '',
             start_date: '',
             end_date: ''
         });
+    };
+
+    const handleSuccessClose = () => {
+        setIsSuccessDialogOpen(false);
+        if (onClose) {
+            onClose();
+        }
     };
 
     return (
@@ -110,28 +112,14 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                     onChange={handleChange}
                     required
                 />
-
-                {itinerary.destinations.map((destination, index) => (
-                    <div key={index} className="destination-field">
-                        <label htmlFor={`destination-${index}`}>{index === 0 ? 'Destination' : `Destination ${index + 1}`}</label>
-                        <div className="destination-input">
-                            <input
-                                type="text"
-                                id={`destination-${index}`}
-                                name={`destination-${index}`}
-                                value={destination}
-                                onChange={e => handleDestinationChange(index, e.target.value)}
-                                required={index === 0}
-                            />
-                            {index > 0 && (
-                                <button type="button" className="remove-destination" onClick={() => removeDestination(index)}>-</button>
-                            )}
-                            {index === itinerary.destinations.length - 1 && (
-                                <button type="button" className="add-destination" onClick={addDestination}>+</button>
-                            )}
-                        </div>
-                    </div>
-                ))}
+                <label htmlFor="destination">Destination</label>
+                <div className="destination-input">
+                    <AutoComplete
+                        id="autocomplete-destination"
+                        value={itinerary.destination}
+                        onChange={handleDestinationChange}
+                    />
+                </div>
 
                 <label htmlFor="start_date">Start Date</label>
                 <input
@@ -179,6 +167,40 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Dialog
+                open={isSuccessDialogOpen}
+                onClose={handleSuccessClose}
+            >
+                <DialogTitle>Success</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Itinerary successfully created!
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleSuccessClose} className="dialog-button">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            {error && (
+                <Dialog
+                    open={Boolean(error)}
+                    onClose={() => setError('')}
+                >
+                    <DialogTitle>Error</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            {error}
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setError('')} className="dialog-button">
+                            Close
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            )}
         </div>
     );
 };

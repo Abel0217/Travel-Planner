@@ -7,26 +7,27 @@ const containerStyle = {
 };
 
 const center = {
-  lat: 37.7749,
+  lat: 37.7749, // Default center (San Francisco)
   lng: -122.4194
 };
 
-const apiKey = 'AIzaSyDka0NQRQUGYEq-AFevr3UaEVe4R5Uz0qE'; // Your API key
-
-const Map = ({ markers }) => {
+const MapComponent = ({ apiKey, markers }) => {
   return (
     <LoadScript googleMapsApiKey={apiKey}>
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
-        zoom={10}
+        zoom={12}
       >
         {markers.map((marker, index) => (
-          <Marker key={index} position={{ lat: marker.lat, lng: marker.lng }} />
+          <Marker
+            key={index}
+            position={{ lat: marker.lat, lng: marker.lng }}
+          />
         ))}
       </GoogleMap>
     </LoadScript>
   );
 };
 
-export default Map;
+export default MapComponent;

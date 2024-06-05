@@ -5,7 +5,9 @@ import { AuthContext } from '../Contexts/AuthContext';
 import './css/HomePage.css';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import ItineraryForm from './Itinerary/components/ItineraryForm'; // Import ItineraryForm
+import ItineraryForm from './Itinerary/components/ItineraryForm';
+
+const UNSPLASH_ACCESS_KEY = 'OGBaaEYGlTkJhJgnTL9zm0AsrYP_r1HQ134Azhv9870';
 
 const HomePage = () => {
     const [itineraries, setItineraries] = useState([]);
@@ -28,22 +30,63 @@ const HomePage = () => {
         setFilteredItineraries(sorted);
     }, [itineraries, filter]);
 
+    const fetchUnsplashImage = async (destination) => {
+        if (!UNSPLASH_ACCESS_KEY) {
+            console.error('Unsplash access key is not set');
+            return 'https://via.placeholder.com/150';
+        }
+
+        if (!destination) {
+            console.error('Destination is undefined');
+            return 'https://via.placeholder.com/150';
+        }
+
+        try {
+            const response = await fetch(`https://api.unsplash.com/search/photos?query=${destination}&client_id=${UNSPLASH_ACCESS_KEY}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch image');
+            }
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+                return data.results[0].urls.small;
+            } else {
+                return 'https://via.placeholder.com/150';
+            }
+        } catch (error) {
+            console.error('Failed to fetch image from Unsplash', error);
+            return 'https://via.placeholder.com/150';
+        }
+    };
+
+    const fetchItinerariesWithImages = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/itineraries');
+            if (response.data && Array.isArray(response.data)) {
+                const itinerariesWithImages = await Promise.all(
+                    response.data.map(async (itinerary) => {
+                        const destination = itinerary.destinations ? itinerary.destinations.trim() : 'default';
+                        const imageUrl = await fetchUnsplashImage(destination);
+                        return {
+                            ...itinerary,
+                            startDate: moment(itinerary.start_date).format('MMMM Do YYYY'),
+                            endDate: moment(itinerary.end_date).format('MMMM Do YYYY'),
+                            imageUrl,
+                            fullDestination: destination
+                        };
+                    })
+                );
+                setItineraries(itinerariesWithImages);
+            } else {
+                console.error('Invalid itinerary data format');
+            }
+        } catch (error) {
+            console.error('Failed to fetch itineraries', error);
+        }
+    }, []);
+
     useEffect(() => {
-        apiClient.get('/itineraries')
-        .then(response => {
-            const formattedItineraries = response.data.map(itinerary => ({
-                ...itinerary,
-                startDate: moment(itinerary.start_date).format('MMMM Do YYYY'),
-                endDate: moment(itinerary.end_date).format('MMMM Do YYYY')
-            }));
-            console.log("Itineraries fetched: ", formattedItineraries);
-            setItineraries(formattedItineraries);
-        })
-        
-            .catch(error => {
-                console.error('Failed to fetch itineraries', error);
-            });
-    }, []); 
+        fetchItinerariesWithImages();
+    }, [fetchItinerariesWithImages]); 
 
     useEffect(() => {
         filterItineraries();  
@@ -61,13 +104,12 @@ const HomePage = () => {
 
     const handleItineraryClick = (itineraryId) => {
         navigate(`/itineraries/${itineraryId}`);
-        console.log('Navigating to:', itineraryId); 
     };
 
     const handleEditClick = (itinerary) => {
         setItineraryToEdit(itinerary);
         setIsEditModalOpen(true);
-        setDropdownOpen(null); // Close the dropdown menu
+        setDropdownOpen(null);
     };
 
     const handleDeleteClick = async () => {
@@ -121,9 +163,10 @@ const HomePage = () => {
             <div className="itinerary-container">
                 {filteredItineraries.map((itinerary, index) => (
                     <div key={itinerary.itinerary_id} className="itinerary-card">
-                        <img src={itinerary.imageUrl || 'default.jpg'} alt={itinerary.title} className="itinerary-image"/>
+                        <img src={itinerary.imageUrl || 'https://via.placeholder.com/150'} alt={itinerary.title} className="itinerary-image"/>
                         <div className="itinerary-info" onClick={() => handleItineraryClick(itinerary.itinerary_id)}>
                             <h3>{itinerary.title}</h3>
+                            <p>{itinerary.fullDestination}</p> 
                             <p>{itinerary.startDate} - {itinerary.endDate}</p>
                             <span>{calculateCountdown(itinerary.startDate)}</span>
                         </div>
@@ -168,18 +211,7 @@ const HomePage = () => {
                         onClose={() => setIsEditModalOpen(false)}
                         onItinerarySaved={() => {
                             setIsEditModalOpen(false);
-                            apiClient.get('/itineraries')
-                                .then(response => {
-                                    const formattedItineraries = response.data.map(itinerary => ({
-                                        ...itinerary,
-                                        startDate: moment(itinerary.start_date).format('MMMM Do YYYY'),
-                                        endDate: moment(itinerary.end_date).format('MMMM Do YYYY')
-                                    }));
-                                    setItineraries(formattedItineraries);
-                                })
-                                .catch(error => {
-                                    console.error('Failed to fetch itineraries', error);
-                                });
+                            fetchItinerariesWithImages(); // Refresh the itineraries and images after saving
                         }}
                     />
                 </Dialog>
@@ -189,3 +221,5 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+

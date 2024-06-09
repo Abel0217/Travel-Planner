@@ -1,3 +1,5 @@
+%%%%% Itinerary Form With  Edit Destination %%%%%
+
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import './css/ItineraryForm.css';
@@ -143,23 +145,12 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                 />
                 <label htmlFor="destination">Destination</label>
                 <div className="destination-input">
-                    {itineraryToEdit ? (
-                        <input
-                            type="text"
-                            id="destination"
-                            name="destination"
-                            value={itinerary.destination}
-                            disabled
-                            style={{ backgroundColor: '#f0f0f0', color: '#999' }}
-                        />
-                    ) : (
-                        <AutoComplete
-                            id="autocomplete-destination"
-                            value={itinerary.destination}
-                            onChange={handleDestinationChange}
-                            setIsValid={setIsDestinationValid}
-                        />
-                    )}
+                    <AutoComplete
+                        id="autocomplete-destination"
+                        value={itinerary.destination}
+                        onChange={handleDestinationChange}
+                        setIsValid={setIsDestinationValid}
+                    />
                 </div>
                 {error && <div className="error-message">{error}</div>}
 
@@ -246,3 +237,5 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
 };
 
 export default ItineraryForm;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% END %%%%%%%%%%%%%%%%%%%%%%%%%%%%

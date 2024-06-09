@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import './css/Forms.css';
 import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
 import { db } from '../../../firebaseConfig';
+import FileUpload from '../../Components/FileUpload';
 
 function FlightForm({ itineraryId, onClose, onFlightAdded, flightToEdit }) {
     const [airline, setAirline] = useState('');
@@ -73,11 +74,22 @@ function FlightForm({ itineraryId, onClose, onFlightAdded, flightToEdit }) {
         setBookingReference('');
     };
 
+    const handleUploadSuccess = (data) => {
+        setAirline(data.airline || '');
+        setFlightNumber(data.flight_number || '');
+        setDepartureAirport(data.departure_airport || '');
+        setArrivalAirport(data.arrival_airport || '');
+        setDepartureTime(data.departure_time ? new Date(data.departure_time) : new Date());
+        setArrivalTime(data.arrival_time ? new Date(data.arrival_time) : new Date());
+        setBookingReference(data.booking_reference || '');
+    };
+
     return (
         <div className="form-modal">
             <div className="form-container">
                 <h2 className="form-title">{flightToEdit ? 'Edit Flight' : 'Add Flight'}</h2>
                 <button className="close-button" onClick={onClose}>×</button>
+                <FileUpload onUploadSuccess={handleUploadSuccess} />
                 <form onSubmit={handleSubmit}>
                     <label>Airline:
                         <input type="text" value={airline} onChange={(e) => setAirline(e.target.value)} required />

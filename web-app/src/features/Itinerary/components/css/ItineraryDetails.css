@@ -40,3 +40,20 @@
     padding: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+.itinerary-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.itinerary-header h1 {
+    margin-bottom: 10px;
+    font-size: 24pt;
+    color: black;
+}
+
+.itinerary-header p {
+    margin-top: -10px;
+    font-size:14pt;
+    color: #666;
+}

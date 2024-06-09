@@ -6,12 +6,7 @@ const containerStyle = {
   height: '400px'
 };
 
-const center = {
-  lat: 37.7749, // Default center (San Francisco)
-  lng: -122.4194
-};
-
-const MapComponent = ({ apiKey, markers }) => {
+const MapComponent = ({ apiKey, center }) => {
   return (
     <LoadScript googleMapsApiKey={apiKey}>
       <GoogleMap
@@ -19,12 +14,7 @@ const MapComponent = ({ apiKey, markers }) => {
         center={center}
         zoom={12}
       >
-        {markers.map((marker, index) => (
-          <Marker
-            key={index}
-            position={{ lat: marker.lat, lng: marker.lng }}
-          />
-        ))}
+        <Marker position={center} />
       </GoogleMap>
     </LoadScript>
   );

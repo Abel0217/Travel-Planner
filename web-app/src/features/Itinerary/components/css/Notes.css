@@ -1,0 +1,44 @@
+.quill-editor-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.quill-editor {
+    width: 100%;
+    height: calc(100vh - 80px);
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ccc; /* Border around the paper */
+}
+
+.quill-toolbar {
+    width: 100%;
+    border: 1px solid #ccc; /* Border around the toolbar */
+    border-bottom: none;
+}
+
+.ql-container {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+/* Ensure bullet points and numbers scale with text size */
+.ql-editor ol, .ql-editor ul {
+    padding-left: 20px; /* Adjust as necessary */
+}
+
+.ql-editor ol li, .ql-editor ul li {
+    font-size: inherit; /* Inherit the font size of the text */
+    line-height: 1.5; /* Adjust line height if needed */
+}
+
+/* Adjust bullet points */
+.ql-editor .ql-list li::before {
+    font-size: inherit;
+    vertical-align: middle; /* Adjust to align with the text */
+}

@@ -13,7 +13,7 @@ import ActivityDetails from './ActivityDetails';
 import RestaurantDetails from './RestaurantDetails';
 import TransportDetails from './TransportDetails';
 import MapComponent from '../../../Components/MapComponent';
-import Notes from './Notes'; // Import the Notes component
+import Notes from './Notes'; 
 
 const ItineraryDetails = () => {
     const { itineraryId } = useParams();
@@ -112,6 +112,7 @@ const ItineraryDetails = () => {
                 <TabPanel>
                     <DailyOverview
                         itineraryId={itineraryId}
+                        destination={itinerary.destinations} 
                         startDate={itinerary.start_date}
                         endDate={itinerary.end_date}
                     />

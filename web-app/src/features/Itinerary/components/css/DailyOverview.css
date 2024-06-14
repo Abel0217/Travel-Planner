@@ -2,6 +2,12 @@
     margin: 20px;
 }
 
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .day-item {
     margin-bottom: 20px;
 }
@@ -97,6 +103,7 @@ h2 {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 .close-button {
@@ -107,4 +114,39 @@ h2 {
     top: 10px;
     right: 10px;
     cursor: pointer;
+}
+
+.weather-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.weather-info img {
+    width: 20px;
+    height: 20px;
+}
+
+.weather-details {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.temp-toggle-btn {
+    position: relative;
+    left: 93%;
+    padding: 5px 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #222946;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    width: 100px;
+}
+
+.temp-toggle-btn:hover {
+    background-color: #f3ab03;
 }

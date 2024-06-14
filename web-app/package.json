@@ -12,17 +12,16 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^12.1.5",
     "@testing-library/user-event": "^13.5.0",
-    "@tinymce/tinymce-react": "^5.0.1",
     "axios": "^1.7.2",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "express": "^4.19.2",
-    "firebase": "^9.23.0",
+    "firebase": "^10.12.2",
     "firebase-admin": "^12.1.1",
+    "levenary": "^1.1.1",
     "moment": "^2.29.1",
-    "multer": "^1.4.5-lts.1",
-    "pdf-parse": "^1.1.1",
     "pg": "^8.11.5",
+    "quill": "^2.0.2",
     "react": "17.0.2",
     "react-big-calendar": "^0.36.0",
     "react-datepicker": "^6.9.0",
@@ -31,7 +30,6 @@
     "react-router-dom": "^6.23.0",
     "react-scripts": "^5.0.1",
     "react-tabs": "^4.1.0",
-    "tinymce": "^7.1.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -65,6 +63,9 @@
     "@babel/preset-env": "^7.24.5",
     "@babel/preset-react": "^7.24.1",
     "chai": "^5.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
     "mocha": "^10.4.0",
     "supertest": "^7.0.0"
   }

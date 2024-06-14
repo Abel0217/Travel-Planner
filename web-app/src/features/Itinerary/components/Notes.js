@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import ReactQuill from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig'; // Adjust the path as necessary
 import './css/Notes.css'; // Make sure to create and import your CSS file
+
+// Extend Quill with custom sizes
+const Size = Quill.import('attributors/style/size');
+Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '24px', '36px', '48px', '64px'];
+Quill.register(Size, true);
 
 // Custom Toolbar Component
 const CustomToolbar = () => (

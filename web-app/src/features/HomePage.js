@@ -12,7 +12,7 @@ const UNSPLASH_ACCESS_KEY = 'OGBaaEYGlTkJhJgnTL9zm0AsrYP_r1HQ134Azhv9870';
 const HomePage = () => {
     const [itineraries, setItineraries] = useState([]);
     const [filteredItineraries, setFilteredItineraries] = useState([]);
-    const [filter, setFilter] = useState('recentlyViewed');
+    const [filter, setFilter] = useState('upcoming');
     const { currentUser } = useContext(AuthContext);
     const navigate = useNavigate();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -20,7 +20,6 @@ const HomePage = () => {
     const [dropdownOpen, setDropdownOpen] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [itineraryToEdit, setItineraryToEdit] = useState(null);
-    const [recentlyViewed, setRecentlyViewed] = useState([]);
 
     const fetchUnsplashImage = async (destination) => {
         if (!UNSPLASH_ACCESS_KEY) {
@@ -79,15 +78,19 @@ const HomePage = () => {
 
     const filterItineraries = useCallback(() => {
         let sorted = [];
-        if (filter === 'recentlyViewed') {
-            sorted = [...itineraries].sort((a, b) => recentlyViewed.indexOf(a.itinerary_id) - recentlyViewed.indexOf(b.itinerary_id));
-        } else if (filter === 'alphabetical') {
+        if (filter === 'alphabetical') {
             sorted = [...itineraries].sort((a, b) => a.title.localeCompare(b.title));
         } else if (filter === 'upcoming') {
-            sorted = [...itineraries].sort((a, b) => moment(a.startDate, 'MMMM Do YYYY').diff(moment(b.startDate, 'MMMM Do YYYY')));
+            sorted = [...itineraries].sort((a, b) => {
+                const endA = moment(a.endDate, 'MMMM Do YYYY');
+                const endB = moment(b.endDate, 'MMMM Do YYYY');
+                if (endA.isBefore(moment())) return 1;
+                if (endB.isBefore(moment())) return -1;
+                return moment(a.startDate, 'MMMM Do YYYY').diff(moment(b.startDate, 'MMMM Do YYYY'));
+            });
         }
         setFilteredItineraries(sorted);
-    }, [itineraries, filter, recentlyViewed]);
+    }, [itineraries, filter]);
 
     useEffect(() => {
         fetchItinerariesWithImages();
@@ -97,19 +100,23 @@ const HomePage = () => {
         filterItineraries();
     }, [itineraries, filter, filterItineraries]);
 
-    const calculateCountdown = (startDate) => {
+    const calculateCountdown = (startDate, endDate) => {
         const today = moment().startOf('day');
         const tripStartDate = moment(startDate, "MMMM Do YYYY").startOf('day');
-        const difference = tripStartDate.diff(today, 'days');
-    
-        if (difference === 0) {
-            return 'Trip has started';
-        } else if (difference === 1) {
-            return 'In 1 day';
-        } else if (difference < 0) {
-            return 'Trip has started';
+        const tripEndDate = moment(endDate, "MMMM Do YYYY").startOf('day');
+        const startDifference = tripStartDate.diff(today, 'days');
+        const endDifference = tripEndDate.diff(today, 'days');
+
+        if (endDifference < 0) {
+            return { text: 'Trip has ended', color: 'gray' };
+        } else if (startDifference === 0) {
+            return { text: 'Trip has started', color: 'green' };
+        } else if (startDifference === 1) {
+            return { text: 'In 1 day', color: 'red' };
+        } else if (startDifference < 0) {
+            return { text: 'Trip has started', color: 'green' };
         } 
-        return `In ${difference} days`;
+        return { text: `In ${startDifference} days`, color: 'red' };
     };
 
     const handleFilterChange = (event) => {
@@ -117,9 +124,8 @@ const HomePage = () => {
     };
 
     const handleItineraryClick = (itineraryId) => {
-        setRecentlyViewed(prev => [itineraryId, ...prev.filter(id => id !== itineraryId)]);
         navigate(`/itineraries/${itineraryId}`);
-        window.scrollTo(0, 0); // Scroll to top
+        window.scrollTo(0, 0); 
     };
 
     const handleEditClick = (itinerary) => {
@@ -172,35 +178,37 @@ const HomePage = () => {
                     Welcome back, {currentUser ? currentUser.name : 'Guest'}!
                 </div>
                 <select onChange={handleFilterChange} value={filter} className="filter-dropdown">
-                    <option value="recentlyViewed">Recently Viewed</option>
                     <option value="upcoming">Upcoming</option>
                     <option value="alphabetical">Alphabetical</option>
                 </select>
             </div>
             <div className="itinerary-container">
-                {filteredItineraries.map((itinerary, index) => (
-                    <div 
-                        key={itinerary.itinerary_id} 
-                        className="itinerary-card" 
-                        onClick={() => handleItineraryClick(itinerary.itinerary_id)}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <img src={itinerary.imageUrl || 'https://via.placeholder.com/150'} alt={itinerary.title} className="itinerary-image"/>
-                        <div className="itinerary-info">
-                            <h3>{itinerary.title}</h3>
-                            <p>{itinerary.fullDestination}</p> 
-                            <p>{itinerary.startDate} - {itinerary.endDate}</p>
-                            <span className="countdown">{calculateCountdown(itinerary.startDate)}</span>
-                        </div>
-                        <div className="dropdown" onClick={(e) => e.stopPropagation()}>
-                            <button className="dropdown-button" onClick={() => toggleDropdown(index)}>...</button>
-                            <div className={`dropdown-content ${dropdownOpen === index ? 'show' : ''}`}>
-                                <button onClick={() => handleEditClick(itinerary)}>Edit</button>
-                                <button onClick={() => handleOpenDeleteDialog(itinerary)}>Delete</button>
+                {filteredItineraries.map((itinerary, index) => {
+                    const countdown = calculateCountdown(itinerary.startDate, itinerary.endDate);
+                    return (
+                        <div 
+                            key={itinerary.itinerary_id} 
+                            className={`itinerary-card ${countdown.text === 'Trip has ended' ? 'gray-out' : ''}`} 
+                            onClick={() => handleItineraryClick(itinerary.itinerary_id)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <img src={itinerary.imageUrl || 'https://via.placeholder.com/150'} alt={itinerary.title} className={`itinerary-image ${countdown.text === 'Trip has ended' ? 'grayscale' : ''}`}/>
+                            <div className="itinerary-info">
+                                <h3>{itinerary.title}</h3>
+                                <p>{itinerary.fullDestination}</p> 
+                                <p>{itinerary.startDate} - {itinerary.endDate}</p>
+                                <span className="countdown" style={{ color: countdown.color }}>{countdown.text}</span>
+                            </div>
+                            <div className="dropdown" onClick={(e) => e.stopPropagation()}>
+                                <button className="dropdown-button" onClick={() => toggleDropdown(index)}>...</button>
+                                <div className={`dropdown-content ${dropdownOpen === index ? 'show' : ''}`}>
+                                    <button onClick={() => handleEditClick(itinerary)}>Edit</button>
+                                    <button onClick={() => handleOpenDeleteDialog(itinerary)}>Delete</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
             <Dialog
                 open={isDeleteDialogOpen}
@@ -233,7 +241,7 @@ const HomePage = () => {
                         onClose={() => setIsEditModalOpen(false)}
                         onItinerarySaved={() => {
                             setIsEditModalOpen(false);
-                            fetchItinerariesWithImages(); // Refresh the itineraries and images after saving
+                            fetchItinerariesWithImages(); 
                         }}
                     />
                 </Dialog>

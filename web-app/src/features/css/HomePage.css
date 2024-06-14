@@ -146,3 +146,15 @@
     background-color: #ddd;
     color: black;
 }
+
+.gray-out {
+    background-color: lightgray !important;
+}
+
+.itinerary-image.grayscale {
+    filter: grayscale(100%);
+}
+
+.countdown {
+    font-weight: bold;
+}

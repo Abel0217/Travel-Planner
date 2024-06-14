@@ -8,8 +8,9 @@ import RestaurantForm from './RestaurantForm';
 import TransportForm from './TransportForm';
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from '../../../firebaseConfig';
+import { fetchWeather } from '../../../api/weatherApi';
 
-const DailyOverview = ({ itineraryId }) => {
+const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
     const [days, setDays] = useState([]);
     const [allActivities, setAllActivities] = useState([]);
     const [allHotels, setAllHotels] = useState([]);
@@ -21,22 +22,19 @@ const DailyOverview = ({ itineraryId }) => {
     const [showForm, setShowForm] = useState(false);
     const [formType, setFormType] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
+    const [weatherData, setWeatherData] = useState({});
+    const [isCelsius, setIsCelsius] = useState(true);
 
     useEffect(() => {
         const fetchItineraryData = async () => {
-            try {
-                const response = await apiClient.get(`/itineraries/${itineraryId}`);
-                const { start_date, end_date } = response.data;
-                generateDays(start_date, end_date);
-                await fetchAllData();
-                setupFirestoreListeners();
-            } catch (error) {
-                console.error('Failed to fetch itinerary data', error);
-            }
+            generateDays(startDate, endDate);
+            await fetchAllData();
+            await fetchWeatherData(startDate, endDate, destination);
+            setupFirestoreListeners();
         };
 
         fetchItineraryData();
-    }, [itineraryId]);
+    }, [itineraryId, destination, startDate, endDate]);
 
     const generateDays = (startDate, endDate) => {
         const start = new Date(startDate);
@@ -50,6 +48,38 @@ const DailyOverview = ({ itineraryId }) => {
         }
 
         setDays(daysList);
+    };
+
+    const fetchWeatherData = async (startDate, endDate, destination) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        let current = new Date(start);
+        const weatherData = {};
+
+        const geocodeResponse = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(destination)}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`);
+        const geocodeData = await geocodeResponse.json();
+
+        if (!geocodeData.results || geocodeData.results.length === 0) {
+            console.error('Failed to geocode destination');
+            return;
+        }
+
+        const location = geocodeData.results[0].geometry.location;
+        const latitude = location.lat;
+        const longitude = location.lng;
+
+        while (current <= end) {
+            const dateStr = current.toISOString().split('T')[0];
+            try {
+                const data = await fetchWeather(latitude, longitude, dateStr);
+                weatherData[dateStr] = data;
+            } catch (error) {
+                console.error('Failed to fetch weather data for', dateStr, error);
+            }
+            current.setDate(current.getDate() + 1);
+        }
+
+        setWeatherData(weatherData);
     };
 
     const fetchAllData = async () => {
@@ -223,15 +253,36 @@ const DailyOverview = ({ itineraryId }) => {
         setSelectedDate(null);
     };
 
+    const toggleTemperatureUnit = () => {
+        setIsCelsius(!isCelsius);
+    };
+
+    const convertTemperature = (tempCelsius) => {
+        return isCelsius ? tempCelsius : (tempCelsius * 9 / 5) + 32;
+    };
+
     return (
         <div className="daily-overview">
             <h2>Overview</h2>
+            <button className="temp-toggle-btn" onClick={toggleTemperatureUnit}>
+                Switch to {isCelsius ? '°F' : '°C'}
+            </button>
             {days.map(day => {
                 const dateString = day.toISOString().split('T')[0];
+                const weather = weatherData[dateString];
                 return (
                     <div key={dateString} className="day-item">
                         <div className="day-header" onClick={() => toggleDay(dateString)}>
                             {day.toDateString()}
+                            {weather && (
+                                <div className="weather-info">
+                                    <img src={weather.icon} alt={weather.condition} />
+                                    <div className="weather-details">
+                                        <p>{weather.condition}</p>
+                                        <p> | {Math.round(convertTemperature(weather.max_temp))}°{isCelsius ? 'C' : 'F'}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {expandedDay === dateString && (
                             <div className="day-details">
@@ -305,12 +356,12 @@ const DailyOverview = ({ itineraryId }) => {
                                             </>
                                         ) : null}
                                         {bookings[dateString].activities.length === 0 &&
-                                         bookings[dateString].hotels.length === 0 &&
-                                         bookings[dateString].flights.length === 0 &&
-                                         bookings[dateString].restaurants.length === 0 &&
-                                         bookings[dateString].transport.length === 0 && (
-                                            <p>No bookings for this day.</p>
-                                        )}
+                                            bookings[dateString].hotels.length === 0 &&
+                                            bookings[dateString].flights.length === 0 &&
+                                            bookings[dateString].restaurants.length === 0 &&
+                                            bookings[dateString].transport.length === 0 && (
+                                                <p>No bookings for this day.</p>
+                                            )}
                                         <button className="add-booking-btn" onClick={(e) => {
                                             e.stopPropagation();
                                             openForm('select', dateString);

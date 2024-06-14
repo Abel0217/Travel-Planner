@@ -11,7 +11,6 @@ const flightRoutes = require('./routes/flightRoutes');
 const hotelRoutes = require('./routes/hotelRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const transportRoutes = require('./routes/transportRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -56,9 +55,6 @@ app.use('/itineraries/:itineraryId/transport', (req, res, next) => {
 // Expense related routes for specific itineraries
 // Have NOT implemented it yet..
 app.use('/itineraries/:itineraryId/expenses', expenseRoutes);
-
-// File upload route
-app.use('/upload', uploadRoutes);
 
 
 // Start the server

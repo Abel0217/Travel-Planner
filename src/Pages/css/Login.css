@@ -1,0 +1,202 @@
+/* ===================
+   Login-Specific Styles
+=================== */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+  height: 100vh;
+  background-color: white;
+}
+
+.auth-box {
+  position: relative;
+  right: -150px; /* Adjust this value to move it more to the right */
+  top: 100px; /* Adds space below the navbar */
+  margin: auto;
+  padding: 1rem; /* Adjusted padding to shrink the box */
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  width: 300px; /* Make the box smaller */
+}
+
+/* Center title */
+.auth-box h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Social Login Buttons */
+.social-login {
+  margin-bottom: 20px;
+}
+
+.auth-google-btn, .auth-apple-btn {
+  width: 100%;
+  padding: 0.75rem;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Spacing between icon and text */
+  margin-bottom: 1rem;
+}
+
+/* Google Button */
+.auth-google-btn {
+  background-color: white;
+  border: 1px solid #4285F4;
+  color: #333;
+}
+
+.auth-google-btn:hover {
+  background-color: #4285F4;
+  color: white;
+}
+
+/* Apple Button */
+.auth-apple-btn {
+  background-color: black;
+}
+
+.auth-apple-btn:hover {
+  background-color: rgb(40, 40, 40);
+}
+
+/* Input fields */
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* Log in Button */
+.auth-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #f3ab03;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.auth-button:hover {
+  background-color: #222946;
+}
+
+/* Divider line */
+.divider {
+  margin: 20px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Error message */
+.auth-error {
+  color: red;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Footer: Inline "Sign up" button */
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.signup-button {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  color: black;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.signup-button:hover {
+  background-color: #222946;
+  color: white;
+}
+
+/* Icon Size */
+.fa-google, .fa-apple {
+  font-size: 1.2em;
+}
+
+/* ------------------------------------------------------------*/
+
+/* Full Page Background */
+.background-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+
+/* Puzzle Pieces (rectangular images) */
+.puzzle-piece {
+  position: absolute;
+  width: 200px; /* Set desired width */
+  height: 250px; /* Set desired height */
+  background-size: cover; /* Ensure the image covers the whole rectangle */
+  background-position: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* For 3D effect */
+  border-radius: 8px; /* Keeps slight round edges */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Make pieces pop out on hover */
+.puzzle-piece:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Position the rectangular images */
+#piece1 {
+  top: 100px;
+  left: 50px;
+  background-image: url('./Puzzle/Big Ben.jpg'); 
+  transform: rotate(-15deg); /* Tilt by -10 degrees */
+
+}
+
+#piece2 {
+  top: 300px;
+  left: 200px;
+  background-image: url('./Puzzle/Eifel Tower.jpg'); 
+  transform: rotate(15deg); 
+
+}
+
+#piece3 {
+  top: 500px;
+  left: 50px;
+  background-image: url('./Puzzle/Statue of Liberty.jpg'); 
+  transform: rotate(-5deg); 
+
+}
+
+
+
+
+

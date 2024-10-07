@@ -1,0 +1,117 @@
+.bookings {
+    margin: 20px;
+}
+
+.booking-section-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.booking-section {
+    margin-bottom: 20px;
+}
+
+.dropdown-header {
+    cursor: pointer;
+    background-color: #f3f3f3;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 0;
+}
+
+.booking-items-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.booking-item {
+    flex: 1 1 calc(50% - 10px); /* Adjusted for two per row with space between */
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.booking-item:nth-child(2n+1):last-child {
+    flex: 1 1 calc(50% - 10px); /* Ensure last odd item does not stretch */
+}
+
+.booking-item h4 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.booking-item p {
+    margin: 5px 0;
+}
+
+.booking-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-button {
+    background-color: transparent; /* Button color */
+    color: black;
+    border: none;
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px; /* Increase the font size for bigger dots */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dropdown-button:hover {
+    transform: scale(1.4); /* Enlarge on hover */
+    background-color: transparent;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 20px;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 10; /* Ensure dropdown is on top */
+    color: black;
+    border: 1px solid #ccc; /* light border for visibility */
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    color: black;
+}
+
+.dropdown-content button:hover {
+    background-color: #f3f3f3;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .booking-item {
+        flex: 1 1 calc(50% - 10px); /* Adjusted for two per row with space between */
+    }
+}

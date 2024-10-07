@@ -1,0 +1,273 @@
+/* ===================
+   Shared Styles
+=================== */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+  height: 100vh;
+  background-color: white;
+}
+
+.auth-box {
+  background-color: rgba(255, 255, 255, 1);
+  padding: 2rem;
+  right: -200px; /* Adjust this value to move it more to the right */
+  top: 100px; /* Adds space below the navbar */
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Enhanced shadow for better visibility */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Defined border for the sign-up box */
+  width: 500px;
+  margin: 0 auto;
+}
+
+/* Center the Sign Up title */
+.auth-box h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.signup-container .name-fields {
+  display: flex;
+  justify-content: space-between;
+}
+
+.signup-container .name-input {
+  width: 48%;
+}
+
+/* Password fields side by side */
+.signup-container .password-fields {
+  display: flex;
+  justify-content: space-between;
+}
+
+.signup-container .password-input-wrapper {
+  width: 48%;
+  position: relative;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.auth-form input.error-input {
+  border-color: red;
+}
+
+/* Sign-up Button Styles */
+.auth-button, .auth-google-btn, .auth-apple-btn {
+  width: 100%;
+  padding: 0.75rem;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.auth-button {
+  background-color: #f3ab03;
+}
+
+.auth-button:hover {
+  background-color: #222946;
+}
+
+/* Google and Apple Buttons */
+.auth-google-btn {
+  background-color: #4285F4;
+}
+
+.auth-apple-btn {
+  background-color: #000;
+}
+
+/* Password Validation Box */
+.password-requirements-popup {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+  width:auto; /* Matches the input width */
+}
+
+.password-requirements-popup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+}
+
+.password-requirements-popup li {
+  margin-bottom: 8px;
+}
+
+.requirement-met {
+  color: green;
+}
+
+.requirement-unmet {
+  color: red;
+}
+
+/* Error message for password mismatch */
+.password-error {
+  color: red;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+
+/* Divider between manual signup and Google/Apple sign-up */
+.divider {
+  margin: 20px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+/* 'Already have an account?' login button styling */
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.login-button {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  color: black;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.login-button:hover {
+  background-color: #222946;
+  color: #fff;
+}
+
+/* Google and Apple Buttons */
+.auth-google-btn {
+  background-color: white;
+  border: 1px solid #4285F4;
+  color: #333;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Spacing between icon and text */
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.auth-google-btn:hover {
+  background-color: #4285F4;
+  border-color: #4285F4;
+  color: white;
+}
+
+.auth-apple-btn {
+  background-color: black;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Spacing between icon and text */
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.auth-apple-btn:hover {
+  background-color: rgb(40, 40, 40);
+}
+
+/* Icon Size */
+.fa-google, .fa-apple {
+  font-size: 1.2em;
+}
+
+/* ------------------------------------------------------------*/
+
+/* Full Page Background */
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Ensures it stays behind the content */
+  overflow-x: hidden; /* Prevents horizontal scroll */
+  overflow-y: auto; /* Allows vertical scroll */
+}
+
+/* Large Background Image */
+.large-bg-image {
+  position: fixed; /* Ensures the background stays fixed on scroll */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size:cover; /* Ensures the image covers the whole screen */
+  background-position: center;
+  z-index: -1; /* Keep the background behind everything */
+}
+
+/* Puzzle Pieces (rectangular images) */
+.puzzle-pieces {
+  position: absolute;
+  width: 200px; /* Set desired width */
+  height: 250px; /* Set desired height */
+  background-size: cover; /* Ensure the image covers the whole rectangle */
+  background-position: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* For 3D effect */
+  border-radius: 8px; /* Keeps slight round edges */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Make pieces pop out on hover */
+.puzzle-pieces:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Position the rectangular images */
+#pieces1 {
+  top: 135px;
+  left: 50px;
+  background-image: url('./Puzzle/Big Ben.jpg'); /* First destination image */
+  transform: rotate(-10deg); /* Tilt by -10 degrees */
+}
+
+#pieces2 {
+  top: 335px;
+  left: 200px;
+  background-image: url('./Puzzle/Eifel Tower.jpg'); /* Second destination image */
+  transform: rotate(15deg); /* Tilt by -10 degrees */
+
+}
+
+#pieces3 {
+  top: 535px;
+  left: 50px;
+  background-image: url('./Puzzle/Pisa.jpg'); /* Third destination image */
+  transform: rotate(-5deg); /* Tilt by -10 degrees */
+
+}

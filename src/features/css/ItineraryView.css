@@ -1,0 +1,228 @@
+/* Update your existing CSS file with these styles */
+
+.itinerary-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three cards per row */
+    gap: 20px;
+    padding: 20px;
+    background-color: #f9f9f9; 
+    margin-top: 0px; 
+    padding-top: 20px; 
+
+}
+
+.itinerary-card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: white;
+    position: relative; 
+}
+
+.itinerary-card:hover {
+    transform: scale(1.05); 
+}
+
+.itinerary-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.itinerary-info {
+    padding: 15px;
+    background-color: white;
+    position: relative; /* To position the countdown text */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.itinerary-info h3 {
+    text-align: center;
+    margin-top: -10px;
+    color: #333;
+}
+
+.itinerary-info p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.itinerary-info span.countdown {
+    font-weight: bold;
+    color: green; 
+    margin-top: 10px;
+    align-self:flex-end; 
+}
+
+/* Greeting and filter section */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10x;
+    background-color: #f4f4f4; 
+}
+
+.greeting {
+    font-size: 24px; 
+    color: #333;
+    flex-grow: 1; 
+}
+
+.filter-dropdown {
+    padding: 8px 15px; 
+    font-size: 14px; 
+    border: 1px solid #ccc;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: white; 
+    margin-right: 20px; 
+}
+
+/* Dropdown button and menu */
+.dropdown {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+}
+
+.dropdown-button {
+    background-color: transparent; /* Button color */
+    color: black;
+    border: none;
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px; /* Increase the font size for bigger dots */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dropdown-button:hover {
+    transform: scale(1.4); /* Enlarge on hover */
+    background-color: transparent;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 5px 10px rgba(73, 72, 72, 0.331);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 1;
+    color: black; 
+    border: 1px solid #ccc; /* light border for visibility */
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    color: black;
+}
+
+.dropdown-content button:hover {
+    background-color: #f3ab03; 
+    color: white;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dialog-button:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.gray-out {
+    background-color: lightgray !important;
+}
+
+.itinerary-image.grayscale {
+    filter: grayscale(100%);
+}
+
+.countdown {
+    font-weight: bold;
+}
+
+.new-itinerary-button {
+    background-color: #f3ab03;
+    color: white;
+    width: 95px;
+    height: 50px;
+    margin-left: 20px; /* Adds space from the left */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow */
+}
+
+.new-itinerary-button:hover {
+    background-color: #c48800;
+}
+
+.header-title {
+    padding-left: 40px; /* Add padding to move it off the wall */
+    margin-top: -5px; /* Add a bit of margin if needed */
+    margin-bottom: -5px; /* Add a bit of margin if needed */
+}
+
+.header-title h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
+}
+
+/* Styles for the Create Itinerary Card */
+.create-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Light gray background */
+    border: 2px dashed #222946; /* Dashed border to indicate creation */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.create-card:hover {
+    background-color: #e6e6e6; /* Slightly darker on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+
+/* Center the "+" symbol */
+.create-itinerary-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; /* Ensure content is vertically centered */
+    width: 100%;  /* Ensure content is horizontally centered */
+}
+
+.create-plus {
+    font-size: 48px; /* Make the "+" symbol larger */
+    color: #222946;  /* Light gray color for the "+" */
+    font-weight: bold; /* Bold the "+" */
+    transition: color 0.3s ease; /* Smooth color transition on hover */
+}
+
+.create-card:hover .create-plus {
+    color: #7e7e7e; /* Slightly darker gray on hover */
+}

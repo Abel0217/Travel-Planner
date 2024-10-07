@@ -1,0 +1,160 @@
+/* Update your existing CSS file with these styles */
+
+.itinerary-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three cards per row */
+    gap: 20px;
+    padding: 20px;
+    background-color: #f9f9f9; 
+    margin-top: 50px; 
+}
+
+.itinerary-card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: white;
+    position: relative; 
+}
+
+.itinerary-card:hover {
+    transform: scale(1.05); 
+}
+
+.itinerary-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Update your existing CSS file with these styles */
+
+.itinerary-info {
+    padding: 15px;
+    background-color: white;
+    position: relative; /* To position the countdown text */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.itinerary-info h3 {
+    text-align: center;
+    margin-top: -10px;
+    color: #333;
+}
+
+.itinerary-info p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.itinerary-info span.countdown {
+    font-weight: bold;
+    color: green; 
+    margin-top: 10px;
+    align-self:flex-end; 
+}
+
+/* Greeting and filter section */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f4; 
+}
+
+.greeting {
+    font-size: 24px; 
+    color: #333;
+    flex-grow: 1; 
+}
+
+.filter-dropdown {
+    padding: 8px 15px; 
+    font-size: 14px; 
+    border: 1px solid #ccc;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: white; 
+    margin-right: 20px; 
+}
+
+/* Dropdown button and menu */
+.dropdown {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+}
+
+.dropdown-button {
+    background-color: transparent; /* Button color */
+    color: black;
+    border: none;
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px; /* Increase the font size for bigger dots */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dropdown-button:hover {
+    transform: scale(1.4); /* Enlarge on hover */
+    background-color: transparent;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 5px 10px rgba(73, 72, 72, 0.331);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 1;
+    color: black; 
+    border: 1px solid #ccc; /* light border for visibility */
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    color: black;
+}
+
+.dropdown-content button:hover {
+    background-color: #f3ab03; 
+    color: white;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dialog-button:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.gray-out {
+    background-color: lightgray !important;
+}
+
+.itinerary-image.grayscale {
+    filter: grayscale(100%);
+}
+
+.countdown {
+    font-weight: bold;
+}

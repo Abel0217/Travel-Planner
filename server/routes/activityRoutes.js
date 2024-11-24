@@ -1,35 +1,50 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 const db = require('../database/dbOperations');
-const firestoreDb = require('../firebaseAdmin'); 
+const verifyToken = require('../FirebaseToken'); // Import the Firebase token middleware
+
+// Apply the token verification middleware to all routes
+router.use(verifyToken);
 
 // Fetch all activities for a specific itinerary
 router.get('/', async (req, res) => {
+    const owner_id = req.user.uid;
+    const itinerary_id = req.params.itineraryId; // This should now be accessible
+    console.log("Activity handler params with mergeParams:", { itinerary_id, owner_id });
+
     try {
-        const activities = await db.fetchAllActivities(req.itineraryId);
+        const activities = await db.fetchAllActivities(itinerary_id, owner_id);
         res.json(activities);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to fetch activities:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
 // Fetch activities by date range
-router.get('/date-range', async (req, res) => {
+router.get('/:itineraryId/date-range', async (req, res) => {
     const { startDate, endDate } = req.query;
+    const owner_id = req.user.uid; // Firebase UID
+    const { itineraryId } = req.params;
     try {
-        const activities = await db.fetchActivitiesByDateRange(req.itineraryId, startDate, endDate);
+        const activities = await db.fetchActivitiesByDateRange(itineraryId, owner_id, startDate, endDate);
         res.json(activities);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to fetch activities by date range:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
 // Add a new activity
 router.post('/', async (req, res) => {
     const { title, description, location, activity_date, start_time, end_time, reservation_number } = req.body;
+    const owner_id = req.user.uid; // Firebase UID
+    const itinerary_id = req.params.itineraryId; // Access itinerary ID from URL params
+
     try {
         const newActivity = await db.addActivity(
-            req.itineraryId,
+            itinerary_id,  // Pass the itinerary ID here
+            owner_id,
             title,
             description,
             location,
@@ -38,75 +53,48 @@ router.post('/', async (req, res) => {
             end_time,
             reservation_number
         );
-
-        // Add to Firestore
-        const activityRef = firestoreDb.collection('activities').doc(newActivity.activity_id.toString());
-        await activityRef.set({
-            itinerary_id: req.itineraryId,
-            title,
-            description,
-            location,
-            activity_date,
-            start_time,
-            end_time,
-            reservation_number
-        });
-
         res.status(201).json(newActivity);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to add activity:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
 // Update an existing activity
 router.put('/:activityId', async (req, res) => {
     const { activityId } = req.params;
-    const { title, description, location, activity_date, start_time, end_time, reservation_number } = req.body;
+    const { title, description, location, activity_date, start_time, end_time, reservation_number, itineraryId } = req.body;
+    const owner_id = req.user.uid; // Firebase UID
     try {
         const updatedActivity = await db.updateActivity(
-            activityId,
-            req.itineraryId,
-            title,
-            description,
-            location,
-            activity_date,
-            start_time,
-            end_time,
+            activityId, 
+            itineraryId, 
+            owner_id, 
+            title, 
+            description, 
+            location, 
+            activity_date, 
+            start_time, 
+            end_time, 
             reservation_number
         );
-
-        // Update Firestore
-        const activityRef = firestoreDb.collection('activities').doc(activityId);
-        await activityRef.set({
-            itinerary_id: req.itineraryId,
-            title,
-            description,
-            location,
-            activity_date,
-            start_time,
-            end_time,
-            reservation_number
-        });
-
         res.json(updatedActivity);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to update activity:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
 // Delete an activity
 router.delete('/:activityId', async (req, res) => {
     const { activityId } = req.params;
+    const owner_id = req.user.uid; // Firebase UID
     try {
-        const deletedActivity = await db.deleteActivity(activityId);
-
-        // Delete from Firestore
-        const activityRef = firestoreDb.collection('activities').doc(activityId);
-        await activityRef.delete();
-
+        const deletedActivity = await db.deleteActivity(activityId, owner_id);
         res.json(deletedActivity);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to delete activity:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 

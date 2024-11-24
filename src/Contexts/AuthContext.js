@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import apiClient from '../api/apiClient'; 
 
-// Create and export context (auth state)
 export const AuthContext = React.createContext();
 
 export const useAuth = () => {
@@ -14,7 +14,7 @@ export const AuthContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser({
           name: user.displayName,
@@ -22,6 +22,21 @@ export const AuthContextProvider = ({ children }) => {
           uid: user.uid,
           photoURL: user.photoURL,
         });
+
+        try {
+          const token = await user.getIdToken();
+
+          await apiClient.post('/users/sync', {}, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          console.log('User synced successfully with PostgreSQL');
+        } catch (error) {
+          console.error('Error syncing user data:', error);
+        }
+
       } else {
         setCurrentUser(null);
       }

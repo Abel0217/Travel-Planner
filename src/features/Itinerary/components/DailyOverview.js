@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
+import Modal from 'react-modal'; 
 import './css/DailyOverview.css';
 import ActivityForm from './ActivityForm';
 import HotelForm from './HotelForm';
@@ -9,6 +10,8 @@ import TransportForm from './TransportForm';
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from '../../../firebaseConfig';
 import { fetchWeather } from '../../../api/weatherApi';
+
+Modal.setAppElement('#root'); 
 
 const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
     const [days, setDays] = useState([]);
@@ -22,10 +25,12 @@ const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
     const [bookings, setBookings] = useState({});
     const [expandedDay, setExpandedDay] = useState(null);
     const [showForm, setShowForm] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false); 
     const [formType, setFormType] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [weatherData, setWeatherData] = useState({});
     const [isCelsius, setIsCelsius] = useState(true);
+    const [showSelectionModal, setShowSelectionModal] = useState(false);
 
     useEffect(() => {
         const fetchItineraryData = async () => {
@@ -41,23 +46,28 @@ const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
     const generateDays = (startDate, endDate) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
+        if (isNaN(start) || isNaN(end)) {
+            console.error("Invalid start or end date");
+            return;
+        }
+    
         const daysList = [];
         let current = new Date(start);
-
+    
         while (current <= end) {
             daysList.push(new Date(current));
             current.setDate(current.getDate() + 1);
         }
-
+    
         const currentDate = new Date().setHours(0, 0, 0, 0);
-
+    
         const past = daysList.filter(day => day < currentDate);
         const future = daysList.filter(day => day >= currentDate);
-
+    
         setPastDays(past);
         setFutureDays(future);
         setDays(daysList);
-    };
+    };    
 
     const fetchWeatherData = async (startDate, endDate, destination) => {
         const start = new Date(startDate);
@@ -98,19 +108,30 @@ const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
                 apiClient.get(`/itineraries/${itineraryId}/hotels`),
                 apiClient.get(`/itineraries/${itineraryId}/flights`),
                 apiClient.get(`/itineraries/${itineraryId}/restaurants`),
-                apiClient.get(`/itineraries/${itineraryId}/transport`)
+                apiClient.get(`/itineraries/${itineraryId}/transport`),
             ]);
-
+    
             setAllActivities(activitiesResponse.data);
             setAllHotels(hotelsResponse.data);
             setAllFlights(flightsResponse.data);
             setAllRestaurants(restaurantsResponse.data);
             setAllTransport(transportResponse.data);
+    
+            console.log('Fetched Activities:', activitiesResponse.data);
+            console.log('Fetched Hotels:', hotelsResponse.data);
+            console.log('Fetched Flights:', flightsResponse.data);
+            console.log('Fetched Restaurants:', restaurantsResponse.data);
+            console.log('Fetched Transport:', transportResponse.data);
         } catch (error) {
-            console.error('Failed to fetch all data', error);
+            console.error('Failed to fetch all data:', error);
         }
-    };
+    };    
 
+    const safeDate = (dateString) => {
+        const date = new Date(dateString);
+        return isNaN(date) ? null : date.toISOString().split('T')[0];
+    };
+    
     const setupFirestoreListeners = () => {
         const activitiesQuery = query(collection(db, 'activities'), where('itineraryId', '==', itineraryId));
         const hotelsQuery = query(collection(db, 'hotels'), where('itineraryId', '==', itineraryId));
@@ -201,32 +222,32 @@ const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
 
     const fetchBookingsForDay = (date) => {
         const filteredActivities = allActivities.filter(activity => {
-            const activityDate = new Date(activity.activity_date).toISOString().split('T')[0];
+            const activityDate = safeDate(activity.activity_date);
             return activityDate === date;
         });
-
+    
         const filteredHotels = allHotels.filter(hotel => {
-            const checkInDate = new Date(hotel.check_in_date).toISOString().split('T')[0];
-            const checkOutDate = new Date(hotel.check_out_date).toISOString().split('T')[0];
+            const checkInDate = safeDate(hotel.check_in_date);
+            const checkOutDate = safeDate(hotel.check_out_date);
             return date >= checkInDate && date <= checkOutDate;
         });
-
+    
         const filteredFlights = allFlights.filter(flight => {
-            const departureDate = new Date(flight.departure_time).toISOString().split('T')[0];
+            const departureDate = safeDate(flight.departure_time);
             return departureDate === date;
         });
-
+    
         const filteredRestaurants = allRestaurants.filter(restaurant => {
-            const reservationDate = new Date(restaurant.reservation_date).toISOString().split('T')[0];
+            const reservationDate = safeDate(restaurant.reservation_date);
             return reservationDate === date;
         });
-
+    
         const filteredTransport = allTransport.filter(transport => {
-            const pickupDate = new Date(transport.pickup_time).toISOString().split('T')[0];
-            const dropoffDate = new Date(transport.dropoff_time).toISOString().split('T')[0];
-            return (date >= pickupDate && date <= dropoffDate);
+            const pickupDate = safeDate(transport.pickup_time);
+            const dropoffDate = safeDate(transport.dropoff_time);
+            return date >= pickupDate && date <= dropoffDate;
         });
-
+    
         setBookings(prevBookings => ({
             ...prevBookings,
             [date]: {
@@ -234,34 +255,67 @@ const DailyOverview = ({ itineraryId, destination, startDate, endDate }) => {
                 hotels: filteredHotels,
                 flights: filteredFlights,
                 restaurants: filteredRestaurants,
-                transport: filteredTransport
-            }
+                transport: filteredTransport,
+            },
         }));
-    };
+    
+        console.log('Bookings for', date, {
+            activities: filteredActivities,
+            hotels: filteredHotels,
+            flights: filteredFlights,
+            restaurants: filteredRestaurants,
+            transport: filteredTransport,
+        });
+    }; 
 
+    const handleBookingAdded = (newBooking, bookingType) => {
+        switch (bookingType) {
+            case 'activity':
+                setAllActivities((prevActivities) => [...prevActivities, newBooking]);
+                break;
+            case 'hotel':
+                setAllHotels((prevHotels) => [...prevHotels, newBooking]);
+                break;
+            case 'flight':
+                setAllFlights((prevFlights) => [...prevFlights, newBooking]);
+                break;
+            case 'restaurant':
+                setAllRestaurants((prevRestaurants) => [...prevRestaurants, newBooking]);
+                break;
+            case 'transport':
+                setAllTransport((prevTransport) => [...prevTransport, newBooking]);
+                break;
+            default:
+                console.error('Unknown booking type:', bookingType);
+        }
+    
+        if (expandedDay) {
+            fetchBookingsForDay(expandedDay);
+        }
+    };
+    
     const toggleDay = (date) => {
         if (expandedDay === date) {
             setExpandedDay(null);
         } else {
-            if (!bookings[date]) {
-                fetchBookingsForDay(date);
-            }
+            fetchBookingsForDay(date); 
             setExpandedDay(date);
         }
-    };
+    };    
+    
 
-    const openForm = (formType, date) => {
-        setFormType(formType);
-        setSelectedDate(date);
-        setShowForm(true);
-    };
-
+    const openForm = (type, date) => {
+        setFormType(type);      
+        setSelectedDate(date);  
+        setIsModalOpen(true);   
+    };    
+    
     const closeForm = () => {
-        setShowForm(false);
-        setFormType(null);
-        setSelectedDate(null);
-    };
-
+        setIsModalOpen(false);  
+        setFormType(null);      
+        setSelectedDate(null);  
+    };    
+    
 const toggleTemperatureUnit = () => {
     setIsCelsius(!isCelsius);
 };
@@ -270,22 +324,44 @@ const convertTemperature = (tempCelsius) => {
     return isCelsius ? tempCelsius : (tempCelsius * 9 / 5) + 32;
 };
 
-const formatDate = (date, includeTime = false) => {
-    const options = { month: 'long', day: 'numeric', year: 'numeric' };
-    const dateString = new Date(date).toLocaleDateString(undefined, options);
-    if (includeTime) {
-        const timeString = new Date(date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
-        return `${dateString} at ${timeString}`;
-    }
-    return dateString;
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
 };
-
 
 const formatTime = (timeString) => {
-    if (!timeString) return 'N/A'; 
-    const [hours, minutes] = timeString.split(':');
-    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+    if (!timeString) return 'N/A';
+    const date = new Date(`1970-01-01T${timeString}`);
+    return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
 };
+
+const formatDateTime = (dateTimeString, includeTime = false) => {
+    if (!dateTimeString) return 'N/A'; 
+    const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    };
+    const date = new Date(dateTimeString);
+    let formattedDate = date.toLocaleDateString('en-US', options);
+
+    if (includeTime) {
+        const timeString = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+        formattedDate = `${formattedDate}, ${timeString}`;
+    }
+
+    return formattedDate;
+};  
 
 
 return (
@@ -306,7 +382,7 @@ return (
                                 <img src={weather.icon} alt={weather.condition} />
                                 <div className="weather-details">
                                     <p>{weather.condition}</p>
-                                    <p> | {Math.round(convertTemperature(weather.max_temp))}°{isCelsius ? 'C' : 'F'}</p>
+                                    <p> · {Math.round(convertTemperature(weather.max_temp))}°{isCelsius ? 'C' : 'F'}</p>
                                 </div>
                             </div>
                         )}
@@ -321,11 +397,14 @@ return (
                                             {bookings[dateString].flights.map(flight => (
                                                 <div key={flight.flight_id} className="booking-item">
                                                     <h4>{flight.airline}</h4>
+                                                    <p><strong>Passenger Name:</strong> {flight.passenger_name}</p>
+                                                    <p><strong>Airline:</strong> {flight.airline}</p>
                                                     <p><strong>Flight Number:</strong> {flight.flight_number}</p>
                                                     <p><strong>Departure Airport:</strong> {flight.departure_airport}</p>
                                                     <p><strong>Arrival Airport:</strong> {flight.arrival_airport}</p>
-                                                    <p><strong>Departure Time:</strong> {formatDate(flight.departure_time, true)}</p>
-                                                    <p><strong>Arrival Time:</strong> {formatDate(flight.arrival_time, true)}</p>
+                                                    <p><strong>Departure:</strong> {formatDateTime(flight.departure_time)}</p>
+                                                    <p><strong>Arrival:</strong> {formatDateTime(flight.arrival_time)}</p>
+                                                    <p><strong>Seat Number:</strong> {flight.seat_number}</p>
                                                     <p><strong>Booking Reference:</strong> {flight.booking_reference}</p>
                                                 </div>
                                             ))}
@@ -337,10 +416,10 @@ return (
                                             {bookings[dateString].hotels.map(hotel => (
                                                 <div key={hotel.hotel_id} className="booking-item">
                                                     <h4>{hotel.hotel_name}</h4>
-                                                    <p><strong>Check-in:</strong> {formatDate(hotel.check_in_date)}</p>
-                                                    <p><strong>Check-out:</strong> {formatDate(hotel.check_out_date)}</p>
-                                                    <p><strong>Address:</strong> {hotel.address}</p>
-                                                    <p><strong>Booking Reference:</strong> {hotel.booking_reference}</p>
+                                                    <p><strong>Hotel Address:</strong> {hotel.address}</p>
+                                                    <p><strong>Check-In:</strong> {formatDate(hotel.check_in_date)}</p>
+                                                    <p><strong>Check-Out:</strong> {formatDate(hotel.check_out_date)}</p>
+                                                    <p><strong>Booking Conformation:</strong> {hotel.booking_confirmation}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -351,8 +430,10 @@ return (
                                             {bookings[dateString].activities.map(activity => (
                                                 <div key={activity.activity_id} className="booking-item">
                                                     <h4>{activity.title}</h4>
-                                                    <p><strong>Location:</strong> {activity.location}</p>
-                                                    <p><strong>Time:</strong> {activity.activity_date ? `${formatDate(activity.activity_date)} at ${activity.start_time}` : 'N/A'}</p>
+                                                    <p><strong>Address:</strong> {activity.location}</p>
+                                                    <p><strong>Activity Date:</strong> {formatDate(activity.activity_date)}</p>
+                                                    <p><strong>Activity Time:</strong> {activity.start_time}</p>
+                                                    <p><strong>Reference Number:</strong> {activity.reservation_number}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -363,9 +444,10 @@ return (
                                             {bookings[dateString].restaurants.map(restaurant => (
                                                 <div key={restaurant.reservation_id} className="booking-item">
                                                     <h4>{restaurant.restaurant_name}</h4>
+                                                    <p><strong>Restaurant Address:</strong> {restaurant.address}</p>
                                                     <p><strong>Reservation Date:</strong> {formatDate(restaurant.reservation_date)}</p>
                                                     <p><strong>Reservation Time:</strong> {formatTime(restaurant.reservation_time)}</p>
-                                                    <p><strong>Address:</strong> {restaurant.address}</p>
+                                                    <p><strong>Number of Guest:</strong> {restaurant.guest_number}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -376,10 +458,10 @@ return (
                                             {bookings[dateString].transport.map(transport => (
                                                 <div key={transport.transport_id} className="booking-item">
                                                     <h4>{transport.type}</h4>
-                                                    <p><strong>Pickup Time:</strong> {formatTime(transport.pickup_time)}</p>
-                                                    <p><strong>Dropoff Time:</strong> {formatTime(transport.dropoff_time)}</p>
                                                     <p><strong>Pickup Location:</strong> {transport.pickup_location}</p>
+                                                    <p><strong>Pickup Time:</strong> {formatDateTime(transport.pickup_time)}</p>
                                                     <p><strong>Dropoff Location:</strong> {transport.dropoff_location}</p>
+                                                    <p><strong>Dropoff Time:</strong> {formatDateTime(transport.dropoff_time)}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -391,10 +473,17 @@ return (
                                         bookings[dateString].transport.length === 0 && (
                                             <p>No bookings for this day.</p>
                                         )}
-                                    <button className="add-booking-btn" onClick={(e) => {
-                                        e.stopPropagation();
-                                        openForm('select', dateString);
-                                    }}>+ Booking</button>
+                                    <button
+                                        className="add-booking-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedDate(dateString); 
+                                            setShowSelectionModal(true); 
+                                        }}
+                                    >
+                                        + Booking
+                                    </button>
+
                                 </>
                             ) : (
                                 <p>No bookings for this day.</p>
@@ -416,7 +505,7 @@ return (
                                 <img src={weather.icon} alt={weather.condition} />
                                 <div className="weather-details">
                                     <p>{weather.condition}</p>
-                                    <p> | {Math.round(convertTemperature(weather.max_temp))}°{isCelsius ? 'C' : 'F'}</p>
+                                    <p> • {Math.round(convertTemperature(weather.max_temp))}°{isCelsius ? 'C' : 'F'}</p>
                                 </div>
                             </div>
                         )}
@@ -431,11 +520,14 @@ return (
                                             {bookings[dateString].flights.map(flight => (
                                                 <div key={flight.flight_id} className="booking-item">
                                                     <h4>{flight.airline}</h4>
+                                                    <p><strong>Passenger Name:</strong> {flight.passenger_name}</p>
+                                                    <p><strong>Airline:</strong> {flight.airline}</p>
                                                     <p><strong>Flight Number:</strong> {flight.flight_number}</p>
                                                     <p><strong>Departure Airport:</strong> {flight.departure_airport}</p>
                                                     <p><strong>Arrival Airport:</strong> {flight.arrival_airport}</p>
-                                                    <p><strong>Departure Time:</strong> {formatTime(flight.departure_time)}</p>
-                                                    <p><strong>Arrival Time:</strong> {formatTime(flight.arrival_time)}</p>
+                                                    <p><strong>Departure:</strong> {formatDateTime(flight.departure_time)}</p>
+                                                    <p><strong>Arrival:</strong> {formatDateTime(flight.arrival_time)}</p>
+                                                    <p><strong>Seat Number:</strong> {flight.seat_number}</p>
                                                     <p><strong>Booking Reference:</strong> {flight.booking_reference}</p>
                                                 </div>
                                             ))}
@@ -447,10 +539,10 @@ return (
                                             {bookings[dateString].hotels.map(hotel => (
                                                 <div key={hotel.hotel_id} className="booking-item">
                                                     <h4>{hotel.hotel_name}</h4>
-                                                    <p><strong>Check-in:</strong> {formatDate(hotel.check_in_date)}</p>
-                                                    <p><strong>Check-out:</strong> {formatDate(hotel.check_out_date)}</p>
-                                                    <p><strong>Address:</strong> {hotel.address}</p>
-                                                    <p><strong>Booking Reference:</strong> {hotel.booking_reference}</p>
+                                                    <p><strong>Hotel Address:</strong> {hotel.address}</p>
+                                                    <p><strong>Check In:</strong> {formatDate(hotel.check_in_date)}</p>
+                                                    <p><strong>Check Out:</strong> {formatDate(hotel.check_out_date)}</p>
+                                                    <p><strong>Booking Conformation:</strong> {hotel.booking_confirmation}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -461,8 +553,10 @@ return (
                                             {bookings[dateString].activities.map(activity => (
                                                 <div key={activity.activity_id} className="booking-item">
                                                     <h4>{activity.title}</h4>
-                                                    <p><strong>Location:</strong> {activity.location}</p>
-                                                    <p><strong>Time:</strong> {formatTime(activity.start_time)}</p>
+                                                    <p><strong>Address:</strong> {activity.location}</p>
+                                                    <p><strong>Activity Date:</strong> {formatDate(activity.activity_date)}</p>
+                                                    <p><strong>Activity Time:</strong> {activity.start_time}</p>
+                                                    <p><strong>Reference Number:</strong> {activity.reservation_number}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -473,9 +567,10 @@ return (
                                             {bookings[dateString].restaurants.map(restaurant => (
                                                 <div key={restaurant.reservation_id} className="booking-item">
                                                     <h4>{restaurant.restaurant_name}</h4>
+                                                    <p><strong>Restaurant Address:</strong> {restaurant.address}</p>
                                                     <p><strong>Reservation Date:</strong> {formatDate(restaurant.reservation_date)}</p>
                                                     <p><strong>Reservation Time:</strong> {formatTime(restaurant.reservation_time)}</p>
-                                                    <p><strong>Address:</strong> {restaurant.address}</p>
+                                                    <p><strong>Number of Guest:</strong> {restaurant.guest_number}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -486,10 +581,10 @@ return (
                                             {bookings[dateString].transport.map(transport => (
                                                 <div key={transport.transport_id} className="booking-item">
                                                     <h4>{transport.type}</h4>
-                                                    <p><strong>Pickup Time:</strong> {formatTime(transport.pickup_time)}</p>
-                                                    <p><strong>Dropoff Time:</strong> {formatTime(transport.dropoff_time)}</p>
                                                     <p><strong>Pickup Location:</strong> {transport.pickup_location}</p>
+                                                    <p><strong>Pickup Time:</strong> {formatDateTime(transport.pickup_time)}</p>
                                                     <p><strong>Dropoff Location:</strong> {transport.dropoff_location}</p>
+                                                    <p><strong>Dropoff Time:</strong> {formatDateTime(transport.dropoff_time)}</p>
                                                 </div>
                                             ))}
                                         </>
@@ -501,10 +596,16 @@ return (
                                         bookings[dateString].transport.length === 0 && (
                                             <p>No bookings for this day.</p>
                                         )}
-                                    <button className="add-booking-btn" onClick={(e) => {
-                                        e.stopPropagation();
-                                        openForm('select', dateString);
-                                    }}>+ Booking</button>
+                                    <button
+                                        className="add-booking-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedDate(dateString); 
+                                            setShowSelectionModal(true); 
+                                        }}
+                                    >
+                                        + Booking
+                                    </button>
                                 </>
                             ) : (
                                 <p>No bookings for this day.</p>
@@ -514,36 +615,130 @@ return (
                 </div>
             );
         })}
-        {showForm && formType === 'select' && (
-            <div className="form-modal">
-                <div className="form-container">
+        {showSelectionModal && (
+            <div className="overlay" onClick={() => setShowSelectionModal(false)}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
                     <h2>Select Booking Type</h2>
-                    <button className="close-button" onClick={closeForm}>×</button>
-                    <div className="form-buttons">
-                        <button onClick={() => openForm('activity', selectedDate)}>Activity</button>
-                        <button onClick={() => openForm('hotel', selectedDate)}>Hotel</button>
-                        <button onClick={() => openForm('flight', selectedDate)}>Flight</button>
-                        <button onClick={() => openForm('restaurant', selectedDate)}>Restaurant</button>
-                        <button onClick={() => openForm('transport', selectedDate)}>Transport</button>
+                    <div className="modal-content">
+                        <button onClick={() => { setFormType('activity'); setShowSelectionModal(false); setShowForm(true); }}>Activity</button>
+                        <button onClick={() => { setFormType('hotel'); setShowSelectionModal(false); setShowForm(true); }}>Hotel</button>
+                        <button onClick={() => { setFormType('flight'); setShowSelectionModal(false); setShowForm(true); }}>Flight</button>
+                        <button onClick={() => { setFormType('restaurant'); setShowSelectionModal(false); setShowForm(true); }}>Restaurant</button>
+                        <button onClick={() => { setFormType('transport'); setShowSelectionModal(false); setShowForm(true); }}>Transport</button>
+                    </div>
+                    <button className="close-button" onClick={() => setShowSelectionModal(false)}>x</button>
+                </div>
+            </div>
+        )}
+
+        {showForm && formType === 'activity' && (
+            <div className="overlay" onClick={closeForm}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={closeForm}>x</button>
+                    <div className="modal-content">
+                        <ActivityForm
+                            itineraryId={itineraryId}
+                            startDate={selectedDate}
+                            endDate={selectedDate}
+                            onClose={closeForm}
+                            onActivityAdded={(newActivity) => handleBookingAdded(newActivity, 'activity')}
+                        />
                     </div>
                 </div>
             </div>
         )}
-        {showForm && formType === 'activity' && (
-            <ActivityForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} onActivityAdded={() => fetchBookingsForDay(selectedDate)} />
-        )}
+
         {showForm && formType === 'hotel' && (
-            <HotelForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} onHotelAdded={() => fetchBookingsForDay(selectedDate)} />
+            <div className="overlay" onClick={closeForm}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={closeForm}>x</button>
+                    <div className="modal-content">
+                        <HotelForm
+                            itineraryId={itineraryId}    
+                            startDate={selectedDate}
+                            endDate={selectedDate}
+                            onClose={closeForm}
+                            onHotelAdded={(newHotel) => handleBookingAdded(newHotel, 'hotel')}
+                        />
+                    </div>
+                </div>
+            </div>
         )}
+
         {showForm && formType === 'flight' && (
-            <FlightForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} onFlightAdded={() => fetchBookingsForDay(selectedDate)} />
+            <div className="overlay" onClick={closeForm}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={closeForm}>x</button>
+                    <div className="modal-content">
+                        <FlightForm
+                            itineraryId={itineraryId}
+                            startDate={selectedDate}
+                            endDate={selectedDate}
+                            onClose={closeForm}
+                            onFlightAdded={(newFlight) => handleBookingAdded(newFlight, 'flight')}
+                        />
+                    </div>
+                </div>
+            </div>
         )}
+
         {showForm && formType === 'restaurant' && (
-            <RestaurantForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} onRestaurantAdded={() => fetchBookingsForDay(selectedDate)} />
+            <div className="overlay" onClick={closeForm}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={closeForm}>x</button>
+                    <div className="modal-content">
+                        <RestaurantForm
+                            itineraryId={itineraryId}
+                            startDate={selectedDate}
+                            endDate={selectedDate}
+                            onClose={closeForm}
+                            onRestaurantAdded={() => fetchBookingsForDay(selectedDate)}
+                        />
+                    </div>
+                </div>
+            </div>
         )}
+
         {showForm && formType === 'transport' && (
-            <TransportForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} onTransportAdded={() => fetchBookingsForDay(selectedDate)} />
+            <div className="overlay" onClick={closeForm}>
+                <div className="modal" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={closeForm}>x</button>
+                    <div className="modal-content">
+                        <TransportForm
+                            itineraryId={itineraryId}
+                            startDate={selectedDate}
+                            endDate={selectedDate}
+                            onClose={closeForm}
+                            onTransportAdded={(newTransport) => handleBookingAdded(newTransport, 'transport')}
+                        />
+                    </div>
+                </div>
+            </div>
         )}
+        <Modal 
+            isOpen={isModalOpen} 
+            onRequestClose={closeForm} 
+            contentLabel="Booking Form"
+            className="modal"  
+            overlayClassName="overlay"  
+        >
+            <button onClick={closeForm} className="modal-close">×</button>
+            {formType === 'activity' && (
+                <ActivityForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} />
+            )}
+            {formType === 'hotel' && (
+                <HotelForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} />
+            )}
+            {formType === 'flight' && (
+                <FlightForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} />
+            )}
+            {formType === 'restaurant' && (
+                <RestaurantForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} />
+            )}
+            {formType === 'transport' && (
+                <TransportForm itineraryId={itineraryId} startDate={selectedDate} endDate={selectedDate} onClose={closeForm} />
+            )}
+        </Modal>
     </div>
 );
 };

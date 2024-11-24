@@ -17,6 +17,21 @@ form {
     position: relative;
 }
 
+.popup-form {
+    z-index: 3000; /* Ensure it appears above the navbar */
+    overflow-y: auto; /* Allow scrolling within the form if content overflows */
+}
+
+/* Ensure the Google Places Autocomplete dropdown is visible */
+.pac-container {
+    z-index: 3000 !important; 
+}
+
+/* Navbar styling */
+.navbar {
+    z-index: 1000; 
+}
+
 h2 {
     margin-bottom: 10px;
     color: #222946;
@@ -49,7 +64,7 @@ button:hover {
     font-size: 20px;
     position: absolute;
     top: 10px;
-    right: 10px;
+    right: 50px;
     cursor: pointer;
 }
 
@@ -128,3 +143,6 @@ input[type="date"]:focus {
 .dialog-button:hover {
     background-color: #f3ab03;
 }
+
+/* --------------------------------------------------- */
+

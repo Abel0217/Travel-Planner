@@ -1,12 +1,20 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 const db = require('../database/dbOperations');
 const firestoreDb = require('../firebaseAdmin'); 
+const verifyToken = require('../FirebaseToken'); // Firebase token verification
+
+// Apply token verification middleware to all hotel routes
+router.use(verifyToken);
 
 // Fetch all hotels for a specific itinerary
 router.get('/', async (req, res) => {
     try {
-        const hotels = await db.fetchHotelsByItineraryId(req.itineraryId);
+        const owner_id = req.user.uid;
+        const itinerary_id = req.params.itineraryId; // Access inherited params
+        console.log("Hotel handler params:", { itinerary_id, owner_id });
+
+        const hotels = await db.fetchHotelsByItineraryId(itinerary_id, owner_id);
         res.json(hotels);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -16,8 +24,9 @@ router.get('/', async (req, res) => {
 // Fetch hotels by date range
 router.get('/date-range', async (req, res) => {
     const { startDate, endDate } = req.query;
+    const owner_id = req.user.uid;  // Firebase UID
     try {
-        const hotels = await db.fetchHotelsByDateRange(req.itineraryId, startDate, endDate);
+        const hotels = await db.fetchHotelsByDateRange(req.params.itineraryId, owner_id, startDate, endDate);
         res.json(hotels);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -27,9 +36,12 @@ router.get('/date-range', async (req, res) => {
 // Add a new hotel
 router.post('/', async (req, res) => {
     const { hotel_name, check_in_date, check_out_date, address, booking_confirmation } = req.body;
+    const owner_id = req.user.uid;  // Firebase UID
     try {
+        // Add hotel to PostgreSQL database only
         const newHotel = await db.addHotel(
-            req.itineraryId,
+            req.params.itineraryId,
+            owner_id,
             hotel_name,
             check_in_date,
             check_out_date,
@@ -37,31 +49,23 @@ router.post('/', async (req, res) => {
             booking_confirmation
         );
 
-        // Add to Firestore
-        const hotelRef = firestoreDb.collection('hotels').doc(newHotel.hotel_id.toString());
-        await hotelRef.set({
-            itinerary_id: req.itineraryId,
-            hotel_name,
-            check_in_date,
-            check_out_date,
-            address,
-            booking_confirmation
-        });
-
         res.status(201).json(newHotel);
     } catch (error) {
+        console.error('Error adding hotel:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
+
 // Update an existing hotel
 router.put('/:hotelId', async (req, res) => {
-    const { hotelId } = req.params;
     const { hotel_name, check_in_date, check_out_date, address, booking_confirmation } = req.body;
+    const owner_id = req.user.uid;  // Firebase UID
     try {
         const updatedHotel = await db.updateHotel(
-            hotelId,
-            req.itineraryId,
+            req.params.hotelId,
+            req.params.itineraryId,
+            owner_id,
             hotel_name,
             check_in_date,
             check_out_date,
@@ -70,9 +74,9 @@ router.put('/:hotelId', async (req, res) => {
         );
 
         // Update Firestore
-        const hotelRef = firestoreDb.collection('hotels').doc(hotelId);
+        const hotelRef = firestoreDb.collection('hotels').doc(req.params.hotelId);
         await hotelRef.set({
-            itinerary_id: req.itineraryId,
+            itinerary_id: req.params.itineraryId,
             hotel_name,
             check_in_date,
             check_out_date,
@@ -88,12 +92,12 @@ router.put('/:hotelId', async (req, res) => {
 
 // Delete a hotel
 router.delete('/:hotelId', async (req, res) => {
-    const { hotelId } = req.params;
+    const owner_id = req.user.uid;  // Firebase UID
     try {
-        const deletedHotel = await db.deleteHotel(hotelId);
+        const deletedHotel = await db.deleteHotel(req.params.hotelId, owner_id);
 
         // Delete from Firestore
-        const hotelRef = firestoreDb.collection('hotels').doc(hotelId);
+        const hotelRef = firestoreDb.collection('hotels').doc(req.params.hotelId);
         await hotelRef.delete();
 
         res.json(deletedHotel);

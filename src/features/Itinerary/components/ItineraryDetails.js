@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getAuth } from "firebase/auth"; 
 import { useParams } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig'; 
@@ -12,10 +13,11 @@ import HotelDetails from './HotelDetails';
 import ActivityDetails from './ActivityDetails';
 import RestaurantDetails from './RestaurantDetails';
 import TransportDetails from './TransportDetails';
+import ItinerarySharing from '../../../Components/ItinerarySharing';
 import MapComponent from '../../../Components/MapComponent';
 import Notes from './Notes';
 import Bookings from './Bookings';
-import MemoryBoard from './MemoryBoard';
+import LiveChat from './LiveChat';
 import ActivityForm from './ActivityForm';
 import HotelForm from './HotelForm';
 import FlightForm from './FlightForm';
@@ -26,6 +28,7 @@ import hotelIcon from './css/Hotel.jpg';
 import activityIcon from './css/Activity.jpg';
 import restaurantIcon from './css/Restaurant.jpg';
 import transportIcon from './css/Transport.jpg';
+import Loading from '../Loading'; 
 
 const ItineraryDetails = () => {
     const { itineraryId } = useParams();
@@ -33,7 +36,10 @@ const ItineraryDetails = () => {
     const [loading, setLoading] = useState(true);
     const [coordinates, setCoordinates] = useState(null);
     const [formType, setFormType] = useState(null);
-
+    const [currentUser, setCurrentUser] = useState(null); 
+    const [isHost, setIsHost] = useState(false);
+    const [isGuest, setIsGuest] = useState(false);
+    
     const geocodeDestination = async (destination) => {
         if (!destination) {
             console.error('No destination provided');
@@ -57,17 +63,33 @@ const ItineraryDetails = () => {
 
     const fetchItineraryDetails = async () => {
         try {
-            const response = await apiClient.get(`/itineraries/${itineraryId}`);
-            console.log('API Response:', response.data);
-            const itineraryData = response.data;
-            setItinerary(itineraryData);
-            await geocodeDestination(itineraryData.destinations);
+            const auth = getAuth();
+            const user = auth.currentUser;
+            setCurrentUser(user);
+    
+            if (user) {
+                const token = await user.getIdToken();
+                const response = await apiClient.get(`/itineraries/${itineraryId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                console.log('API Response:', response.data);
+                const itineraryData = response.data;
+                setItinerary(itineraryData);
+    
+                setIsHost(itineraryData.owner_id === user.uid);
+                setIsGuest(itineraryData.isShared);
+                await geocodeDestination(itineraryData.destinations);
+            } else {
+                console.error("User not logged in");
+            }
         } catch (error) {
             console.error('Failed to fetch itinerary details', error);
         } finally {
             setLoading(false);
         }
-    };
+    };    
 
     useEffect(() => {
         const fetchItineraryFromFirestore = () => {
@@ -105,32 +127,56 @@ const ItineraryDetails = () => {
         setFormType(null);
     };
 
+    useEffect(() => {
+        if (currentUser && itinerary) {
+            setIsHost(currentUser.uid === itinerary.owner_id);
+            setIsGuest(itinerary.participants?.some(p => p.uid === currentUser.uid && p.role === 'guest'));
+        }
+    }, [itinerary, currentUser]);
+
+    const leaveItinerary = async () => {
+        try {
+            await apiClient.post('/sharing/remove', { itineraryId, userId: currentUser.uid });
+            alert('You have left the itinerary.');
+        } catch (error) {
+            console.error('Error leaving itinerary:', error);
+        }
+    };
+
+    const editItinerary = () => {
+        alert('Edit itinerary feature coming soon.');
+    };
+
+    const deleteItinerary = async () => {
+        try {
+            await apiClient.delete(`/itineraries/${itineraryId}`);
+            alert('Itinerary deleted.');
+        } catch (error) {
+            console.error('Error deleting itinerary:', error);
+        }
+    };
+
     const handleActivityAdded = (newActivity) => {
-        // Logic to update the state with the new activity
         console.log('New activity added:', newActivity);
     };
 
     const handleHotelAdded = (newHotel) => {
-        // Logic to update the state with the new hotel
         console.log('New hotel added:', newHotel);
     };
 
     const handleFlightAdded = (newFlight) => {
-        // Logic to update the state with the new flight
         console.log('New flight added:', newFlight);
     };
 
     const handleRestaurantAdded = (newRestaurant) => {
-        // Logic to update the state with the new restaurant
         console.log('New restaurant added:', newRestaurant);
     };
 
     const handleTransportAdded = (newTransport) => {
-        // Logic to update the state with the new transport
         console.log('New transport added:', newTransport);
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <Loading />; 
     if (!itinerary.title) return <div>No itinerary found.</div>;
 
     return (
@@ -144,13 +190,19 @@ const ItineraryDetails = () => {
             ) : (
                 <p>Loading map...</p>
             )}
+            {/* Conditional render for Host and Guest actions */}
+            <div className="itinerary-actions">
+                {isGuest ? (
+                    <button onClick={leaveItinerary}>Leave Itinerary</button>
+                ) : null}
+            </div>
             <Tabs>
                 <TabList>
                     <Tab>Overview</Tab>
                     <Tab>Bookings</Tab>
                     <Tab>My Bookings</Tab>
-                    <Tab>Memory Board</Tab>
                     <Tab>Notes</Tab>
+                    <Tab>Live Chat</Tab>
                 </TabList>
 
                 <TabPanel>
@@ -197,17 +249,21 @@ const ItineraryDetails = () => {
                         </div>
                     )}
                 </TabPanel>
-
                 <TabPanel>
                     <Bookings itineraryId={itineraryId} />
                 </TabPanel>
-
-                <TabPanel>
-                    <MemoryBoard itineraryId={itineraryId} />
-                </TabPanel>
-
                 <TabPanel>
                     <Notes itineraryId={itineraryId} />
+                </TabPanel>
+                <TabPanel>
+                    <LiveChat itineraryId={itineraryId} currentUser={currentUser} /> {/* Pass currentUser here */}
+                </TabPanel>
+                <TabPanel>
+                    <ItinerarySharing 
+                        itineraryId={itineraryId} 
+                        currentUser={currentUser} 
+                        isHost={isHost} 
+                    />
                 </TabPanel>
             </Tabs>
         </div>

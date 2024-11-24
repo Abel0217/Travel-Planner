@@ -5,18 +5,21 @@
 
 .booking-cards {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    margin: 20px 0;
+    flex-wrap: wrap; /* Allows items to wrap onto multiple lines */
+    justify-content: center; /* Center the entire row of cards */
+    gap: 20px; /* Space between cards */
+    margin: 20px auto;
+    max-width: 1000px; /* Set a maximum width to control the row */
 }
 
 .booking-card {
-    flex: 0 0 30%;
+    flex: 1 1 30%; /* Each card will take up about 30% of the container width */
+    max-width: 300px; /* Prevent the card from getting too wide */
+    min-width: 200px; /* Ensure cards are not too small */
     border: 1px solid #dee2e6;
     border-radius: 10px;
     padding: 20px;
     text-align: center;
-    margin: 10px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
 }
@@ -26,20 +29,13 @@
     transform: scale(1.05);
 }
 
+
 .card-icon {
     width: 50px;
     height: 50px;
     margin-bottom: 10px;
 }
 
-.back-button {
-    background: none;
-    border: none;
-    color: blue;
-    cursor: pointer;
-    margin-bottom: 20px;
-    font-size: 16px;
-}
 
 .bookings {
     margin: 20px;

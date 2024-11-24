@@ -42,7 +42,6 @@ const AutoComplete = ({ id, value, onChange, setIsValid }) => {
     }, [value]);
 
     const handleBlur = () => {
-        // Check if the input value matches the selected value
         if (!inputValue) {
             setIsValid(false);
         }

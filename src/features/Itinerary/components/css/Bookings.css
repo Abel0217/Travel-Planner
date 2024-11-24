@@ -115,3 +115,21 @@
         flex: 1 1 calc(50% - 10px); /* Adjusted for two per row with space between */
     }
 }
+
+/* Styling the dialog buttons */
+.dialog-actions .dialog-button {
+    background-color: #222946 !important; 
+    color: white !important; 
+    border-radius: 5px;
+    padding: 8px 16px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-transform: none; 
+    font-size: 16px;
+    border: none;
+}
+
+.dialog-actions .dialog-button:hover {
+    background-color: #f3ab03 !important; 
+    color: white !important; 
+    cursor: pointer;
+}

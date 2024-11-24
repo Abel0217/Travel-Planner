@@ -9,7 +9,7 @@
 
 .quill-editor {
     width: 100%;
-    height: calc(100vh - 80px);
+    height: calc(200vh - 80px);
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border: 1px solid #ccc;

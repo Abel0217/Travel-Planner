@@ -1,0 +1,8 @@
+.expense-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 2rem;
+    color: #333;
+}

@@ -1,24 +1,60 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database/dbOperations');
+const verifyToken = require('../FirebaseToken'); // Import the Firebase token middleware
+const pool = require('../database/db'); // Adjust the path based on where your dbConfig file is located
 
-// Fetch ALL itineraries
+// Apply the token verification middleware to all routes
+router.use(verifyToken);
+
+// Fetch ALL itineraries for the logged-in user
 router.get('/', async (req, res) => {
     try {
-        const itineraries = await db.fetchAllItineraries();
+        const owner_id = req.user.uid; // Ensure uid is available
+        console.log('Owner ID from request:', owner_id); // Log the owner ID
+        const itineraries = await db.fetchAllItineraries(owner_id);
+        console.log('Fetched itineraries:', itineraries); // Log fetched itineraries
         res.json(itineraries);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to fetch itineraries:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
-// Fetch a specific itinerary
-router.get('/:itineraryId', async (req, res) => {
+// Fetch a specific itinerary (for owner or guest)
+router.get('/:itineraryId', verifyToken, async (req, res) => {
+    const { itineraryId } = req.params;
+    const userId = req.user.uid;
+
     try {
-        const itinerary = await db.fetchItineraryById(req.params.itineraryId);
+        console.log('Attempting to fetch itinerary with ID:', itineraryId, 'for user ID:', userId);
+
+        let itinerary = await db.fetchItineraryById(itineraryId, userId);
+
+        if (!itinerary) {
+            console.log('User is not the owner, checking shared access for itinerary:', itineraryId);
+
+            const isGuestQuery = `
+                SELECT i.*
+                FROM core.itineraries i
+                JOIN core.shared s ON i.itinerary_id = s.itinerary_id
+                WHERE i.itinerary_id = $1 AND s.guest_id = $2;
+            `;
+            const result = await pool.query(isGuestQuery, [itineraryId, userId]);
+
+            if (result.rows.length > 0) {
+                itinerary = result.rows[0];
+            } else {
+                console.log('Access denied for user ID:', userId, 'on itinerary ID:', itineraryId);
+                return res.status(403).json({ error: 'Access denied.' });
+            }
+        }
+
+        console.log('Fetched itinerary:', itinerary);
         res.json(itinerary);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to fetch the itinerary:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
@@ -47,7 +83,8 @@ router.get('/:itineraryId/days/details', async (req, res) => {
 
         res.json(daysWithDetails);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to fetch day details:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
@@ -64,35 +101,104 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Title, start date, end date, and destinations are required' });
         }
 
-        // Create the itinerary
-        const newItinerary = await db.addItinerary({ title, start_date, end_date, destinations });
-        console.log('New itinerary created:', newItinerary);
+        // Get the owner_id from the authenticated user (req.user.uid)
+        const owner_id = req.user.uid;
 
+        // Create the itinerary with the user as owner
+        const newItinerary = await db.addItinerary({
+            owner_id, 
+            title, 
+            start_date, 
+            end_date, 
+            destinations
+        });
+
+        console.log('New itinerary created:', newItinerary);
         res.status(201).json(newItinerary);
     } catch (error) {
         console.error('Failed to create itinerary:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
 // Update an existing itinerary
 router.put('/:itineraryId', async (req, res) => {
     try {
-        const updatedItinerary = await db.updateItinerary(req.params.itineraryId, req.body);
+        const owner_id = req.user.uid; // Get the user id from the request
+        const updatedItinerary = await db.updateItinerary(req.params.itineraryId, owner_id, req.body);
         res.json(updatedItinerary);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to update itinerary:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 
 // Delete an itinerary
 router.delete('/:itineraryId', async (req, res) => {
     try {
-        const deletedItinerary = await db.deleteItinerary(req.params.itineraryId);
+        const owner_id = req.user.uid; // Get the user id from the request
+        const deletedItinerary = await db.deleteItinerary(req.params.itineraryId, owner_id);
         res.json(deletedItinerary);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Failed to delete itinerary:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
+
+// Invite friend to itinerary
+// Invite friend to itinerary
+router.post('/invite', verifyToken, async (req, res) => {
+    const { itineraryId, friendId } = req.body;
+    const ownerId = req.user.uid;
+
+    try {
+        // Check if the itinerary belongs to the current user (host)
+        const itinerary = await db.fetchItineraryById(itineraryId, ownerId);
+        if (!itinerary) {
+            return res.status(403).json({ error: 'Unauthorized to invite friends to this itinerary.' });
+        }
+
+        // Add friend to the share table for itinerary access as a guest
+        const shareEntry = await db.addGuestToShare(itineraryId, friendId);
+        res.status(201).json(shareEntry); // Respond with the new share entry
+    } catch (error) {
+        console.error('Error inviting friend to itinerary:', error);
+        res.status(500).json({ error: 'Failed to invite friend to itinerary.' });
+    }
+});
+
+
+// Get itinerary details for a guest
+router.get('/view/:itineraryId', verifyToken, async (req, res) => {
+    const { itineraryId } = req.params;
+    const guestId = req.user.uid;
+
+    try {
+        // Step 1: Verify guest access
+        const checkAccessQuery = `
+            SELECT 1 FROM core.shared
+            WHERE itinerary_id = $1 AND guest_id = $2;
+        `;
+        const accessResult = await pool.query(checkAccessQuery, [itineraryId, guestId]);
+        
+        if (accessResult.rowCount === 0) {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        // Step 2: Fetch itinerary details from `itineraries`
+        const itineraryQuery = 'SELECT * FROM core.itineraries WHERE itinerary_id = $1';
+        const { rows } = await pool.query(itineraryQuery, [itineraryId]);
+        
+        if (!rows[0]) {
+            return res.status(404).json({ error: 'Itinerary not found' });
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Failed to fetch itinerary:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
 
 module.exports = router;

@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const pool = require('./database/db'); 
+const bodyParser = require('body-parser');
 const app = express();
+require('dotenv').config();
 
 // Route imports
 const itineraryRoutes = require('./routes/itineraryRoutes');
@@ -11,7 +14,11 @@ const flightRoutes = require('./routes/flightRoutes');
 const hotelRoutes = require('./routes/hotelRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const transportRoutes = require('./routes/transportRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
+const notificationRoutes = require('./routes/notificationRoutes'); 
+const usersRoute = require('./routes/userRoutes'); 
+const friendsRoutes = require('./routes/friendsRoutes'); 
+const sharingRoutes = require('./routes/sharingRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -23,42 +30,57 @@ app.use('/itineraries', itineraryRoutes);
 app.use('/days', dayRoutes);
 
 // Activity related routes for specific itineraries
-app.use('/itineraries/:itineraryId/activities', (req, res, next) => {
-    req.itineraryId = req.params.itineraryId;
-    next();
-}, activityRoutes);
+app.use('/itineraries/:itineraryId/activities', activityRoutes);
 
 // Flight related routes for specific itineraries
-app.use('/itineraries/:itineraryId/flights', (req, res, next) => {
-    req.itineraryId = req.params.itineraryId;
-    next();
-}, flightRoutes);
+app.use('/itineraries/:itineraryId/flights', flightRoutes);
 
 // Hotel related routes for specific itineraries
-app.use('/itineraries/:itineraryId/hotels', (req, res, next) => {
-    req.itineraryId = req.params.itineraryId;
-    next();
-}, hotelRoutes);
+app.use('/itineraries/:itineraryId/hotels', hotelRoutes);
 
 // Restaurant related routes for specific itineraries
-app.use('/itineraries/:itineraryId/restaurants', (req, res, next) => {
-    req.itineraryId = req.params.itineraryId;
-    next();
-}, restaurantRoutes);
+app.use('/itineraries/:itineraryId/restaurants', restaurantRoutes);
 
 // Transport related routes for specific itineraries
-app.use('/itineraries/:itineraryId/transport', (req, res, next) => {
-    req.itineraryId = req.params.itineraryId;
-    next();
-}, transportRoutes);
+app.use('/itineraries/:itineraryId/transport', transportRoutes);
 
-// Notifications related routes
-app.use('/notifications', notificationRoutes);
+// Notifications Related Routes
+app.use('/notifications', notificationRoutes); 
 
+// User Related Routes
+app.use('/users', usersRoute);
+
+// Friends Related Routes
+app.use('/friends', friendsRoutes);
+
+// Sharing Itinerary Routes
+app.use('/sharing', sharingRoutes);
+
+// Upload Related Routes
+app.use('/upload', uploadRoutes);
 
 // Expense related routes for specific itineraries
 // Have NOT implemented it yet..
 app.use('/itineraries/:itineraryId/expenses', expenseRoutes);
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something went wrong!');
+});
+
+
+// Route to fetch emails based on a query
+app.get('/test-fetch-emails', async (req, res) => {
+    try {
+        const emails = await getEmails('Conformation'); // Replace with your desired search keyword
+        res.json({ success: true, emails });
+    } catch (error) {
+        console.error('Error fetching emails:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 
 // Start server

@@ -1,8 +1,6 @@
-/* Update your existing CSS file with these styles */
-
 .itinerary-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Three cards per row */
+    grid-template-columns: repeat(3, 1fr); 
     gap: 20px;
     padding: 20px;
     background-color: #f9f9f9; 
@@ -34,7 +32,7 @@
 .itinerary-info {
     padding: 15px;
     background-color: white;
-    position: relative; /* To position the countdown text */
+    position: relative; 
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -42,20 +40,25 @@
 
 .itinerary-info h3 {
     text-align: center;
-    margin-top: -10px;
-    color: #333;
+    margin: 5px;
+    margin-top: -5px; 
+    color: #222946; 
+    font-weight: bold;
+    font-size: 20px; 
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3); 
 }
 
 .itinerary-info p {
-    margin: 5px 0;
-    font-size: 0.9rem;
-    color: #666;
+    text-align: center; 
+    margin: 2px 0; 
+    font-size: 14px; 
+    color: #555; 
 }
 
 .itinerary-info span.countdown {
     font-weight: bold;
     color: green; 
-    margin-top: 10px;
+    margin-top: 50px;
     align-self:flex-end; 
 }
 
@@ -93,20 +96,21 @@
 }
 
 .dropdown-button {
-    background-color: transparent; /* Button color */
+    background-color: transparent; 
     color: black;
     border: none;
     padding: 3px 6px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 18px; /* Increase the font size for bigger dots */
+    font-size: 18px; 
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .dropdown-button:hover {
-    transform: scale(1.4); /* Enlarge on hover */
+    transform: scale(1.4); 
+    color: #f3ab03;
     background-color: transparent;
 }
 
@@ -120,7 +124,7 @@
     overflow: hidden;
     z-index: 1;
     color: black; 
-    border: 1px solid #ccc; /* light border for visibility */
+    border: 1px solid #ccc; 
 }
 
 .dropdown-content button {
@@ -164,14 +168,14 @@
     color: white;
     width: 95px;
     height: 50px;
-    margin-left: 20px; /* Adds space from the left */
+    margin-left: 20px; 
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    transition: background-color 0.3s ease; /* Smooth hover transition */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow */
+    transition: background-color 0.3s ease; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
 }
 
 .new-itinerary-button:hover {
@@ -179,9 +183,9 @@
 }
 
 .header-title {
-    padding-left: 40px; /* Add padding to move it off the wall */
-    margin-top: -5px; /* Add a bit of margin if needed */
-    margin-bottom: -5px; /* Add a bit of margin if needed */
+    padding-left: 40px; 
+    margin-top: -5px; 
+    margin-bottom: -5px; 
 }
 
 .header-title h1 {
@@ -192,19 +196,21 @@
 
 /* Styles for the Create Itinerary Card */
 .create-card {
+    height: 390px; 
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f0f0f0; /* Light gray background */
-    border: 2px dashed #222946; /* Dashed border to indicate creation */
+    background-color: #f0f0f0;
+    border: 2px dashed #222946;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .create-card:hover {
-    background-color: #e6e6e6; /* Slightly darker on hover */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    background-color: #e6e6e6; 
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); 
+    
 }
 
 /* Center the "+" symbol */
@@ -212,17 +218,281 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%; /* Ensure content is vertically centered */
-    width: 100%;  /* Ensure content is horizontally centered */
+    height: 100%; 
+    width: 100%;  
 }
 
 .create-plus {
-    font-size: 48px; /* Make the "+" symbol larger */
-    color: #222946;  /* Light gray color for the "+" */
-    font-weight: bold; /* Bold the "+" */
-    transition: color 0.3s ease; /* Smooth color transition on hover */
+    font-size: 48px; 
+    color: #222946;  
+    font-weight: bold; 
+    transition: color 0.3s ease; 
 }
 
 .create-card:hover .create-plus {
-    color: #7e7e7e; /* Slightly darker gray on hover */
+    color: #f3ab03; 
 }
+
+.invite-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.invite-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.dialog-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* ----------- Invite Modal Enhancements ----------- */
+
+.invite-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; /* Increase this value to ensure the popup overlays other elements */
+}
+
+.invite-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 500px;
+    min-height: 250px;
+    max-height:80dvh;
+    overflow-y: auto;
+    position: relative;
+    text-align: center;
+}
+.invite-friends-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto; 
+    width: 95%; 
+}
+
+.invite-modal-title {
+    font-size: 18px; /* Larger font size for emphasis */
+    font-weight: bold;
+    color: white;
+    background-color: #222946;
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: inline-block;
+    text-align: center;
+    margin: 0 auto 15px;
+}
+.invite-modal-title:hover {
+    transform: scale(1.02); 
+    cursor: default;
+}
+
+.invite-friend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 10px; /* Adjust padding for better alignment */
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s;
+    border-radius: 8px; /* Add rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+    margin-bottom: 10px;
+    background-color: #f9f9f9; /* Slight background color to distinguish cards */
+}
+
+.invite-friend-item:hover {
+    background-color: #f5f5f5;
+    transform: scale(1.02); 
+}
+
+.profile-pic.small {
+    width: 45px; 
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for profile picture */
+}
+
+.friend-name {
+    flex-grow: 1;
+    text-align: left;
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+
+.add-button {
+    background-color: #222946 !important;
+    color: white;
+    border: none;
+    width: 100px;
+    border-radius: 4px;
+    padding: 7px 15px;
+    margin: 0; 
+    position: relative; 
+    right: 10px !important; 
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: #f3ab03 !important;
+}
+
+.add-button.pending {
+    background-color: #888;
+    cursor: not-allowed;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #222946;
+    color: white;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.close-button:hover {
+    background-color: #f3ab03;
+}
+
+/* ------------------------------------------- */
+.add-button {
+    background-color: #222946;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.add-button.pending {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+.add-button:hover:not(.pending) {
+    background-color: #f3ab03;
+}
+
+.MuiDialog-root {
+    z-index: 2000 !important; 
+}
+
+.dialog-content {
+    text-align: center;
+    font-size: 1rem;
+    font-family: Arial, sans-serif;
+    margin-top: 10px;
+}
+
+.dialog-actions .dialog-button {
+    background-color: #222946 !important; 
+    color: white !important; 
+    border-radius: 5px;
+    padding: 8px 16px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-transform: none; 
+    font-size: 16px;
+    border: none;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+
+.dialog-actions .dialog-button:hover {
+    background-color: #f3ab03 !important; 
+    color: white !important; 
+    cursor: pointer;
+}
+
+.divider-line {
+    border: 0;
+    height: 1px;
+    background: #ddd;
+    margin: 20px 0;
+}
+
+.section-title {
+    font-size: 18px; 
+    font-weight: bold;
+    color: white;
+    background-color: #222946;
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: inline-block;
+    text-align: center;
+    margin: 0 auto 15px;
+}
+
+.section-title:hover{
+    transform: scale(1.02); 
+    cursor: default;
+}
+
+.participants-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.participant-item .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.participant-item .participant-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #222946;
+}
+

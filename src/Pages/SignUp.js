@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signOut, sendEmailVerification, signInWithEmailAndPassword } from 'firebase/auth';
 import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
-import './css/SignUp.css'; // Importing the new dedicated SignUp CSS file
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import apiClient from '../api/apiClient'; 
+import './css/SignUp.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
 
-// Import images
 import Beach from './css/Images/Beach.jpg';
 import Hollywood from './css/Images/Hollywood.jpg';
 import London from './css/Images/London.jpg';
@@ -28,7 +29,11 @@ function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordMatchError, setPasswordMatchError] = useState(false);
+  const [resendEmail, setResendEmail] = useState(''); 
+  const [showResendDialog, setShowResendDialog] = useState(false); 
+  const [resendMessage, setResendMessage] = useState(''); 
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [showEmailSentDialog, setShowEmailSentDialog] = useState(false);
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
     hasNumber: false,
@@ -36,7 +41,6 @@ function SignUp() {
     hasUpper: false,
   });
 
-  // List of background images
   const backgroundImages = [
     Beach,
     Hollywood,
@@ -51,7 +55,6 @@ function SignUp() {
     Venice,
   ];
 
-  // Randomize background image on page load
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * backgroundImages.length);
     document.querySelector('.background-container').style.backgroundImage = `url(${backgroundImages[randomIndex]})`;
@@ -69,48 +72,66 @@ function SignUp() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-
-    // Password validation logic
+  
     if (!Object.values(passwordRequirements).every(Boolean)) {
       setPasswordError('Password does not meet requirements.');
       return;
     }
-
-    // Password mismatch validation
+  
     if (password !== confirmPassword) {
       setPasswordError('Passwords do not match.');
       return;
-    } else {
-      setPasswordError(''); // Clear errors once matched
-      setPasswordMatchError(false);
     }
-
+  
     const auth = getAuth();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  
+      await sendEmailVerification(userCredential.user);
+  
       await signOut(auth);
-      navigate('/login');
+  
+      setShowEmailSentDialog(true); 
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
-        setPasswordError('Email already has an account. Please sign in.');
+        setPasswordError('Email already has an account. Please log in.');
       } else {
         setPasswordError(error.message);
       }
     }
-  };
+  };  
 
+  const handleResendVerification = async () => {
+    const auth = getAuth();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, resendEmail, 'tempPassword');
+  
+      await sendEmailVerification(userCredential.user);
+  
+      await auth.signOut();
+  
+      setResendMessage(`Verification email has been sent to ${resendEmail}. Please check your inbox.`);
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        setResendMessage('Verification email already sent. Please check your email.');
+      } else {
+        setResendMessage('Failed to send verification email. Please check the email address.');
+        console.error('Error resending verification email:', error);
+      }
+    }
+  };  
+  
   return (
     <div className="background-container">
-      {/* Puzzle pieces */}
       <div className="puzzle-pieces" id="pieces1"></div>
       <div className="puzzle-pieces" id="pieces2"></div>
       <div className="puzzle-pieces" id="pieces3"></div>
-
-      {/* Auth box with signup form */}
+  
       <div className="auth-box">
         <h1>Sign Up and Start Planning Today!</h1>
-
+  
         <form onSubmit={handleSignUp} className="auth-form">
+          {/* Form Inputs */}
           <div className="name-fields">
             <input
               type="text"
@@ -133,6 +154,7 @@ function SignUp() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+          {/* Password Fields */}
           <div className="password-fields">
             <div className="password-input-wrapper">
               <input
@@ -142,30 +164,11 @@ function SignUp() {
                 onChange={(e) => {
                   setPassword(e.target.value);
                   validatePassword(e.target.value);
-                  setShowPasswordRequirements(true); // Show requirements while typing
+                  setShowPasswordRequirements(true);
                 }}
-                onBlur={() => setShowPasswordRequirements(false)} // Hide when focus is lost
+                onBlur={() => setShowPasswordRequirements(false)}
                 className={passwordMatchError ? 'error-input' : ''}
               />
-              {/* Display password requirements message */}
-              {showPasswordRequirements && (
-                <div className="password-requirements-popup">
-                  <ul>
-                    <li className={passwordRequirements.minLength ? 'requirement-met' : 'requirement-unmet'}>
-                      {passwordRequirements.minLength ? '✔' : '✖'} At least 8 characters
-                    </li>
-                    <li className={passwordRequirements.hasNumber ? 'requirement-met' : 'requirement-unmet'}>
-                      {passwordRequirements.hasNumber ? '✔' : '✖'} One number
-                    </li>
-                    <li className={passwordRequirements.hasSymbol ? 'requirement-met' : 'requirement-unmet'}>
-                      {passwordRequirements.hasSymbol ? '✔' : '✖'} One special character
-                    </li>
-                    <li className={passwordRequirements.hasUpper ? 'requirement-met' : 'requirement-unmet'}>
-                      {passwordRequirements.hasUpper ? '✔' : '✖'} One uppercase letter
-                    </li>
-                  </ul>
-                </div>
-              )}
             </div>
             <div className="password-input-wrapper">
               <input
@@ -177,21 +180,32 @@ function SignUp() {
               />
             </div>
           </div>
-
-          {/* Centralized error message */}
+  
+          {/* Errors */}
           {passwordError && <p className="password-error">{passwordError}</p>}
-
+  
+          {/* Submit Button */}
           <button
             type="submit"
             className="auth-button"
-            onMouseEnter={() => setShowPasswordRequirements(false)} // Hide on hover over the button
+            onMouseEnter={() => setShowPasswordRequirements(false)}
           >
             Sign up
           </button>
+  
+          {/* Resend Verification Button */}
+          <button
+            type="button"
+            className="resend-verification-button"
+            onClick={() => setShowResendDialog(true)}
+          >
+            Resend Verification Email
+          </button>
         </form>
-
+  
         <div className="divider"></div>
-
+  
+        {/* Social Signups */}
         <div className="social-signup">
           <button onClick={signInWithGoogle} className="auth-google-btn">
             <FontAwesomeIcon icon={faGoogle} /> Sign up with Google
@@ -200,7 +214,7 @@ function SignUp() {
             <FontAwesomeIcon icon={faApple} /> Sign up with Apple
           </button>
         </div>
-
+  
         <div className="auth-footer">
           Already have an account?{' '}
           <button className="login-button" onClick={() => navigate('/login')}>
@@ -208,8 +222,69 @@ function SignUp() {
           </button>
         </div>
       </div>
+  
+      {/* Resend Verification Popup */}
+      <Dialog
+        open={showResendDialog}
+        onClose={() => setShowResendDialog(false)}
+      >
+        <DialogTitle style={{ textAlign: 'center' }}>Resend Verification Email</DialogTitle>
+        <DialogContent style={{ textAlign: 'center' }}>
+          {!resendMessage ? (
+            <>
+              <DialogContentText>
+                Please enter your email address to resend the verification link.
+              </DialogContentText>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={resendEmail}
+                onChange={(e) => setResendEmail(e.target.value)}
+                style={{ width: '100%', padding: '8px', marginTop: '10px' }}
+              />
+            </>
+          ) : (
+            <DialogContentText>{resendMessage}</DialogContentText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {!resendMessage ? (
+            <>
+              <Button onClick={() => setShowResendDialog(false)} className="dialog-button">Cancel</Button>
+              <Button onClick={handleResendVerification} className="dialog-button">Submit</Button>
+            </>
+          ) : (
+            <Button onClick={() => setShowResendDialog(false)} className="dialog-button">Close</Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Email Sent Dialog */}
+      <Dialog
+        open={showEmailSentDialog}
+        onClose={() => setShowEmailSentDialog(false)}
+      >
+        <DialogTitle style={{ textAlign: 'center' }}>Email Sent</DialogTitle>
+        <DialogContent style={{ textAlign: 'center' }}>
+          <DialogContentText>
+            A verification email has been sent to <strong>{email}</strong>. Please check your inbox and follow the instructions to verify your email.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setShowEmailSentDialog(false);
+              navigate('/login');
+            }}
+            className="dialog-button"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
-  );
+  );  
+
 }
 
 export default SignUp;

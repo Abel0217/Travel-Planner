@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import './css/ItineraryForm.css';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import AutoComplete from './AutoComplete'; // Import the AutoComplete component
+import { useNavigate } from 'react-router-dom';
+import AutoComplete from './AutoComplete';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -18,6 +19,7 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
     const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
     const [error, setError] = useState('');
     const [isDestinationValid, setIsDestinationValid] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (itineraryToEdit) {
@@ -27,7 +29,7 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                 start_date: itineraryToEdit.start_date,
                 end_date: itineraryToEdit.end_date
             });
-            setIsDestinationValid(true); // Set valid initially if editing
+            setIsDestinationValid(true); 
         }
     }, [itineraryToEdit]);
 
@@ -119,19 +121,13 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
         if (onClose) {
             onClose();
         }
+        navigate('/itineraries-View'); 
     };
-
+    
     return (
         <div className="popup-form">
-            {/* Adding inline style for .pac-container */}
-            <style>{`
-                .pac-container {
-                    z-index: 10000 !important;
-                }
-            `}</style>
             <form onSubmit={handleSubmit} noValidate>
                 <h2>{itineraryToEdit ? 'Edit Itinerary' : 'Create New Itinerary'}</h2>
-                {itineraryToEdit && <button type="button" className="close-icon" onClick={onClose}>×</button>}
                 <label htmlFor="title">Title</label>
                 <input
                     type="text"

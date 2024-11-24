@@ -11,7 +11,7 @@ const center = {
   lng: -122.4194
 };
 
-const apiKey = 'AIzaSyDka0NQRQUGYEq-AFevr3UaEVe4R5Uz0qE'; 
+const apiKey = 'AIzaSyDka0NQRQUGYEq-AFevr3UaEVe4R5UzOqE'; 
 
 const Map = ({ markers }) => {
   return (

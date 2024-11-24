@@ -5,6 +5,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './css/ItineraryOverview.css';
+import Loading from '../../Loading'; 
 
 const localizer = momentLocalizer(moment);
 
@@ -33,7 +34,7 @@ const ItineraryOverview = () => {
         return []; 
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <Loading />;
     if (!itinerary) return <div>No itinerary found.</div>;
 
     return (

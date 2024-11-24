@@ -1,135 +1,285 @@
 /* NavBar.css */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    background-color: #222946; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-  }
-  
-  .navbar-logo {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-  }
-  
-  .logo-img {
-    height: 40px; 
-  }
-  
-  .navbar-links {
-    display: flex;
-    align-items: center;
-  }
-  
-  /* Log-In button */
-  .navbar-item {
-    display: inline-block;
-    background-color: #222946; 
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem;
-    text-decoration: none;
-    color: white;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  /* Log-In button HOVER */
-  .navbar-item:hover,
-  .navbar-item:focus {
-    background-color: transparent; 
-    border-color: #f3ab03;
-    color: white; 
-  }
-  
-  /* sign-up button */
-  .navbar-item-signup {
-    background-color: #f3ab03;
-    color: #ffffff;
-    border-radius: 10px;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Hover sign-up button */
-  .navbar-item-signup:hover,
-  .navbar-item-signup:focus {
-    background-color: #f3ab03; /* Darker shade: '#c48800' */
-    color: #222946;
-  }
-  
-  .profile-img {
-    border-radius: 50%; 
-    width: 40px; 
-    height: 40px; 
-    object-fit: cover; 
-  }
-  
-  .dropdown-menu {
-    position: absolute;
-    top: 100%; /* Align with the navbar item */
-    right: -1px; /* Align it directly under the Itineraries option */
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px 0;
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-    min-width: 120px; /* Set a minimum width for better look */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a soft shadow for better visibility */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #222946;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Center the logo specifically */
+.navbar-logo-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Profile image stays on the right */
+.navbar-item.profile-container {
+  margin-left: auto;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 40px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+}
+
+/* Log-In button */
+.navbar-item {
+  display: inline-block;
+  background-color: #222946;
+  padding: 15px 20px;
+  margin: 0 0.5rem;
+  text-decoration: none;
+  color: white;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Log-In button HOVER */
+.navbar-item:hover,
+.navbar-item:focus {
+  background-color: transparent;
+  border-color: #f3ab03;
+  color: white;
+}
+
+/* Sign-up button */
+.navbar-item-signup {
+  background-color: #f3ab03;
+  color: white;
+  border-radius: 10px;
+  padding: 15px 20px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap; 
+  display: inline-block;
+  text-align: center;
+}
+
+/* Hover sign-up button */
+.navbar-item-signup:hover,
+.navbar-item-signup:focus {
+  background-color: #f3ab03;
+  color: #222946;
+}
+
+/* Profile Image Styles */
+.profile-img {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: -1px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  min-width: 120px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Dropdown items */
 .dropdown-menu a,
 .dropdown-menu button {
-    padding: 10px 15px;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    color: #333;  
-    font-size: 16px; /* Font size adjustment for better readability */
-    text-decoration: none; /* No underline for links */
-    transition: background-color 0.2s ease;
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
 }
 
 /* Hover effect for dropdown items */
 .dropdown-menu button:hover,
 .dropdown-menu a:hover {
-    background-color: #f3f3f3; /* Slight hover background change */
-    color: #222946; /* Match your primary color */
+  background-color: #f3f3f3;
+  color: #222946;
 }
 
-/* Align the dropdown with the navbar item */
 .navbar-item {
-    position: relative;
+  position: relative;
 }
 
 /* Ensure the dropdown is below the navbar item and does not cover it */
 .itinerary-dropdown {
-    top: 60px; /* Push it further down to avoid overlap with the Itineraries menu */
-    left: 0;
-    right: auto;
+  top: 60px;
+  left: 0;
+  right: auto;
 }
 
-/* Center the Itinerary dropdown */
 .itinerary-dropdown::before {
-    content: "";
-    position: absolute;
-    top: -8px;
-    left: 20px; /* Adjust the arrow position */
-    border-width: 0 8px 8px 8px;
-    border-style: solid;
-    border-color: transparent transparent white transparent; /* Add arrow to point to menu */
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  border-width: 0 8px 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent white transparent;
 }
 
-/* Spacing adjustments for better alignment with the rest of the navbar */
 .navbar {
-    position: relative;
-    z-index: 9999; /* Ensure navbar stays above other elements */
+  position: relative;
+  z-index: 9999;
 }
 
+
+/* Sidebar styles */
+.sidebar {
+  position: fixed;
+  left: -250px;
+  top: 0;
+  width: 250px;
+  height: 100%;
+  background-color: rgba(34, 41, 70, 0.9); 
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+
+.show-sidebar {
+  left: 0;
+}
+
+.menu-icon {
+  font-size: 22px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 20px;
+  position: absolute;
+  top: 20px;
+  left: 10px;
+  z-index: 1100; 
+}
+
+/* Sidebar items */
+.sidebar a,
+.sidebar-item {
+  padding: 10px 15px;
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar a:hover,
+.sidebar-item:hover {
+  background-color: #f3ab03;
+}
+
+/* Submenu styling */
+.sidebar-submenu {
+  padding-left: 20px;
+  background-color: rgba(34, 41, 70, 0.9); 
+}
+
+/* Submenu link */
+.sidebar-submenu a {
+  font-size: 16px;
+  padding: 8px 15px;
+  background-color: rgba(34, 41, 70, 0.9);
+}
+
+.sidebar-submenu a:hover {
+  background-color: #444;
+}
+
+/* Back button styling */
+.sidebar-back {
+  padding: 10px 15px;
+  font-size: 18px;
+  cursor: pointer;
+  color: #fff;
+  position: absolute;
+  right: 10px;
+  top: 15px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar-back:hover {
+  color: #f3ab03;
+  transform: scale(1.05);
+}
+
+/* Add these styles for when the user is not logged in */
+.navbar-login {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #222946;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-login .navbar-logo-container {
+    position: relative;
+    left: 0; 
+    margin-right: auto; 
+}
+
+.navbar-login .navbar-item,
+.navbar-login .navbar-item-signup {
+    margin-left: auto;
+}
+
+.navbar-login .navbar-item-signup {
+    margin-right: 20px; 
+}
+
+.navbar-login .navbar-item {
+    margin-right: 15px; 
+}
+
+.navbar-login .navbar-item-signup,
+.navbar-login .navbar-item {
+    text-align: center;
+}
+
+/* Prevent horizontal scrolling */
+body.navbar-login {
+    overflow-x: hidden;
+}
+
+/* Not logged-in navbar */
+.navbar-login-buttons {
+  margin-left: auto;
+  display: flex;
+}
+
+.navbar-login-buttons .navbar-item {
+  margin-right: 10px;
+}
+
+.navbar-logged-out-logo {
+  position: relative;
+  left: 20px; 
+}

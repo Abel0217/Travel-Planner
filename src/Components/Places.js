@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { searchPlaces } from '../api/placesApi';
 import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
-import Map from '../api/mapsApi'; // Ensure this is the correct path
+import Map from '../api/mapsApi'; 
 
 const Places = () => {
   const [query, setQuery] = useState('');
-  const [location, setLocation] = useState('37.7749,-122.4194'); // Default to San Francisco
-  const [radius, setRadius] = useState(1000); // Default to 1 km
+  const [location, setLocation] = useState('37.7749,-122.4194'); 
+  const [radius, setRadius] = useState(1000); 
   const [places, setPlaces] = useState([]);
   const [searchBox, setSearchBox] = useState(null);
   const [markers, setMarkers] = useState([]);
 
-  const apiKey = 'AIzaSyDka0NQRQUGYEq-AFevr3UaEVe4R5Uz0qE'; // Your API key
+  const apiKey = 'AIzaSyDka0NQRQUGYEq-AFevr3UaEVe4R5Uz0qE'; 
 
   const handleSearch = async () => {
     try {

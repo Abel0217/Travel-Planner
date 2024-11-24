@@ -3,7 +3,7 @@ import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig'; 
-import './css/Notes.css'; 
+import './css/Notes.css';
 
 // Quill with custom sizes
 const Size = Quill.import('attributors/style/size');

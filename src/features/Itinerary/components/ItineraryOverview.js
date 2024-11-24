@@ -11,6 +11,7 @@ import TransportDetails from './TransportDetails';
 import ActivityDetails from './ActivityDetails';
 import DailyOverview from './DailyOverview'; 
 import './css/ItineraryOverview.css';
+import Loading from '../../Loading'; 
 
 const localizer = momentLocalizer(moment);
 
@@ -40,7 +41,7 @@ const ItineraryOverview = () => {
         return [];
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <Loading />;
     if (!itinerary) return <div>No itinerary found.</div>;
 
     return (

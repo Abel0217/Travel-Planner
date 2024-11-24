@@ -1,0 +1,195 @@
+/* HomePage.css */
+.homepage {
+    min-height: 100vh; 
+    width: 100vw;  
+    position: relative;
+    overflow-x: hidden; 
+}
+
+html, body {
+    overflow-x: hidden; 
+    width: 100%; 
+    margin: 0; 
+    padding: 0; 
+}
+
+
+/* Full-screen background below the welcome box */
+.homepage-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Full-screen height */
+    background-size: cover;
+    background-position: center;
+    overflow-x: hidden; 
+    z-index: 1; 
+}
+
+/* Welcome box styling */
+.welcome-box {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%); 
+    background-color: rgba(255, 255, 255, 0.85); 
+    padding: 10px 20px;
+    border-radius: 12px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    font-size: 14px; 
+    color: black;
+    text-align: center;
+    font-weight: bold;
+    z-index: 10; 
+    transition: transform 0.3s ease; 
+}
+
+/* Bounce effect on hover */
+.welcome-box:hover {
+    transform: translateX(-50%) translateY(-10px); 
+}
+
+/* Fixed Upcoming Trip Card with hover bounce */
+.upcoming-trip {
+    position: fixed;
+    bottom: 20px;
+    right: 15px;
+    background-color: rgba(255, 255, 255, 0.85); 
+    padding: 10px 20px;
+    border-radius: 8px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    font-size: 14px;
+    color: #333;
+    z-index: 20; 
+    transition: transform 0.3s ease; 
+}
+
+/* Bounce effect for the upcoming trip card */
+.upcoming-trip:hover {
+    transform: translateY(-5px); 
+}
+
+/* Floating View My Trips button */
+.trips-box {
+    position: fixed; 
+    bottom: 100px;
+    right: 15px;
+    background-color: rgba(255, 255, 255, 0.85); 
+    padding: 10px 20px;
+    border-radius: 8px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    font-size: 12px;
+    color: #333;
+    font-weight: bold;
+    z-index: 20; 
+    cursor: pointer;
+    transition: transform 0.3s ease; 
+}
+
+/* Bounce effect for the trips box */
+.trips-box:hover {
+    transform: translateY(-5px); 
+}
+
+/* Weather Widget */
+.weather-widget {
+    position: fixed;
+    bottom: 150px;
+    left: 15px;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    z-index: 20;
+    transition: transform 0.3s ease;
+}
+
+/* Hover effect for the weather widget */
+.weather-widget:hover {
+    transform: translateY(-5px); 
+}
+
+/* Destination Inspiration Section */
+.destination-inspiration {
+    position: relative;
+    padding: 20px;
+    text-align: center;
+}
+
+.destination-cards {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.destination-card {
+    width: 150px;
+    height: 100px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-end;
+    padding: 10px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+}
+
+/* Hover effect for destination cards */
+.destination-card:hover {
+    transform: translateY(-5px); 
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    position: absolute;
+    bottom: 20px; /* Adjust the vertical positioning */
+    left: 50%;
+    transform: translateX(-50%); /* Center horizontally */
+    display: flex;
+    gap: 15px; /* Space between buttons */
+    z-index: 20; /* Above background */
+}
+
+/* Individual Action Buttons */
+.action-button {
+    background-color: rgba(255, 255, 255, 0.85); /* White background */
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap; /* Prevents text wrapping */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    display: inline-block; /* Ensures inline alignment */
+}
+
+
+/* Bounce Animation on Hover */
+.action-button:hover {
+    transform: translateY(-5px);
+    background-color: #222946;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column; /* Stack buttons vertically on smaller screens */
+        gap: 10px;
+    }
+
+    .action-button {
+        width: 80%; /* Make buttons wider on smaller screens */
+        margin: 0 auto; /* Center align buttons */
+    }
+}

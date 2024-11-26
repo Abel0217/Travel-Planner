@@ -71,23 +71,4 @@ app.use((err, req, res, next) => {
 });
 
 
-// Route to fetch emails based on a query
-app.get('/test-fetch-emails', async (req, res) => {
-    try {
-        const emails = await getEmails('Conformation'); // Replace with your desired search keyword
-        res.json({ success: true, emails });
-    } catch (error) {
-        console.error('Error fetching emails:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-
-// Start server
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
-
 module.exports = app;

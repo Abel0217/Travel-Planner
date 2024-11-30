@@ -1,7 +1,7 @@
 const { google } = require('googleapis');
 const CLIENT_ID = '270254942833-92k0ds41tla62fst4me7b73nsps2ioqs.apps.googleusercontent.com';
 const CLIENT_SECRET = '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';
-const REDIRECT_URI = 'http://localhost:3001';
+const REDIRECT_URI = `${process.env.SERVER_URL}`;
 const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN; 
 
 const oAuth2Client = new google.auth.OAuth2(

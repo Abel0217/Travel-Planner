@@ -60,7 +60,7 @@ const HomePage = () => {
                 }
 
                 console.log('Firebase Token:', token);
-                const response = await axios.get('http://localhost:3001/users/name', {
+                const response = await axios.get(`${process.env.REACT_APP_SERVER_URL}/users/name`, {
                     headers: { Authorization: `Bearer ${token}` }, 
                 });
 

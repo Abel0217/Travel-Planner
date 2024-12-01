@@ -59,10 +59,9 @@ app.use('/sharing', sharingRoutes);
 // Upload Related Routes
 app.use('/upload', uploadRoutes);
 
-// Expense related routes for specific itineraries
+// Expense Related Routes 
 // Have NOT implemented it yet..
 app.use('/itineraries/:itineraryId/expenses', expenseRoutes);
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -70,24 +69,10 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something went wrong!');
 });
 
-
-// Route to fetch emails based on a query
-app.get('/test-fetch-emails', async (req, res) => {
-    try {
-        const emails = await getEmails('Conformation'); // Replace with your desired search keyword
-        res.json({ success: true, emails });
-    } catch (error) {
-        console.error('Error fetching emails:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-
 // Start server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
 
 module.exports = app;

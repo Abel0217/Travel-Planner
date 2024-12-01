@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Travel Planner Web App
 
 **Copyright © 2024 Abel Mesfin. All Rights Reserved.**
@@ -97,3 +98,7 @@ Have questions or suggestions? Reach out to me:
 ---
 
 ## Enjoy Your Travel Planning!
+=======
+# Travel-Planner
+A full-stack web application for planning and sharing travel itineraries. Built with React, Node.js, Express, PostgreSQL, and Firebase.
+>>>>>>> c493ff51e41672a7f8b6bd0ff97d0f631f7d6358

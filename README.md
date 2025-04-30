@@ -56,7 +56,7 @@ With collaborative tools like a live chat feature and shared itineraries, this a
 ### Backend
 - **Node.js**: Server-side operations and API management.
 - **Express.js**: Simplified API routing and middleware functionality.
-- **PostgreSQL**: Robust database for managing user data and itineraries.
+- **PostgreSQL**: Database for managing user data and itineraries.
 - **Firebase**: Secure authentication and real-time updates.
 
 ---

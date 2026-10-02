@@ -2,7 +2,7 @@ import { useContext, useLayoutEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import NavBar from './Components/NavBar';
 import Footer from './Components/Footer';
-import ItineraryView from './features/ItineraryView'; 
+import ItineraryView from './features/Itinerary/ItineraryView'; 
 import ItineraryForm from './features/Itinerary/components/ItineraryForm';
 import ItineraryDetails from './features/Itinerary/components/ItineraryDetails';
 import ItineraryOverview from './features/Itinerary/components/ItineraryOverview/ItineraryOverview';

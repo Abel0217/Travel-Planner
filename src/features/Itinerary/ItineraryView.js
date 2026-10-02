@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import apiClient from '../api/apiClient';
+import apiClient from '../../api/apiClient';
 import moment from 'moment';
-import { AuthContext } from '../Contexts/AuthContext'; 
-import './css/ItineraryView.css';
+import { AuthContext } from '../../Contexts/AuthContext'; 
+import '../css/ItineraryView.css';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import ItineraryForm from './Itinerary/components/ItineraryForm';
+import ItineraryForm from './components/ItineraryForm';
 
 const UNSPLASH_ACCESS_KEY = 'OGBaaEYGlTkJhJgnTL9zm0AsrYP_r1HQ134Azhv9870';
 

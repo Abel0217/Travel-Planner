@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import apiClient from '../../api/apiClient';
-import PlaceSuggest from '../../Components/PlaceSuggest';
+import PlaceSuggest from './PlaceSuggest';
 import { openLeoForItinerary } from '../../utils/itineraryContext';
 import { cityBackdrop, fetchCityPhoto } from './cityBackdrop';
 import AddToTripDialog from './AddToTripDialog';

@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { sceneryImages, preloadScenery, randomLocalSceneryIndex } from '../utils/scenery';
-import { pickRandomMonumentCards } from '../utils/monuments';
+import { pickLandscapeMonumentCards } from '../utils/monuments';
 import '../Pages/css/Auth.css';
 
 // Three rounded photo cards of famous places, picked at random on every page load.
@@ -8,8 +8,16 @@ function AuthShell({ wide = false, children }) {
     const pageRef = useRef(null);
     // Chosen once per page load. Nothing rotates on a timer.
     const [background] = useState(() => sceneryImages[randomLocalSceneryIndex()]);
-    const [cards] = useState(() => pickRandomMonumentCards(3));
+    const [cards, setCards] = useState([]);
     const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+        let alive = true;
+        pickLandscapeMonumentCards(3).then((next) => {
+            if (alive) setCards(next);
+        });
+        return () => { alive = false; };
+    }, []);
 
     // Keep the page exactly as tall as the screen under the navbar.
     useLayoutEffect(() => {
@@ -27,6 +35,7 @@ function AuthShell({ wide = false, children }) {
 
     // Wait for the photos, then fade them in over the navy base so nothing flashes blank.
     useEffect(() => {
+        if (!cards.length) return undefined;
         let alive = true;
         const sources = [background, ...cards.map((card) => card.src)];
         const giveUp = window.setTimeout(() => alive && setReady(true), 2500);

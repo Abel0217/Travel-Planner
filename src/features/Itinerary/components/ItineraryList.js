@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../../api/apiClient'; 
-import ItineraryControls from '../../../Components/ItineraryControls'; 
+import ItineraryControls from './ItineraryControls'; 
 import { Link } from 'react-router-dom';
 
 const ItineraryList = () => {

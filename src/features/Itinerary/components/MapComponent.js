@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
-import apiClient from '../api/apiClient';
-import TripMap from '../features/Itinerary/components/overview/TripMap';
-import { buildDays } from '../features/Itinerary/components/overview/overviewModel';
-import { geocodeQuery } from '../utils/tripGeo';
-import useMapProvider from '../utils/useMapProvider';
-import '../features/Itinerary/components/css/TripOverview.css';
+import apiClient from '../../../api/apiClient';
+import TripMap from './overview/TripMap';
+import { buildDays } from './overview/overviewModel';
+import { geocodeQuery } from '../../../utils/tripGeo';
+import useMapProvider from '../../../utils/useMapProvider';
+import './css/TripOverview.css';
 
 const LIBRARIES = ['places'];
 const EMPTY = { activities: [], hotels: [], flights: [], restaurants: [], transport: [] };

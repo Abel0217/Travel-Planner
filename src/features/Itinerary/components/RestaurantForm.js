@@ -1,345 +1,154 @@
-import React, { useState, useEffect } from 'react';
-import apiClient from '../../../api/apiClient';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-import './css/Forms.css';
-import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
-import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
-import { db } from '../../../firebaseConfig';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, IconButton } from '@mui/material';
-import UploadFile from '../../Upload/UploadFile';
-import Loading from '../Loading';
-import CloseIcon from '@mui/icons-material/Close';
+import React, { useState } from 'react';
+import { localDateFromField, timeValue } from './bookingFields';
+import TimeField from './formKit/TimeField';
+import {
+    DateInput, Field, FormSheet, Grid, More, PlaceInput, Stepper, TextInput,
+    prettyDate, toDateField, useBookingSubmit, useTripDates, outsideTrip,
+} from './formKit/FormKit';
 
-function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurantAdded, restaurantToEdit }) {
-    const initialDate = startDate ? new Date(startDate) : new Date();
-    const [restaurantName, setRestaurantName] = useState('');
-    const [reservationDate, setReservationDate] = useState(null);
-    const [reservationTime, setReservationTime] = useState('');
-    const [guestNumber, setGuestNumber] = useState('');
-    const [address, setAddress] = useState('');
-    const [bookingConfirmation, setBookingConfirmation] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
-    const [isOptionsDialogOpen, setIsOptionsDialogOpen] = useState(false);
-    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-    const [isEmailPopupOpen, setIsEmailPopupOpen] = useState(false);
-    const [error, setError] = useState('');
-    const [showWarningDialog, setShowWarningDialog] = useState(false);
-    const [pendingRestaurant, setPendingRestaurant] = useState(null);
-    const [isLoading, setIsLoading] = useState(false); 
-    const [searchBox, setSearchBox] = useState(null); 
-    const [itineraryStart, setItineraryStart] = useState(null);
-    const [itineraryEnd, setItineraryEnd] = useState(null);
-    
-    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const blank = { name: '', date: '', time: '', guests: 2, address: '', confirmation: '' };
 
-    useEffect(() => {
-        setIsLoading(true);
-        if (restaurantToEdit) {
-            setTimeout(() => {
-                setRestaurantName(restaurantToEdit.restaurant_name);
-                setReservationDate(new Date(restaurantToEdit.reservation_date));
-                setReservationTime(restaurantToEdit.reservation_time);
-                setGuestNumber(restaurantToEdit.guest_number);
-                setAddress(restaurantToEdit.address);
-                setBookingConfirmation(restaurantToEdit.booking_confirmation);
-                setIsLoading(false);
-            }, 1000);
-        } else {
-            setIsLoading(false);
-        }
-    }, [restaurantToEdit]);   
-    
-    useEffect(() => {
-        const fetchItineraryDates = async () => {
-            try {
-                const response = await apiClient.get(`/itineraries/${itineraryId}`);
-                const itinerary = response.data;
-    
-                if (itinerary) {
-                    console.log("Fetched Itinerary Data:", itinerary);
-                    setItineraryStart(new Date(itinerary.start_date));
-                    setItineraryEnd(new Date(itinerary.end_date));
-                } else {
-                    console.error("No itinerary found for ID:", itineraryId);
-                }
-            } catch (error) {
-                console.error("Error fetching itinerary dates:", error);
-            }
+const initialFrom = (restaurant, prefill) => {
+    if (restaurant) {
+        return {
+            name: restaurant.restaurant_name || '',
+            date: toDateField(restaurant.reservation_date),
+            time: timeValue(restaurant.reservation_time),
+            guests: Number(restaurant.guest_number) || 2,
+            address: restaurant.address || '',
+            confirmation: restaurant.booking_confirmation || '',
         };
-    
-        if (itineraryId) {
-            fetchItineraryDates();
+    }
+    if (!prefill) return blank;
+    return {
+        ...blank,
+        name: prefill.title || '',
+        date: prefill.date ? toDateField(localDateFromField(prefill.date)) : '',
+        time: prefill.time ? timeValue(prefill.time) : '',
+        address: prefill.location || '',
+        guests: Number(prefill.guests) || 2,
+    };
+};
+
+function RestaurantForm({ itineraryId, startDate, endDate, onClose, onRestaurantAdded, restaurantToEdit, prefill }) {
+    const [values, setValues] = useState(() => initialFrom(restaurantToEdit, prefill));
+    const [problem, setProblem] = useState('');
+    const [opened, setOpened] = useState(false);
+    const trip = useTripDates(itineraryId, startDate, endDate);
+    const editing = Boolean(restaurantToEdit);
+    const save = useBookingSubmit({
+        resource: 'restaurants',
+        mirror: 'restaurants',
+        itineraryId,
+        editId: restaurantToEdit?.reservation_id,
+        onSaved: onRestaurantAdded,
+    });
+
+    const set = (key) => (value) => setValues((current) => ({ ...current, [key]: value }));
+    const website = !editing && prefill?.website ? prefill.website : '';
+
+    const handleExtracted = (data) => {
+        setValues((current) => ({
+            ...current,
+            name: data.restaurantName || current.name,
+            address: data.address || current.address,
+            confirmation: data.bookingConfirmation || current.confirmation,
+            guests: Number(data.guestNumber) || current.guests,
+            date: data.reservationDate ? (toDateField(localDateFromField(data.reservationDate)) || current.date) : current.date,
+            time: data.reservationTime ? timeValue(data.reservationTime) : current.time,
+        }));
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (!values.name.trim() || !values.date || !values.time) {
+            setProblem('Please add the restaurant, the date and the time.');
+            return;
         }
-    }, [itineraryId]);    
-
-    const handleExtractedData = (data) => {
-        setRestaurantName(data.restaurantName || restaurantName);
-
-        if (data.reservationDate) {
-            const parsedReservationDate = new Date(data.reservationDate);
-            if (!isNaN(parsedReservationDate)) setReservationDate(parsedReservationDate);
-        }
-
-        if (data.reservationTime) {
-            setReservationTime(data.reservationTime);
-        }
-
-        setGuestNumber(data.guestNumber || guestNumber);
-        setAddress(data.address || address);
-        setBookingConfirmation(data.bookingConfirmation || bookingConfirmation);
+        setProblem('');
+        save.submit({
+            restaurant_name: values.name.trim(),
+            reservation_date: values.date,
+            reservation_time: values.time,
+            guest_number: String(values.guests),
+            address: values.address.trim(),
+            booking_confirmation: values.confirmation.trim(),
+            itinerary_id: itineraryId,
+        }, outsideTrip([values.date], trip.start, trip.end));
     };
 
-    const onLoad = (ref) => {
-        setSearchBox(ref); 
-    };
-    
-    const onPlacesChanged = () => {
-        const places = searchBox.getPlaces();
-        if (places && places.length > 0) {
-            const place = places[0];
-            setAddress(place.formatted_address); 
-        }
-    };
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-    
-        const updatedRestaurant = {
-            restaurant_name: restaurantName,
-            reservation_date: reservationDate.toISOString().split('T')[0],
-            reservation_time: reservationTime,
-            guest_number: guestNumber,
-            address: address,
-            booking_confirmation: bookingConfirmation,
-            itinerary_id: itineraryId
-        };
-    
-        const itineraryStart = new Date(startDate);
-        const itineraryEnd = new Date(endDate);
-    
-        if (
-            isNaN(itineraryStart.getTime()) || isNaN(itineraryEnd.getTime()) ||
-            reservationDate < itineraryStart || reservationDate > itineraryEnd
-        ) {
-            console.log("Warning: Reservation date is outside the itinerary range.");
-            setPendingRestaurant(updatedRestaurant);   
-            setShowWarningDialog(true);                
-        } else {
-            await saveRestaurant(updatedRestaurant);
-        }
-    };    
-    
-    const saveRestaurant = async (restaurant) => {
-        setIsLoading(true);
-        try {
-            let response;
-            if (restaurantToEdit) {
-                response = await apiClient.put(`/itineraries/${itineraryId}/restaurants/${restaurantToEdit.reservation_id}`, restaurant);
-                const restaurantRef = doc(db, 'restaurants', restaurantToEdit.id);
-                await updateDoc(restaurantRef, restaurant);
-            } else {
-                response = await apiClient.post(`/itineraries/${itineraryId}/restaurants`, restaurant);
-                const newDocRef = doc(collection(db, 'restaurants'));
-                await setDoc(newDocRef, restaurant);
-            }
-            onRestaurantAdded(response.data);
-            setIsSuccessDialogOpen(true); 
-        } catch (error) {
-            console.error('Failed to save restaurant:', error);
-            setError('Failed to save restaurant. Please try again.');
-        }
-        setIsLoading(false);
-    };    
-    
-    const handleClear = () => {
-        setRestaurantName('');
-        setReservationDate(null);
-        setReservationTime('');
-        setGuestNumber('');
-        setAddress('');
-        setBookingConfirmation('');
-    };
-
-    const handleSuccessClose = () => {
-        setIsSuccessDialogOpen(false);
-        onClose();
-    };
-
-    const handleErrorClose = () => {
-        setError('');
-    };
-
-    const handleOptionsDialogOpen = () => {
-        setIsOptionsDialogOpen(true);
-    };
-
-    const handleOptionsDialogClose = () => {
-        setIsOptionsDialogOpen(false);
-    };
-
-    const handleEmailPopupOpen = () => {
-        setIsOptionsDialogOpen(false);
-        setIsEmailPopupOpen(true);
-    };
-
-    const handleUploadDialogOpen = () => {
-        setIsOptionsDialogOpen(false);
-        setIsUploadDialogOpen(true);
-    };
-
-    const handleUploadDialogClose = () => {
-        setIsUploadDialogOpen(false);
-    };
-
-    const handleEmailPopupClose = () => {
-        setIsEmailPopupOpen(false);
+    const reset = () => {
+        setValues(blank);
+        setOpened(false);
+        save.again();
     };
 
     return (
-        <LoadScript googleMapsApiKey={apiKey} libraries={['places']}>
-            {loading && <Loading />}
-            <div className="form-container full-size">
-                <button className="back-button" onClick={onClose}>Back</button>
-                <form onSubmit={handleSubmit}>
-                    <h2 className="form-title">{restaurantToEdit ? 'Edit Restaurant' : 'Add Restaurant'}</h2>
-
-                    <div className="upload-email-section">
-                        <button type="button" onClick={handleOptionsDialogOpen} className="options-button">Select Upload Options - Coming Soon!</button>
+        <FormSheet
+            category="restaurant"
+            title={editing ? 'Edit Restaurant Reservation' : 'Add A Restaurant'}
+            subtitle="Tables, tastings and the places you want to eat."
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            submitLabel={editing ? 'Save Changes' : 'Add Restaurant'}
+            busy={save.busy}
+            error={problem || save.error}
+            warning={save.warning ? {
+                title: 'This Is Outside Your Trip Dates',
+                text: `Your trip runs ${prettyDate(trip.start)} to ${prettyDate(trip.end)}. Add it anyway?`,
+                onConfirm: save.confirm,
+                onCancel: save.dismissWarning,
+            } : null}
+            done={save.done ? {
+                title: editing ? 'Reservation Updated' : 'Restaurant Added',
+                text: `${values.name} is on your trip for ${prettyDate(values.date)}.`,
+            } : null}
+            onAnother={reset}
+            canAddAnother={!editing}
+            upload={editing ? null : { type: 'restaurant', onData: handleExtracted }}
+        >
+            {website ? (
+                <div className="bk-banner is-info">
+                    <strong>Book This Table On Their Website</strong>
+                    <span>
+                        {opened
+                            ? 'Once you have booked, paste the confirmation number below and save, and it goes straight on your trip.'
+                            : 'Reserve for the date and time below, then come back here with your confirmation number.'}
+                    </span>
+                    <div>
+                        <a className="bk-btn small primary" href={website} target="_blank" rel="noopener noreferrer" onClick={() => setOpened(true)}>
+                            Open Booking Page
+                        </a>
                     </div>
+                </div>
+            ) : null}
 
-                    <div className="or-divider">or</div>
+            <Field label="Restaurant" required htmlFor="rest-name">
+                <PlaceInput id="rest-name" kind="restaurant" fill="name" value={values.name} onChange={set('name')} placeholder="Search for the restaurant by name" required onPick={(place) => place && setValues((current) => ({ ...current, name: place.name, address: place.address || current.address }))} />
+            </Field>
 
-                    <label>Restaurant Name:
-                        <input type="text" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} required />
-                    </label>
-                    <div className="date-fields">
-                        <label>Reservation Date:
-                        <DatePicker
-                            selected={reservationDate}
-                            onChange={date => setReservationDate(date)}
-                            minDate={itineraryStart}
-                            maxDate={itineraryEnd}
-                            placeholderText="Reservation Date"
-                            dateFormat="yyyy-MM-dd"
-                        />
-                        </label>
-                        <label>Reservation Time:
-                            <input type="time" value={reservationTime} onChange={e => setReservationTime(e.target.value)} required />
-                        </label>
-                        <label>Number of Guests:
-                            <input 
-                                type="text" 
-                                value={guestNumber} 
-                                onChange={e => setGuestNumber(e.target.value)} 
-                                required 
-                                placeholder="Enter number of guests"
-                            />
-                        </label>
-                    </div>
-                    <label>Address:
-                        <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
-                            <input
-                                type="text"
-                                value={address}
-                                onChange={e => setAddress(e.target.value)}
-                                placeholder="Enter address"
-                                required
-                            />
-                        </StandaloneSearchBox>
-                    </label>
-                    <label>Booking Confirmation:
-                        <input type="text" value={bookingConfirmation} onChange={e => setBookingConfirmation(e.target.value)} required />
-                    </label>
-                    <div className="form-buttons">
-                        <button type="submit">{restaurantToEdit ? 'Save Changes' : 'Add Restaurant'}</button>
-                        <button type="button" onClick={handleClear}>Clear</button>
-                    </div>
-                </form>
+            <Grid cols={3}>
+                <Field label="Date" required htmlFor="rest-date">
+                    <DateInput id="rest-date" value={values.date} onChange={set('date')} />
+                </Field>
+                <Field label="Time" required>
+                    <TimeField value={values.time} onChange={set('time')} clearable={false} />
+                </Field>
+                <Field label="Guests">
+                    <Stepper value={values.guests} onChange={set('guests')} min={1} max={30} label="Number Of Guests" />
+                </Field>
+            </Grid>
 
-                {/* Warning Dialog */}
-                <Dialog open={showWarningDialog} onClose={() => setShowWarningDialog(false)}>
-                    <DialogTitle>Warning</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            The reservation date is outside the itinerary dates. Do you want to proceed?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setShowWarningDialog(false)} className="dialog-button">Back</Button>
-                        <Button onClick={() => { 
-                            saveRestaurant(pendingRestaurant); 
-                            setShowWarningDialog(false); 
-                        }} className="dialog-button">
-                            Proceed
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+            <Field label="Address" hint="Add an address so it shows up on the map." htmlFor="rest-addr">
+                <PlaceInput id="rest-addr" value={values.address} onChange={set('address')} placeholder="Search for the restaurant or its address" />
+            </Field>
 
-
-                {/* Success Dialog */}
-                <Dialog open={isSuccessDialogOpen} onClose={handleSuccessClose}>
-                    <DialogTitle>Success</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Restaurant successfully {restaurantToEdit ? 'updated' : 'added'}!
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleSuccessClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Error Dialog */}
-                <Dialog open={Boolean(error)} onClose={handleErrorClose}>
-                    <DialogTitle>Error</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>{error}</DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleErrorClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Options Dialog */}
-                <Dialog open={isOptionsDialogOpen} onClose={handleOptionsDialogClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle style={{ textAlign: 'center' }}>Select Options</DialogTitle>
-                    <DialogContent>
-                        <Button onClick={handleUploadDialogOpen} className="dialog-button">Upload File</Button>
-                        <Button onClick={handleEmailPopupOpen} className="dialog-button">Email Us Your Booking</Button>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Upload File Popup */}
-                <Dialog open={isUploadDialogOpen} onClose={handleUploadDialogClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle>Upload Your File</DialogTitle>
-                    <DialogContent>
-                        <UploadFile onExtractedData={handleExtractedData} />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleUploadDialogClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Email Us Popup */}
-                <Dialog open={isEmailPopupOpen} onClose={handleEmailPopupClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle>
-                        Forward Your Booking
-                        <IconButton onClick={handleEmailPopupClose} className="close-icon">
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText className="dialog-content-text">
-                            Please forward your booking confirmation emails to <br />
-                            <strong>bookings@yourdomain.com</strong>.
-                            <br />We will extract the details and update your itinerary automatically.
-                        </DialogContentText>
-                    </DialogContent>
-                </Dialog>
-            </div>
-        </LoadScript>
+            <More label="Confirmation Number" startOpen={Boolean(values.confirmation) || opened}>
+                <Field label="Confirmation Number" htmlFor="rest-conf">
+                    <TextInput id="rest-conf" value={values.confirmation} onChange={(e) => set('confirmation')(e.target.value)} maxLength={80} placeholder="Add it once the table is booked" />
+                </Field>
+            </More>
+        </FormSheet>
     );
 }
 

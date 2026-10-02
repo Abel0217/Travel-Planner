@@ -1,4 +1,12 @@
-const pool = require('./db');  
+const pool = require('./db');
+const { notifyItineraryChange } = require('./notify');
+
+async function publishTripChange(row, actorUid, summary) {
+    if (row?.itinerary_id && actorUid) {
+        await notifyItineraryChange(row.itinerary_id, actorUid, summary);
+    }
+    return row;
+}  
 
 // Itinerary Operations
 // Fetch all itineraries
@@ -59,29 +67,51 @@ const addItinerary = async (data) => {
     // Automatically assign host role to the itinerary creator
     const addHostRoleQuery = `
         INSERT INTO core.roles (itinerary_id, user_id, role)
-        VALUES ($1, $2, 'host');
+        VALUES ($1, $2, 'host')
+        ON CONFLICT DO NOTHING;
     `;
-    await pool.query(addHostRoleQuery, [itinerary.itinerary_id, owner_id]);
+    try {
+        await pool.query(addHostRoleQuery, [itinerary.itinerary_id, owner_id]);
+    } catch (roleError) {
+        console.error('Host role insert skipped:', roleError.message);
+    }
 
     return itinerary;
 };
 
 
 // Update itinerary
+const toSqlDate = (value) => {
+    if (!value) return null;
+    const text = String(value);
+    const match = text.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (match) return match[1];
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString().slice(0, 10);
+};
+
 const updateItinerary = async (itinerary_id, owner_id, data) => {
-    const { title, start_date, end_date } = data;
+    const title = String(data.title || '').trim();
+    const start_date = toSqlDate(data.start_date);
+    const end_date = toSqlDate(data.end_date);
+    const destinations = String(data.destinations || data.destination || '').trim() || null;
+
+    if (!title || !start_date || !end_date) {
+        return null;
+    }
     
     const query = `
         UPDATE core.itineraries 
-        SET title = $1, start_date = $2, end_date = $3 
-        WHERE itinerary_id = $4 AND owner_id = $5 
+        SET title = $1, start_date = $2, end_date = $3, destinations = COALESCE($4, destinations)
+        WHERE itinerary_id = $5 AND owner_id = $6 
         RETURNING *;
     `;
-    const values = [title, start_date, end_date, itinerary_id, owner_id];
+    const values = [title, start_date, end_date, destinations, itinerary_id, owner_id];
 
     try {
         const { rows } = await pool.query(query, values);
-        return rows[0];
+        return publishTripChange(rows[0], owner_id, 'updated the trip details');
     } catch (error) {
         console.error('Error updating itinerary:', error);
         throw new Error('Failed to update itinerary');
@@ -188,7 +218,10 @@ const fetchAllActivities = async (itinerary_id, owner_id) => {
         SELECT a.* 
         FROM core.activities a
         JOIN core.itineraries i ON a.itinerary_id = i.itinerary_id
-        WHERE a.itinerary_id = $1 AND i.owner_id = $2;
+        WHERE a.itinerary_id = $1
+          AND (i.owner_id = $2 OR EXISTS (
+              SELECT 1 FROM core.shared s WHERE s.itinerary_id = i.itinerary_id AND s.guest_id = $2
+          ));
     `;
     const { rows } = await pool.query(query, [itinerary_id, owner_id]);
     return rows;
@@ -234,7 +267,7 @@ const updateActivity = async (activityId, itineraryId, owner_id, title, descript
     `;
     const values = [activityId, title, description, location, activityDate, startTime, endTime, reservationNumber, owner_id];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+    return publishTripChange(rows[0], owner_id, 'updated an activity');
 };
 
 // Delete Activity 
@@ -310,7 +343,10 @@ const fetchFlightsByItineraryId = async (itinerary_id, owner_id) => {
         SELECT f.*
         FROM core.flights f
         JOIN core.itineraries i ON f.itinerary_id = i.itinerary_id
-        WHERE f.itinerary_id = $1 AND i.owner_id = $2
+        WHERE f.itinerary_id = $1
+          AND (i.owner_id = $2 OR EXISTS (
+              SELECT 1 FROM core.shared s WHERE s.itinerary_id = i.itinerary_id AND s.guest_id = $2
+          ))
     `;
     const { rows } = await pool.query(query, [itinerary_id, owner_id]);
     return rows;
@@ -355,7 +391,7 @@ const updateFlight = async (flightId, itineraryId, owner_id, airline, flight_num
     `;
     const values = [flightId, airline, flight_number, departure_airport, arrival_airport, departure_time, arrival_time, booking_reference, passenger_name, seat_number, owner_id];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+    return publishTripChange(rows[0], owner_id, 'updated a flight');
 };
 
 // Delete Flight
@@ -377,7 +413,10 @@ const fetchHotelsByItineraryId = async (itinerary_id, owner_id) => {
         SELECT h.*
         FROM core.hotels h
         JOIN core.itineraries i ON h.itinerary_id = i.itinerary_id
-        WHERE h.itinerary_id = $1 AND i.owner_id = $2;
+        WHERE h.itinerary_id = $1
+          AND (i.owner_id = $2 OR EXISTS (
+              SELECT 1 FROM core.shared s WHERE s.itinerary_id = i.itinerary_id AND s.guest_id = $2
+          ));
     `;
     const { rows } = await pool.query(query, [itinerary_id, owner_id]);
     return rows;
@@ -423,7 +462,7 @@ const updateHotel = async (hotelId, itineraryId, owner_id, hotel_name, check_in_
     `;
     const values = [hotelId, hotel_name, check_in_date, check_out_date, address, booking_confirmation, owner_id];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+    return publishTripChange(rows[0], owner_id, 'updated a hotel');
 };
 
 // Delete a hotel
@@ -444,7 +483,10 @@ const fetchRestaurantsByItineraryId = async (itinerary_id, owner_id) => {
         SELECT r.*
         FROM core.restaurant r
         JOIN core.itineraries i ON r.itinerary_id = i.itinerary_id
-        WHERE r.itinerary_id = $1 AND i.owner_id = $2
+        WHERE r.itinerary_id = $1
+          AND (i.owner_id = $2 OR EXISTS (
+              SELECT 1 FROM core.shared s WHERE s.itinerary_id = i.itinerary_id AND s.guest_id = $2
+          ))
         ORDER BY r.reservation_date, r.reservation_time;
     `;
     const { rows } = await pool.query(query, [itinerary_id, owner_id]);
@@ -489,7 +531,7 @@ const updateRestaurant = async (reservationId, itineraryId, owner_id, restaurant
     `;
     const values = [reservationId, restaurant_name, reservation_date, reservation_time, guest_number, address, booking_confirmation, owner_id];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+    return publishTripChange(rows[0], owner_id, 'updated a restaurant reservation');
 };
 
 // Delete a restaurant reservation
@@ -556,7 +598,7 @@ const updateTransport = async (transportId, itineraryId, owner_id, type, pickup_
     `;
     const values = [transportId, type, pickup_time, dropoff_time, pickup_location, dropoff_location, booking_reference, owner_id];
     const { rows } = await pool.query(query, values);
-    return rows[0];
+    return publishTripChange(rows[0], owner_id, 'updated transportation');
 };
 
 // Delete a transport
@@ -585,15 +627,16 @@ const createUser = async ({ uid, email, first_name, last_name, profile_picture }
 };
 
 // Update user details (name, date of birth, profile picture)
-const updateUserDetails = async ({ uid, first_name, last_name }) => {
+const updateUserDetails = async ({ uid, first_name, last_name, date_of_birth }) => {
     const query = `
         UPDATE core.users
         SET first_name = COALESCE($1, first_name), 
-            last_name = COALESCE($2, last_name)
-        WHERE uid = $3
+            last_name = COALESCE($2, last_name),
+            date_of_birth = COALESCE($3, date_of_birth)
+        WHERE uid = $4
         RETURNING *;
     `;
-    const values = [first_name, last_name, uid];
+    const values = [first_name, last_name, date_of_birth || null, uid];
 
     console.log('Executing query with values:', values);
     try {
@@ -734,12 +777,12 @@ const createFriendship = async (uid_1, uid_2) => {
 // Fetch a list of friends for a user
 const fetchUserFriends = async (uid) => {
     const query = `
-        SELECT u.uid, u.first_name, u.last_name, u.profile_picture
+        SELECT u.uid, u.first_name, u.last_name, u.email, u.profile_picture
         FROM core.friends f
         JOIN core.users u ON (f.uid_2 = u.uid)
         WHERE f.uid_1 = $1
         UNION
-        SELECT u.uid, u.first_name, u.last_name, u.profile_picture
+        SELECT u.uid, u.first_name, u.last_name, u.email, u.profile_picture
         FROM core.friends f
         JOIN core.users u ON (f.uid_1 = u.uid)
         WHERE f.uid_2 = $1;
@@ -774,7 +817,7 @@ const checkFriendshipExists = async (requester_uid, requestee_uid) => {
 // Fetch incoming friend requests
 const fetchIncomingRequests = async (uid) => {
     const query = `
-        SELECT r.request_id, u.first_name, u.last_name, u.profile_picture, r.created_at
+        SELECT r.request_id, r.requester_id, u.first_name, u.last_name, u.email, u.profile_picture, r.created_at
         FROM core.friend_requests r
         JOIN core.users u ON r.requester_id = u.uid
         WHERE r.requestee_id = $1 AND r.status = 'pending';
@@ -794,7 +837,7 @@ const fetchIncomingRequests = async (uid) => {
 // Fetch outgoing friend requests
 const fetchOutgoingRequests = async (uid) => {
     const query = `
-        SELECT r.request_id, r.requestee_id, u.profile_picture, u.first_name, u.last_name
+        SELECT r.request_id, r.requestee_id, u.profile_picture, u.first_name, u.last_name, u.email
         FROM core.friend_requests r
         JOIN core.users u ON r.requestee_id = u.uid
         WHERE r.requester_id = $1 AND r.status = 'pending';

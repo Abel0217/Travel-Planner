@@ -1,6 +1,62 @@
-.itinerary-header {
-    text-align: center;
-    margin-bottom: 20px;
+.map-placeholder {
+    width: min(100%, 1100px);
+    height: 460px;
+    margin: 0 auto 20px;
+    border-radius: 16px;
+    background: #e8ebf4;
+}
+
+.trip-map-wrap {
+    width: min(100%, 1100px);
+    margin: 0 auto 20px;
+}
+
+.trip-map-canvas {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    min-height: 460px;
+}
+
+.map-legend {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    top: auto;
+    right: auto;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.94);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: #222946;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(34, 41, 70, 0.16);
+}
+
+.map-legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.map-distances {
+    margin-top: 10px;
+    background: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 8px 20px rgba(34, 41, 70, 0.08);
+}
+
+.map-distances p {
+    margin: 6px 0 0;
+    color: #444;
+    font-size: 13px;
 }
 
 .booking-cards {
@@ -12,62 +68,126 @@
     max-width: 1000px; /* Set a maximum width to control the row */
 }
 
-.booking-card {
-    flex: 1 1 30%; /* Each card will take up about 30% of the container width */
-    max-width: 300px; /* Prevent the card from getting too wide */
-    min-width: 200px; /* Ensure cards are not too small */
-    border: 1px solid #dee2e6;
-    border-radius: 10px;
-    padding: 20px;
+.react-tabs__tab-panel--selected:has(.bookings-picker),
+.react-tabs__tab-panel--selected:has(.bookings) {
+    background: linear-gradient(180deg, #1c2342 0%, #2a3358 100%);
+    border: none;
+    border-radius: 18px;
+    padding: 24px 16px 28px;
+    box-shadow: 0 16px 36px rgba(34, 41, 70, 0.18);
+}
+
+/* "Bookings" tab: choose what to add. */
+.bookings-picker {
+    max-width: 1040px;
+    margin: 0 auto;
+}
+
+.bookings-picker .picker-head {
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.bookings-picker .picker-head h2 {
+    margin: 0 0 6px;
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.bookings-picker .picker-head p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 15px;
+}
+
+.bookings-picker .picker-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.bookings-picker .booking-card {
+    display: flex;
+    flex: 0 1 calc(33.333% - 11px);
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    min-width: 230px;
+    margin: 0;
+    padding: 24px 18px 18px;
+    border: 2px solid transparent;
+    border-top: 6px solid var(--cat);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(8, 12, 30, 0.28);
+    color: #222946;
+    font: inherit;
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
+    opacity: 1;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.booking-card:hover {
-    background-color: #f8f9fa;
-    transform: scale(1.05);
+.bookings-picker .booking-card:hover {
+    border-color: var(--cat);
+    border-top-color: var(--cat);
+    background: #ffffff;
+    box-shadow: 0 18px 36px rgba(8, 12, 30, 0.38);
+    opacity: 1;
+    transform: translateY(-4px);
 }
 
-
-.card-icon {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 10px;
+.bookings-picker .card-icon-wrap {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 0 6px;
+    border-radius: 20px;
+    background: var(--cat-tint);
+    color: var(--cat);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-
-.bookings {
-    margin: 20px;
+.bookings-picker .booking-card:hover .card-icon-wrap {
+    background: var(--cat);
+    color: #ffffff;
 }
 
-.booking-section {
-    margin-bottom: 20px;
+.bookings-picker .booking-card h3 {
+    margin: 0;
+    color: #222946;
+    font-size: 19px;
+    font-weight: 700;
 }
 
-.booking-section h3 {
-    margin-bottom: 10px;
+.bookings-picker .booking-card p {
+    margin: 0;
+    color: #6b7390;
+    font-size: 13.5px;
+    line-height: 1.4;
 }
 
-.booking-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    background-color: #f8f9fa;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.bookings-picker .card-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: var(--cat-tint);
+    color: var(--cat);
+    font-size: 13px;
+    font-weight: 800;
 }
 
-.booking-item h4 {
-    margin-bottom: 5px;
-    color: #007bff;
+.bookings-picker .booking-card:hover .card-add {
+    background: var(--cat);
+    color: #ffffff;
 }
-
-.booking-item p {
-    margin: 5px 0;
-    line-height: 1.5;
-}
-
 .memory-board {
     margin: 20px;
 }
@@ -81,50 +201,347 @@
 }
 
 .react-tabs {
-    margin-top: 20px;
+    margin-top: 12px;
 }
 
-.react-tabs__tab-list {
-    border-bottom: 2px solid #ccc;
-    padding-left: 0;
-    margin: 0 0 10px;
+.itinerary-tab-dock {
+    position: fixed;
+    left: 18px;
+    right: 18px;
+    bottom: 22px;
+    top: auto;
+    margin: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    width: auto;
+    pointer-events: none;
+}
+
+.itinerary-tab-dock > * {
+    pointer-events: auto;
+}
+
+.itinerary-tabs .react-tabs__tab-list {
+    display: none;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: stretch;
+    gap: 6px;
+    border: none;
+    padding: 8px;
+    margin: 0;
     list-style-type: none;
+    background: rgba(34, 41, 70, 0.96);
+    border-radius: 22px;
+    width: min(200px, calc(100vw - 80px));
+    max-width: none;
+    box-shadow: 0 16px 36px rgba(34, 41, 70, 0.28);
+    backdrop-filter: blur(12px);
 }
 
-.react-tabs__tab {
-    display: inline-block;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    bottom: -1px;
+.itinerary-menu-anchor {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.itinerary-menu-anchor.open .react-tabs__tab-list {
+    display: flex;
+}
+
+.itinerary-tab-dock button.itinerary-tab-orb {
+    display: grid;
+    place-items: center;
+    width: 52px !important;
+    height: 52px;
+    min-width: 52px;
+    border: none;
+    border-radius: 50%;
+    background: #f3ab03;
+    color: #ffffff;
+    line-height: 0;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(34, 41, 70, 0.28);
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.itinerary-tab-dock button.itinerary-tab-orb svg { display: block; }
+
+.itinerary-tab-dock button.itinerary-tab-orb:hover {
+    background: #f3ab03;
+    color: #ffffff;
+}
+
+button.itinerary-tab-ask {
+    width: 80px !important;
+    height: 80px;
+    min-width: 80px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(243, 171, 3, 0.9);
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 48%),
+        #222946;
+    color: #f3ab03;
+    box-shadow:
+        0 12px 26px rgba(16, 20, 38, 0.34),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: width 0.22s ease, height 0.22s ease, padding 0.22s ease;
+}
+
+button.itinerary-tab-ask span,
+button.itinerary-tab-ask em {
+    display: block;
+    text-align: center;
+    background: transparent;
+    color: #f3ab03;
+}
+
+button.itinerary-tab-ask span {
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+}
+
+button.itinerary-tab-ask em {
+    color: #ffffff;
+    font-style: normal;
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 1.25;
+    max-width: 68px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    transition: opacity 0.2s ease, max-height 0.2s ease, margin 0.2s ease;
+}
+
+button.itinerary-tab-ask:hover {
+    width: 92px !important;
+    height: 92px;
+    padding: 12px;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 48%),
+        #222946;
+    color: #f3ab03;
+}
+
+button.itinerary-tab-ask:hover span {
+    color: #f3ab03;
+    font-size: 10px;
+}
+
+button.itinerary-tab-ask:hover em {
+    max-height: 36px;
+    opacity: 1;
+    margin-top: 4px;
+    color: #ffffff;
+    font-size: 8px;
+}
+
+.itinerary-tabs .react-tabs__tab {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border: none !important;
+    bottom: auto;
     position: relative;
     list-style: none;
-    padding: 6px 12px;
+    padding: 10px 14px;
     cursor: pointer;
+    border-radius: 14px;
+    color: rgba(255, 255, 255, 0.88);
+    font-weight: 700;
+    font-size: 13px;
+    background: transparent;
 }
 
-.react-tabs__tab--selected {
-    background-color: #fff;
-    border-color: #aaa;
-    color: black;
-    border-radius: 5px 5px 0 0;
+.itinerary-tabs .react-tabs__tab:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.react-tabs__tab-panel {
-    border: 1px solid #ccc;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.itinerary-tabs .react-tabs__tab--selected {
+    background: #f3ab03 !important;
+    color: #222946 !important;
+    border: none !important;
+    border-radius: 14px;
+}
+
+.itinerary-tabs .react-tabs__tab-panel {
+    border: none;
+    padding: 8px 4px 80px;
+    box-shadow: none;
+    background: transparent;
+}
+
+.itinerary-tabs .react-tabs__tab-panel--selected:has(.live-chat) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0 0 96px;
+}
+
+.itinerary-details-page:has(.react-tabs__tab-panel--selected .live-chat) {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 56px);
+    padding-bottom: 48px;
+}
+
+.itinerary-details-page:has(.react-tabs__tab-panel--selected .live-chat) .itinerary-tabs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.itinerary-tabs .react-tabs__tab-panel--selected:has(.live-chat) .live-chat {
+    flex: none;
+}
+
+.itinerary-tabs .react-tabs__tab-panel--selected:has(.bookings-picker),
+.itinerary-tabs .react-tabs__tab-panel--selected:has(.bookings),
+.itinerary-tabs .react-tabs__tab-panel--selected:has(.expense-embedded) {
+    background: linear-gradient(180deg, #1c2342 0%, #2a3358 100%);
+    border: none;
+    border-radius: 22px;
+    padding: 22px 16px 28px;
+    box-shadow: 0 16px 36px rgba(34, 41, 70, 0.18);
+}
+
+.itinerary-details-page {
+    padding: 8px 16px 32px;
+    box-sizing: border-box;
+    min-height: calc(100vh - 56px);
+    background: #f4f4f4;
+}
+
+.itinerary-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 18px auto 8px;
+    padding: 0 16px;
+    text-align: center;
 }
 
 .itinerary-header h1 {
-    margin-bottom: 10px;
-    font-size: 24pt;
-    color: black;
+    max-width: 920px;
+    margin: 0;
+    background: linear-gradient(135deg, #1a2038 0%, #222946 45%, #3d4a86 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #222946;
+    font-size: clamp(34px, 4vw, 48px);
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    text-align: center;
+    overflow-wrap: anywhere;
 }
 
-.itinerary-header p {
-    margin-top: -10px;
-    font-size:14pt;
-    color: #666;
+.itinerary-header .itin-rule {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 132px;
+    margin: 12px 0 14px;
+}
+
+.itinerary-header .itin-rule::before,
+.itinerary-header .itin-rule::after {
+    flex: 1;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, rgba(243, 171, 3, 0), #f3ab03);
+    content: '';
+}
+
+.itinerary-header .itin-rule::after { transform: scaleX(-1); }
+
+.itinerary-header .itin-rule b {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: #f3ab03;
+    transform: rotate(45deg);
+}
+
+.itinerary-header .itin-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.itinerary-header .itin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    max-width: 100%;
+    padding: 7px 14px 7px 11px;
+    border: 1px solid rgba(34, 41, 70, 0.1);
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(34, 41, 70, 0.08);
+    color: #222946;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.itinerary-header .itin-chip svg { flex: none; color: #f3ab03; }
+
+.itinerary-header .itin-chip b {
+    margin-left: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #fff1cc;
+    color: #7a5200;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.itinerary-header .itin-chip.is-place {
+    border-color: transparent;
+    background: #222946;
+    box-shadow: 0 6px 16px rgba(34, 41, 70, 0.25);
+    color: #ffffff;
+    font-weight: 800;
+}
+
+@media (max-width: 560px) {
+    .itinerary-header { margin-top: 12px; }
+    .itinerary-header .itin-chip { font-size: 13px; }
+}
+
+@media (max-width: 720px) {
+    .bookings-picker .booking-card {
+        flex-basis: 100%;
+    }
 }
 
 .card-container {
@@ -132,4 +549,18 @@
     flex-wrap: wrap;
     gap: 16px;
     justify-content: center;
+}
+
+/* The map sits under the booking tools: add or review first, see where it all is second. */
+.bookings-map {
+    width: min(1180px, 100%);
+    margin: 28px auto 0;
+}
+
+.bookings-map h2 {
+    margin: 0 0 12px;
+    color: #222946;
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
 }

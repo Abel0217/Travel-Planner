@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/dbOperations');
 const verifyToken = require('../FirebaseToken'); // Import the Firebase token middleware
-const pool = require('../database/db'); // Adjust the path based on where your dbConfig file is located
+const pool = require('../database/db');
+const { ensureDestinationChat, parseDestination } = require('../database/aiChats');
+const { notifyTripInvite } = require('../services/tripMail');
 
 // Apply the token verification middleware to all routes
 router.use(verifyToken);
@@ -113,6 +115,19 @@ router.post('/', async (req, res) => {
             destinations
         });
 
+        const place = parseDestination(destinations);
+        if (place.city && place.country) {
+            try {
+                await ensureDestinationChat(owner_id, {
+                    country: place.country,
+                    city: place.city,
+                    itineraryId: newItinerary.itinerary_id,
+                });
+            } catch (chatError) {
+                console.error('Could not create the destination chat:', chatError);
+            }
+        }
+
         console.log('New itinerary created:', newItinerary);
         res.status(201).json(newItinerary);
     } catch (error) {
@@ -124,12 +139,36 @@ router.post('/', async (req, res) => {
 // Update an existing itinerary
 router.put('/:itineraryId', async (req, res) => {
     try {
-        const owner_id = req.user.uid; // Get the user id from the request
-        const updatedItinerary = await db.updateItinerary(req.params.itineraryId, owner_id, req.body);
+        const owner_id = req.user.uid;
+        const itineraryId = Number(req.params.itineraryId);
+        if (!Number.isFinite(itineraryId)) {
+            return res.status(400).json({ error: 'Invalid itinerary id.' });
+        }
+
+        const title = String(req.body.title || '').trim();
+        const start_date = req.body.start_date;
+        const end_date = req.body.end_date;
+        const destinations = String(req.body.destinations || req.body.destination || '').trim();
+
+        if (!title || !start_date || !end_date) {
+            return res.status(400).json({ error: 'Title, start date, and end date are required.' });
+        }
+
+        const updatedItinerary = await db.updateItinerary(itineraryId, owner_id, {
+            title,
+            start_date,
+            end_date,
+            destinations,
+        });
+
+        if (!updatedItinerary) {
+            return res.status(404).json({ error: 'Itinerary not found, or you are not the host.' });
+        }
+
         res.json(updatedItinerary);
     } catch (error) {
         console.error('Failed to update itinerary:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        res.status(500).json({ error: 'Failed to update itinerary.', details: error.message });
     }
 });
 
@@ -160,6 +199,12 @@ router.post('/invite', verifyToken, async (req, res) => {
 
         // Add friend to the share table for itinerary access as a guest
         const shareEntry = await db.addGuestToShare(itineraryId, friendId);
+        notifyTripInvite({
+            actorUid: ownerId,
+            friendId,
+            itineraryId,
+            title: itinerary.title,
+        });
         res.status(201).json(shareEntry); // Respond with the new share entry
     } catch (error) {
         console.error('Error inviting friend to itinerary:', error);

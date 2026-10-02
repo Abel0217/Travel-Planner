@@ -6,20 +6,11 @@ const AutoComplete = ({ id, value, onChange, setIsValid }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        const loadScript = (url, callback) => {
-            const script = document.createElement('script');
-            script.src = url;
-            script.async = true;
-            script.defer = true;
-            script.onload = callback;
-            document.head.appendChild(script);
-        };
-
-        const handleScriptLoad = () => {
+        const attach = () => {
+            if (!window.google?.maps?.places || !inputRef.current || autocompleteRef.current) return;
             autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
                 types: ['(cities)'],
             });
-
             autocompleteRef.current.addListener('place_changed', () => {
                 const place = autocompleteRef.current.getPlace();
                 if (place && place.formatted_address) {
@@ -30,11 +21,16 @@ const AutoComplete = ({ id, value, onChange, setIsValid }) => {
             });
         };
 
-        if (!window.google) {
-            loadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&libraries=places`, handleScriptLoad);
-        } else {
-            handleScriptLoad();
-        }
+        attach();
+        const timer = setInterval(() => {
+            if (autocompleteRef.current) {
+                clearInterval(timer);
+                return;
+            }
+            attach();
+        }, 200);
+
+        return () => clearInterval(timer);
     }, [onChange, setIsValid]);
 
     useEffect(() => {
@@ -59,7 +55,7 @@ const AutoComplete = ({ id, value, onChange, setIsValid }) => {
             value={inputValue}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="Enter a destination"
+            placeholder="City"
             style={{ width: '100%', padding: '8px', fontSize: '16px' }}
         />
     );

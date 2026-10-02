@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from "firebase/auth"; 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig'; 
 import apiClient from '../../../api/apiClient';
@@ -18,27 +18,38 @@ import MapComponent from '../../../Components/MapComponent';
 import Notes from './Notes';
 import Bookings from './Bookings';
 import LiveChat from './LiveChat';
-import ActivityForm from './ActivityForm';
-import HotelForm from './HotelForm';
-import FlightForm from './FlightForm';
-import RestaurantForm from './RestaurantForm';
-import TransportForm from './TransportForm';
-import flightIcon from './css/Flight.jpg';
-import hotelIcon from './css/Hotel.jpg';
-import activityIcon from './css/Activity.jpg';
-import restaurantIcon from './css/Restaurant.jpg';
-import transportIcon from './css/Transport.jpg';
 import Loading from '../Loading'; 
+import Expense from '../../Expense';
+import { openLeoForItinerary } from '../../../utils/itineraryContext';
+import { geocodeQuery } from '../../../utils/tripGeo';
+import { CATEGORIES, CATEGORY_ORDER } from '../../../utils/bookingTheme';
+import BookingFormModal from './BookingFormModal';
+import { Glyph } from './overview/glyphs';
+import { dayKey, formatDay, daysBetween } from './overview/overviewModel';
+
+const PICKER_TEXT = {
+    activity: 'Tours, tickets and things to do.',
+    restaurant: 'Tables, tastings and reservations.',
+    hotel: 'Where you are staying each night.',
+    flight: 'Tickets, times and airports.',
+    transport: 'Trains, buses, taxis and transfers.',
+};
 
 const ItineraryDetails = () => {
     const { itineraryId } = useParams();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [itinerary, setItinerary] = useState({ title: '', start_date: '', end_date: '', destinations: '' });
     const [loading, setLoading] = useState(true);
     const [coordinates, setCoordinates] = useState(null);
+    const [bookingsVersion, setBookingsVersion] = useState(0);
+    const bumpBookings = () => setBookingsVersion((value) => value + 1);
+    const [tabIndex, setTabIndex] = useState(() => (searchParams.get('tab') === 'chat' ? 5 : 0));
     const [formType, setFormType] = useState(null);
     const [currentUser, setCurrentUser] = useState(null); 
     const [isHost, setIsHost] = useState(false);
     const [isGuest, setIsGuest] = useState(false);
+    const [tabMenuOpen, setTabMenuOpen] = useState(false);
     
     const geocodeDestination = async (destination) => {
         if (!destination) {
@@ -54,10 +65,12 @@ const ItineraryDetails = () => {
                 const location = data.results[0].geometry.location;
                 setCoordinates({ lat: location.lat, lng: location.lng });
             } else {
-                console.error('Failed to geocode destination', data);
+                const fallback = await geocodeQuery(destination);
+                if (fallback) setCoordinates(fallback);
             }
         } catch (error) {
-            console.error('Failed to geocode destination', error);
+            const fallback = await geocodeQuery(destination);
+            if (fallback) setCoordinates(fallback);
         }
     };
 
@@ -80,7 +93,7 @@ const ItineraryDetails = () => {
     
                 setIsHost(itineraryData.owner_id === user.uid);
                 setIsGuest(itineraryData.isShared);
-                await geocodeDestination(itineraryData.destinations);
+                geocodeDestination(itineraryData.destinations);
             } else {
                 console.error("User not logged in");
             }
@@ -92,31 +105,21 @@ const ItineraryDetails = () => {
     };    
 
     useEffect(() => {
-        const fetchItineraryFromFirestore = () => {
-            const docRef = doc(db, 'itineraries', itineraryId);
-            const unsubscribe = onSnapshot(docRef, async (snapshot) => {
-                if (snapshot.exists()) {
-                    const itineraryData = snapshot.data();
-                    console.log('Firestore Snapshot:', itineraryData);
-                    setItinerary(itineraryData);
-                    await geocodeDestination(itineraryData.destinations);
-                } else {
-                    console.error('No such document!');
-                    await fetchItineraryDetails();
+        fetchItineraryDetails();
+        if (!itineraryId) return undefined;
+
+        const docRef = doc(db, 'itineraries', itineraryId);
+        const unsubscribe = onSnapshot(docRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const itineraryData = snapshot.data();
+                setItinerary((prev) => ({ ...prev, ...itineraryData }));
+                if (itineraryData.destinations) {
+                    geocodeDestination(itineraryData.destinations);
                 }
-                setLoading(false);
-            });
+            }
+        });
 
-            return unsubscribe;
-        };
-
-        if (itineraryId) {
-            fetchItineraryFromFirestore();
-        }
-
-        return () => {
-            setLoading(false);
-        };
+        return () => unsubscribe();
     }, [itineraryId]);
 
     const openForm = (formType) => {
@@ -158,52 +161,134 @@ const ItineraryDetails = () => {
 
     const handleActivityAdded = (newActivity) => {
         console.log('New activity added:', newActivity);
+        bumpBookings();
     };
 
     const handleHotelAdded = (newHotel) => {
         console.log('New hotel added:', newHotel);
+        bumpBookings();
     };
 
     const handleFlightAdded = (newFlight) => {
         console.log('New flight added:', newFlight);
+        bumpBookings();
     };
 
     const handleRestaurantAdded = (newRestaurant) => {
         console.log('New restaurant added:', newRestaurant);
+        bumpBookings();
     };
 
     const handleTransportAdded = (newTransport) => {
         console.log('New transport added:', newTransport);
+        bumpBookings();
     };
 
+    const tripStatus = (() => {
+        const start = dayKey(itinerary.start_date);
+        const end = dayKey(itinerary.end_date) || start;
+        if (!start) return { label: 'Your Itinerary', range: '', length: '' };
+        const short = { month: 'short', day: 'numeric' };
+        const sameYear = start.slice(0, 4) === end.slice(0, 4);
+        const range = start === end
+            ? formatDay(start, { ...short, year: 'numeric' })
+            : `${formatDay(start, sameYear ? short : { ...short, year: 'numeric' })} – ${formatDay(end, { ...short, year: 'numeric' })}`;
+        const total = daysBetween(start, end) + 1;
+        const length = `${total} ${total === 1 ? 'Day' : 'Days'}`;
+        return { range, length };
+    })();
     if (loading) return <Loading />; 
     if (!itinerary.title) return <div>No itinerary found.</div>;
 
     return (
-        <div>
+        <div className="itinerary-details-page">
             <div className="itinerary-header">
                 <h1>{itinerary.title}</h1>
-                <p>{itinerary.destinations}</p>
-            </div>
-            {coordinates ? (
-                <MapComponent apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY} center={coordinates} />
-            ) : (
-                <p>Loading map...</p>
-            )}
-            {/* Conditional render for Host and Guest actions */}
+                <span className="itin-rule" aria-hidden="true"><b /></span>
+                <div className="itin-meta">
+                    {itinerary.destinations ? (
+                        <span className="itin-chip is-place">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21z" />
+                                <circle cx="12" cy="9.5" r="2.5" />
+                            </svg>
+                            {itinerary.destinations}
+                        </span>
+                    ) : null}
+                    {tripStatus.range ? (
+                        <span className="itin-chip">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+                                <path d="M8 3v4M16 3v4M3.5 10h17" />
+                            </svg>
+                            {tripStatus.range}
+                            {tripStatus.length ? <b>{tripStatus.length}</b> : null}
+                        </span>
+                    ) : null}
+                </div>
+            </div>            {/* Conditional render for Host and Guest actions */}
             <div className="itinerary-actions">
                 {isGuest ? (
                     <button onClick={leaveItinerary}>Leave Itinerary</button>
                 ) : null}
             </div>
-            <Tabs>
-                <TabList>
-                    <Tab>Overview</Tab>
-                    <Tab>Bookings</Tab>
-                    <Tab>My Bookings</Tab>
-                    <Tab>Notes</Tab>
-                    <Tab>Live Chat</Tab>
-                </TabList>
+            <Tabs
+                className="itinerary-tabs"
+                selectedIndex={tabIndex}
+                onSelect={(index) => {
+                    setTabIndex(index);
+                    setFormType(null);
+                    setTabMenuOpen(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+            >
+                <div className="itinerary-tab-dock">
+                    <div className={`itinerary-menu-anchor ${tabMenuOpen ? 'open' : ''}`}>
+                        <TabList>
+                            <Tab>Overview</Tab>
+                            <Tab>Bookings</Tab>
+                            <Tab>My Bookings</Tab>
+                            <Tab>Expenses</Tab>
+                            <Tab>Notes</Tab>
+                            <Tab>Live Chat</Tab>
+                        </TabList>
+                        <button
+                            type="button"
+                            className="itinerary-tab-orb"
+                            onClick={() => setTabMenuOpen((open) => !open)}
+                            aria-label="Toggle itinerary tabs"
+                            aria-expanded={tabMenuOpen}
+                        >
+                            {tabMenuOpen ? (
+                                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                                    <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+                                </svg>
+                            ) : (
+                                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                                    <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
+                    <button
+                        type="button"
+                        className="itinerary-tab-ask"
+                        onClick={async () => {
+                            try {
+                                await openLeoForItinerary(apiClient, navigate, {
+                                    itinerary_id: itineraryId,
+                                    destinations: itinerary.destinations,
+                                });
+                            } catch (error) {
+                                navigate('/travel-guide');
+                            }
+                        }}
+                        aria-label="Ask Leo"
+                    >
+                        <span>ASK LEO</span>
+                        <em>Ask AI to start planning your trip</em>
+                    </button>
+                </div>
 
                 <TabPanel>
                     <DailyOverview
@@ -211,52 +296,58 @@ const ItineraryDetails = () => {
                         destination={itinerary.destinations}
                         startDate={itinerary.start_date}
                         endDate={itinerary.end_date}
+                        center={coordinates}
                     />
                 </TabPanel>
 
                 <TabPanel>
+                    <div className="bookings-picker">
+                        <header className="picker-head">
+                            <h2>Add To Your Trip</h2>
+                            <p>Pick what you are booking. We keep it short: only what is needed.</p>
+                        </header>
+                        <div className="picker-grid">
+                            {CATEGORY_ORDER.map((type) => {
+                                const category = CATEGORIES[type];
+                                return (
+                                    <button
+                                        type="button"
+                                        key={type}
+                                        className="booking-card"
+                                        style={{ '--cat': category.color, '--cat-tint': category.tint }}
+                                        onClick={() => openForm(type)}
+                                    >
+                                        <span className="card-icon-wrap"><Glyph name={category.glyph} size={26} /></span>
+                                        <h3>{category.plural}</h3>
+                                        <p>{PICKER_TEXT[type]}</p>
+                                        <span className="card-add"><Glyph name="plus" size={14} /> Add {category.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                     {formType ? (
-                        <div>
-                            <button className="back-button" onClick={closeForm}>Back</button>
-                            {formType === 'activity' && <ActivityForm onClose={closeForm} onActivityAdded={handleActivityAdded} itineraryId={itineraryId} startDate={itinerary.start_date} endDate={itinerary.end_date} />}
-                            {formType === 'hotel' && <HotelForm onClose={closeForm} onHotelAdded={handleHotelAdded} itineraryId={itineraryId} />}
-                            {formType === 'flight' && <FlightForm onClose={closeForm} onFlightAdded={handleFlightAdded} itineraryId={itineraryId} />}
-                            {formType === 'restaurant' && <RestaurantForm onClose={closeForm} onRestaurantAdded={handleRestaurantAdded} itineraryId={itineraryId} />}
-                            {formType === 'transport' && <TransportForm onClose={closeForm} onTransportAdded={handleTransportAdded} itineraryId={itineraryId} />}
-                        </div>
-                    ) : (
-                        <div className="card-container">
-                            <div className="booking-card" onClick={() => openForm('flight')}>
-                                <img src={flightIcon} alt="Flights" className="card-icon"/>
-                                <h3>Flights</h3>
-                            </div>
-                            <div className="booking-card" onClick={() => openForm('hotel')}>
-                                <img src={hotelIcon} alt="Hotels" className="card-icon"/>
-                                <h3>Hotels</h3>
-                            </div>
-                            <div className="booking-card" onClick={() => openForm('activity')}>
-                                <img src={activityIcon} alt="Activities" className="card-icon"/>
-                                <h3>Activities</h3>
-                            </div>
-                            <div className="booking-card" onClick={() => openForm('restaurant')}>
-                                <img src={restaurantIcon} alt="Restaurants" className="card-icon"/>
-                                <h3>Restaurants</h3>
-                            </div>
-                            <div className="booking-card" onClick={() => openForm('transport')}>
-                                <img src={transportIcon} alt="Transportation" className="card-icon"/>
-                                <h3>Transport</h3>
-                            </div>
-                        </div>
-                    )}
+                        <BookingFormModal
+                            type={formType}
+                            itineraryId={itineraryId}
+                            startDate={itinerary.start_date}
+                            endDate={itinerary.end_date}
+                            onClose={closeForm}
+                            onAdded={bumpBookings}
+                        />
+                    ) : null}
                 </TabPanel>
                 <TabPanel>
-                    <Bookings itineraryId={itineraryId} />
+                    <Bookings itineraryId={itineraryId} onChange={bumpBookings} />
+                </TabPanel>
+                <TabPanel>
+                    <Expense lockedItineraryId={itineraryId} />
                 </TabPanel>
                 <TabPanel>
                     <Notes itineraryId={itineraryId} />
                 </TabPanel>
                 <TabPanel>
-                    <LiveChat itineraryId={itineraryId} currentUser={currentUser} /> {/* Pass currentUser here */}
+                    <LiveChat itineraryId={itineraryId} active={tabIndex === 5} />
                 </TabPanel>
                 <TabPanel>
                     <ItinerarySharing 
@@ -266,7 +357,16 @@ const ItineraryDetails = () => {
                     />
                 </TabPanel>
             </Tabs>
-        </div>
+            {tabIndex === 1 || tabIndex === 2 ? (
+                <section className="bookings-map">
+                    <h2>Your Trip On The Map</h2>
+                    {coordinates ? (
+                        <MapComponent center={coordinates} itineraryId={itineraryId} destination={itinerary.destinations} startDate={itinerary.start_date} endDate={itinerary.end_date} refreshKey={bookingsVersion} />
+                    ) : (
+                        <div className="map-placeholder">Map will appear once the destination loads.</div>
+                    )}
+                </section>
+            ) : null}        </div>
     );
 };
 

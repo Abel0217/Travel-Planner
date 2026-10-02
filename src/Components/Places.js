@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { searchPlaces } from '../api/placesApi';
-import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
+import { StandaloneSearchBox } from '@react-google-maps/api';
 import Map from '../api/mapsApi'; 
 
 const Places = () => {
@@ -43,8 +43,7 @@ const Places = () => {
   return (
     <div>
       <h2>Find Places</h2>
-      <LoadScript googleMapsApiKey={apiKey} libraries={['places']}>
-        <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
+      <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
           <input
             type="text"
             value={query}
@@ -63,8 +62,7 @@ const Places = () => {
               textOverflow: 'ellipses'
             }}
           />
-        </StandaloneSearchBox>
-      </LoadScript>
+      </StandaloneSearchBox>
       <button onClick={handleSearch}>Search</button>
       <div>
         {places.map(place => (

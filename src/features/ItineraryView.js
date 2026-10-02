@@ -13,6 +13,7 @@ const ItineraryView = () => {
     const [itineraries, setItineraries] = useState([]);
     const [filteredItineraries, setFilteredItineraries] = useState([]);
     const [filter, setFilter] = useState('upcoming');
+    const [showPast, setShowPast] = useState(false);
     const { currentUser } = useContext(AuthContext);
     const navigate = useNavigate();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -48,16 +49,16 @@ const ItineraryView = () => {
             return 'https://via.placeholder.com/150';
         }
     
-        const query = `${destination} landscape`;
+        const query = `${destination.split(',')[0]} travel destination landscape`;
     
         try {
-            const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${UNSPLASH_ACCESS_KEY}`);
+            const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&orientation=landscape&per_page=1&client_id=${UNSPLASH_ACCESS_KEY}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch image');
             }
             const data = await response.json();
             if (data.results && data.results.length > 0) {
-                return data.results[0].urls.small;
+                return data.results[0].urls.regular;
             } else {
                 return 'https://via.placeholder.com/150';
             }
@@ -71,21 +72,23 @@ const ItineraryView = () => {
         try {
             const response = await apiClient.get('/itineraries');
             if (response.data && Array.isArray(response.data)) {
-                const itinerariesWithImages = await Promise.all(
-                    response.data.map(async (itinerary) => {
-                        const destination = itinerary.destinations ? itinerary.destinations.trim() : 'default';
-                        const imageUrl = await fetchUnsplashImage(destination);
-                        return {
-                            ...itinerary,
-                            startDate: moment(itinerary.start_date).format('MMMM Do YYYY'),
-                            endDate: moment(itinerary.end_date).format('MMMM Do YYYY'),
-                            imageUrl,
-                            fullDestination: destination,
-                        };
-                    })
-                );
-                setItineraries(itinerariesWithImages);
-                setFilteredItineraries(itinerariesWithImages);
+                const mapped = response.data.map((itinerary) => {
+                    const destination = itinerary.destinations ? itinerary.destinations.trim() : 'default';
+                    return {
+                        ...itinerary,
+                        startDate: moment(itinerary.start_date).format('MMMM Do YYYY'),
+                        endDate: moment(itinerary.end_date).format('MMMM Do YYYY'),
+                        imageUrl: '',
+                        fullDestination: destination,
+                    };
+                });
+                setItineraries(mapped);
+                mapped.forEach(async (itinerary) => {
+                    const imageUrl = await fetchUnsplashImage(itinerary.fullDestination);
+                    setItineraries((current) => current.map((item) => (
+                        item.itinerary_id === itinerary.itinerary_id ? { ...item, imageUrl } : item
+                    )));
+                });
             } else {
                 console.error('Invalid itinerary data format');
             }
@@ -142,21 +145,29 @@ const ItineraryView = () => {
             ...itineraries.map(itinerary => ({ ...itinerary, type: 'regular' })),
             ...sharedItineraries.map(itinerary => ({ ...itinerary, type: 'shared' })),
         ];
-    
-        let sorted = [...combinedItineraries]; 
-    
-        if (filter === 'alphabetical') {
-            sorted.sort((a, b) => a.title.localeCompare(b.title));
-        } else if (filter === 'upcoming') {
-            sorted.sort((a, b) => {
-                const daysUntilA = moment(a.startDate, 'MMMM Do YYYY').diff(moment(), 'days');
-                const daysUntilB = moment(b.startDate, 'MMMM Do YYYY').diff(moment(), 'days');
-                return daysUntilA - daysUntilB;
-            });
+        const today = moment().startOf('day');
+        const upcomingActive = combinedItineraries
+            .filter((trip) => moment(trip.end_date).startOf('day').isSameOrAfter(today))
+            .sort((a, b) => moment(a.start_date).diff(moment(b.start_date)));
+        const past = combinedItineraries
+            .filter((trip) => moment(trip.end_date).startOf('day').isBefore(today))
+            .sort((a, b) => moment(b.start_date).diff(moment(a.start_date)));
+
+        if (showPast) {
+            setFilteredItineraries(past);
+            return;
         }
-    
-        setFilteredItineraries(sorted);
-    }, [itineraries, sharedItineraries, filter]);                
+
+        if (filter === 'alphabetical') {
+            setFilteredItineraries([...combinedItineraries].sort((a, b) => a.title.localeCompare(b.title)));
+            return;
+        }
+
+        const featured = [...upcomingActive];
+        const remainingSlots = Math.max(0, 4 - featured.length);
+        featured.push(...past.slice(0, remainingSlots));
+        setFilteredItineraries(featured);
+    }, [itineraries, sharedItineraries, filter, showPast]);                
     
 
     const sendInvite = async (friendId, friendName) => {
@@ -230,12 +241,13 @@ const ItineraryView = () => {
                     Authorization: `Bearer ${currentUser.token}`,
                 },
             });
-            fetchSharedItineraries();  
+            fetchSharedItineraries();
         } catch (error) {
             console.error('Failed to leave itinerary:', error);
-            alert('Failed to leave itinerary.');
+            setErrorDialogMessage('Failed to leave itinerary.');
+            setErrorDialogOpen(true);
         } finally {
-            setIsLeaveDialogOpen(false);  
+            setIsLeaveDialogOpen(false);
         }
     };
     
@@ -307,7 +319,7 @@ const ItineraryView = () => {
 
     const handleFilterChange = (event) => {
         setFilter(event.target.value);
-        console.log('Selected filter:', event.target.value); 
+        setShowPast(false);
     };
     
     const handleItineraryClick = (itineraryId) => {
@@ -390,8 +402,13 @@ const ItineraryView = () => {
         };
     }, []);
 
+    const participantIds = new Set(
+        participants.map((person) => String(person.user_id || person.uid || ''))
+    );
+    const friendsToInvite = friends.filter((friend) => !participantIds.has(String(friend.uid)));
+
     return (
-        <div>
+        <div className="itinerary-view-page">
             <div className="header-container">
                 <div className="header-title">
                     <h1>Itineraries</h1>
@@ -402,58 +419,90 @@ const ItineraryView = () => {
                 </select>
             </div>
             <div className="itinerary-container">
+                {!showPast ? (
                 <div 
                     className="itinerary-card create-card" 
                     onClick={() => navigate('/itineraries/create')}
                     style={{ cursor: 'pointer' }}
                 >
                     <div className="create-itinerary-content">
-                        <span className="create-plus">+</span>
+                        <span className="create-plus plus-mark">+</span>
                     </div>
                 </div>
+                ) : null}
 
                 {filteredItineraries.map((itinerary, index) => {
                     const countdown = calculateCountdown(itinerary.startDate, itinerary.endDate);
+                    const ended = countdown.text === 'Trip has ended';
 
                     return (
                         <div
                             key={itinerary.itinerary_id}
-                            className={`itinerary-card ${countdown.text === 'Trip has ended' ? 'gray-out' : ''}`}
-                            onClick={() => handleItineraryClick(itinerary.itinerary_id)} 
-                            style={{ cursor: 'pointer' }}
+                            className={`itinerary-card photo-card ${ended ? 'completed' : ''}`}
+                            onClick={() => handleItineraryClick(itinerary.itinerary_id)}
+                            style={{ cursor: 'pointer', backgroundImage: `url(${itinerary.imageUrl || ''})` }}
                         >
-                            <img
-                                src={itinerary.imageUrl || 'https://via.placeholder.com/150'}
-                                alt={itinerary.title}
-                                className={`itinerary-image ${countdown.text === 'Trip has ended' ? 'grayscale' : ''}`}
-                            />
-                            <div className="itinerary-info">
-                                <h3>{itinerary.title}</h3>
-                                <p>{itinerary.fullDestination}</p>
-                                <p>{itinerary.startDate} - {itinerary.endDate}</p>
-                                <span className="countdown" style={{ color: countdown.color }}>{countdown.text}</span>
-                            </div>
-                            {/* Dropdown Menu */}
-                            <div className="dropdown" onClick={(e) => e.stopPropagation()}>
-                                <button className="dropdown-button" onClick={() => toggleDropdown(index)}>...</button>
-                                <div className={`dropdown-content ${dropdownOpen === index ? 'show' : ''}`}>
-                                    {itinerary.type === 'shared' ? (
-                                        <>
-                                            <button onClick={() => handleViewParticipants(itinerary.itinerary_id)}>View Participants</button>
-                                            <button onClick={() => handleLeaveItineraryRequest(itinerary)}>Leave Itinerary</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button onClick={() => handleEditClick(itinerary)}>Edit</button>
-                                            <button onClick={() => handleInviteClick(itinerary)}>Add Friends</button>
-                                            <button onClick={() => handleOpenDeleteDialog(itinerary)}>Delete</button>
-                                        </>
-                                    )}
+                            <div className="card-overlay">
+                                <div className="card-status-row">
+                                    <span className={`countdown-badge ${ended ? 'ended' : ''}`}>{countdown.text}</span>
+                                    <span className={`role-chip ${itinerary.type === 'shared' ? 'guest' : 'host'}`}>
+                                        {itinerary.type === 'shared' ? 'Guest' : 'Host'}
+                                    </span>
+                                </div>
+                                <div className="dropdown" onClick={(e) => e.stopPropagation()}>
+                                    <button className="dropdown-button" onClick={() => toggleDropdown(index)}>⋮</button>
+                                    <div className={`dropdown-content ${dropdownOpen === index ? 'show' : ''}`}>
+                                        {itinerary.type === 'shared' ? (
+                                            <>
+                                                <button onClick={() => handleViewParticipants(itinerary.itinerary_id)}>View Participants</button>
+                                                <button onClick={() => handleLeaveItineraryRequest(itinerary)}>Leave Itinerary</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button onClick={() => handleEditClick(itinerary)}>Edit</button>
+                                                <button onClick={() => handleInviteClick(itinerary)}>Add Friends</button>
+                                                <button onClick={() => handleOpenDeleteDialog(itinerary)}>Delete</button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="card-copy">
+                                    <h3>{itinerary.title}</h3>
+                                    <p>{itinerary.fullDestination}</p>
+                                    <p>{itinerary.startDate} - {itinerary.endDate}</p>
                                 </div>
                             </div>
                         </div>
                     );
                 })}
+                {!showPast && filter === 'upcoming' && (
+                    (itineraries.length + sharedItineraries.length) > 4 ? (
+                        <div
+                            className="itinerary-card create-card"
+                            onClick={() => setShowPast(true)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <div className="create-itinerary-content">
+                                <span className="create-plus past-trips-label">
+                                    <b>View</b>
+                                    <b>Past</b>
+                                    <b>Trips</b>
+                                </span>
+                            </div>
+                        </div>
+                    ) : null
+                )}
+                {showPast ? (
+                    <div
+                        className="itinerary-card create-card"
+                        onClick={() => setShowPast(false)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <div className="create-itinerary-content">
+                            <span className="create-plus">Back To Upcoming</span>
+                        </div>
+                    </div>
+                ) : null}
             </div>
 
             <Dialog
@@ -492,18 +541,16 @@ const ItineraryView = () => {
                     <Button
                         onClick={async () => {
                             try {
-                                await apiClient.post('/sharing/leave', { itineraryId: itineraryToLeave.itinerary_id }, {
-                                    headers: {
-                                        Authorization: `Bearer ${currentUser.token}`,
-                                    },
-                                });
-                                alert('You have left the itinerary.');
+                                await apiClient.post('/sharing/leave', { itineraryId: itineraryToLeave.itinerary_id });
+                                setIsLeaveDialogOpen(false);
+                                setSuccessDialogMessage('You have left the itinerary.');
+                                setSuccessDialogOpen(true);
                                 fetchSharedItineraries();
                             } catch (error) {
                                 console.error('Failed to leave itinerary:', error);
-                                alert('Failed to leave itinerary.');
-                            } finally {
                                 setIsLeaveDialogOpen(false);
+                                setErrorDialogMessage('Failed to leave itinerary.');
+                                setErrorDialogOpen(true);
                             }
                         }}
                         className="dialog-button"
@@ -591,31 +638,36 @@ const ItineraryView = () => {
                     onClose={() => setIsEditModalOpen(false)}
                     maxWidth="sm"
                     fullWidth
+                    disableEnforceFocus
                 >
                     <ItineraryForm
                         itineraryToEdit={itineraryToEdit}
                         onClose={() => setIsEditModalOpen(false)}
                         onItinerarySaved={() => {
                             setIsEditModalOpen(false);
-                            fetchItinerariesWithImages(); 
+                            fetchItinerariesWithImages();
                         }}
                     />
                 </Dialog>
             )}
             {isInviteModalOpen && (
-                <div className="invite-modal">
-                    <div className="invite-modal-content">
-                        <button className="close-button" onClick={() => setIsInviteModalOpen(false)}>✖</button>
-                        <h3 className="invite-modal-title">Add Friend to Itinerary</h3>
-                        
-                        {/* Friends to Invite */}
-                        {friends.length > 0 ? (
+                <div className="invite-modal" onClick={() => setIsInviteModalOpen(false)}>
+                    <div className="invite-modal-content" onClick={(event) => event.stopPropagation()}>
+                        <div className="invite-modal-header">
+                            <h3>Add Friend to Itinerary</h3>
+                            <button type="button" className="invite-close" onClick={() => setIsInviteModalOpen(false)} aria-label="Close">
+                                ×
+                            </button>
+                        </div>
+                        <div className="invite-modal-body">
+                        {friendsToInvite.length > 0 ? (
                             <ul className="invite-friends-list">
-                                {friends.map((friend) => (
+                                {friendsToInvite.map((friend) => (
                                     <li key={friend.uid} className="invite-friend-item">
-                                        <img src={friend.profile_picture} alt={friend.first_name} className="profile-pic small" />
+                                        <img src={friend.profile_picture} alt="" className="profile-pic small" />
                                         <span className="friend-name">{friend.first_name} {friend.last_name}</span>
                                         <button
+                                            type="button"
                                             className={`add-button ${friend.isInvited ? "pending" : ""}`}
                                             onClick={() => sendInvite(friend.uid, `${friend.first_name} ${friend.last_name}`)}
                                             disabled={friend.isInvited}
@@ -626,21 +678,21 @@ const ItineraryView = () => {
                                 ))}
                             </ul>
                         ) : (
-                            <p>No friends available to invite. Add friends first!</p>
+                            <p className="invite-empty">
+                                {friends.length > 0
+                                    ? 'Everyone on your friends list is already on this trip.'
+                                    : 'No friends available to invite. Add friends first.'}
+                            </p>
                         )}
 
-                        {/* Horizontal Divider */}
-                        <hr className="divider-line" />
-
-                        {/* Friends Already in the Itinerary */}
-                        <h4 className="section-title">Friends Already Added</h4>
+                        <h4 className="invite-section-label">Friends Already Added</h4>
                         {participants.length > 0 ? (
                             <ul className="participants-list">
                                 {participants.map((participant) => (
                                     <li key={participant.user_id} className="participant-item">
                                         <img
                                             src={participant.profile_picture || "https://via.placeholder.com/50"}
-                                            alt={participant.first_name}
+                                            alt=""
                                             className="profile-pic small"
                                         />
                                         <span className="participant-name">
@@ -650,8 +702,9 @@ const ItineraryView = () => {
                                 ))}
                             </ul>
                         ) : (
-                            <p>No friends are currently added to this itinerary.</p>
+                            <p className="invite-empty">No friends are currently added to this itinerary.</p>
                         )}
+                        </div>
                     </div>
                 </div>
             )}

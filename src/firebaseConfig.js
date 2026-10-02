@@ -1,22 +1,34 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, setPersistence, browserLocalPersistence, connectAuthEmulator } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD-1JxrE5TZD0Vh5nSASAFaGw1Wr2P-Q8c",
-  authDomain: "travel-planner-20f6c.firebaseapp.com",
-  projectId: "travel-planner-20f6c",
-  storageBucket: "travel-planner-20f6c.appspot.com",
-  messagingSenderId: "540755138239",
-  appId: "1:540755138239:web:a511ebbf2d56e63a19d80a",
-  measurementId: "G-Y3CSC9K5QT",
-  databaseURL: "https://travel-planner-20f6c.firebaseio.com"
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
+  databaseURL: process.env.REACT_APP_DATABASE_URL || `https://${process.env.REACT_APP_PROJECT_ID}.firebaseio.com`
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
+
+if (process.env.REACT_APP_FIREBASE_AUTH_EMULATOR === 'true' && !auth.emulatorConfig) {
+  const emulatorHost = process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_URL || 'http://127.0.0.1:9099';
+  try {
+    connectAuthEmulator(auth, emulatorHost, { disableWarnings: true });
+  } catch (error) {
+    // connectAuthEmulator throws if it was already connected during hot reload
+    if (!String(error?.message || '').includes('already been called')) {
+      console.warn('Firebase Auth emulator connection skipped:', error.message);
+    }
+  }
+}
+
 setPersistence(auth, browserLocalPersistence);
 
 const googleProvider = new GoogleAuthProvider();
@@ -27,7 +39,6 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 appleProvider.addScope('email');
 appleProvider.addScope('name');
 
-// Initialize Firestore
 const db = getFirestore(app);
 
 export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);

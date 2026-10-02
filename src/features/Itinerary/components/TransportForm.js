@@ -1,379 +1,210 @@
-import React, { useState, useEffect } from 'react';
-import apiClient from '../../../api/apiClient';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-import './css/Forms.css';
-import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
-import { db } from '../../../firebaseConfig';
-import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
-import UploadFile from '../../Upload/UploadFile'; 
-import Loading from '../Loading'; 
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, IconButton } from '@mui/material'; 
-import CloseIcon from '@mui/icons-material/Close'; 
+import React, { useState } from 'react';
+import { localDateFromField, timeValue } from './bookingFields';
+import TimeField from './formKit/TimeField';
+import AirportSuggest from './AirportSuggest';
+import { Glyph, transportGlyph } from './overview/glyphs';
+import {
+    Chips, DateInput, Field, FormSheet, Grid, More, PlaceInput, TextInput,
+    joinLocal, localParts, outsideTrip, prettyDate, toDateField, useBookingSubmit, useTripDates,
+} from './formKit/FormKit';
 
-function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAdded, transportToEdit }) {
-    const initialDate = startDate ? new Date(startDate) : new Date();
-    const [type, setType] = useState('');
-    const [pickupTime, setPickupTime] = useState(null);
-    const [dropoffTime, setDropoffTime] = useState(null);
-    const [pickupLocation, setPickupLocation] = useState('');
-    const [dropoffLocation, setDropoffLocation] = useState('');
-    const [bookingReference, setBookingReference] = useState('');
-    const [pickupSearchBox, setPickupSearchBox] = useState(null);
-    const [dropoffSearchBox, setDropoffSearchBox] = useState(null);
-    const [isLoading, setIsLoading] = useState(false); 
-    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false); 
-    const [isOptionsDialogOpen, setIsOptionsDialogOpen] = useState(false); 
-    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false); 
-    const [isEmailPopupOpen, setIsEmailPopupOpen] = useState(false); 
-    const [error, setError] = useState(''); 
-    const [showWarningDialog, setShowWarningDialog] = useState(false);
-    const [pendingTransport, setPendingTransport] = useState(null);
-    const [itineraryStart, setItineraryStart] = useState(null);
-    const [itineraryEnd, setItineraryEnd] = useState(null);
-    
-    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const METHODS = ['Train', 'Bus', 'Taxi', 'Plane', 'Other'].map((label) => ({
+    value: label,
+    label,
+    glyph: label === 'Plane' ? 'flight' : transportGlyph(label),
+}));
 
-    useEffect(() => {
-        setIsLoading(true); 
-        if (transportToEdit) {
-            setTimeout(() => {
-                setType(transportToEdit.type);
-                setPickupTime(new Date(transportToEdit.pickup_time));
-                setDropoffTime(new Date(transportToEdit.dropoff_time));
-                setPickupLocation(transportToEdit.pickup_location);
-                setDropoffLocation(transportToEdit.dropoff_location);
-                setBookingReference(transportToEdit.booking_reference);
-                setIsLoading(false); 
-            }, 1000); 
-        } else {
-            setIsLoading(false); 
-        }
-    }, [transportToEdit]);
+const blank = {
+    type: '', pickupDate: '', pickupTime: '', dropDate: '', dropTime: '',
+    from: '', to: '', reference: '',
+};
 
-    useEffect(() => {
-        const fetchItineraryDates = async () => {
-            try {
-                const response = await apiClient.get(`/itineraries/${itineraryId}`);
-                const itinerary = response.data;
-    
-                if (itinerary) {
-                    console.log("Fetched Itinerary Data:", itinerary);
-                    setItineraryStart(new Date(itinerary.start_date));
-                    setItineraryEnd(new Date(itinerary.end_date));
-                } else {
-                    console.error("No itinerary found for ID:", itineraryId);
-                }
-            } catch (error) {
-                console.error("Error fetching itinerary dates:", error);
-            }
+const methodFrom = (value) => {
+    const found = METHODS.find((item) => item.value.toLowerCase() === String(value || '').toLowerCase());
+    if (found) return found.value;
+    return value ? 'Other' : '';
+};
+
+const initialFrom = (ride, prefill) => {
+    if (ride) {
+        const pickup = localParts(ride.pickup_time);
+        const drop = localParts(ride.dropoff_time);
+        return {
+            type: methodFrom(ride.type),
+            pickupDate: pickup.date,
+            pickupTime: pickup.time,
+            dropDate: drop.date,
+            dropTime: drop.time,
+            from: ride.pickup_location || '',
+            to: ride.dropoff_location || '',
+            reference: ride.booking_reference || '',
         };
-    
-        if (itineraryId) {
-            fetchItineraryDates();
+    }
+    if (!prefill) return blank;
+    const day = prefill.date ? toDateField(localDateFromField(prefill.date)) : '';
+    return {
+        ...blank,
+        type: methodFrom(prefill.method),
+        pickupDate: day,
+        pickupTime: prefill.time ? timeValue(prefill.time) : '',
+        from: prefill.location || '',
+    };
+};
+
+function TransportForm({ itineraryId, startDate, endDate, onClose, onTransportAdded, transportToEdit, prefill, onSwitch }) {
+    const [values, setValues] = useState(() => initialFrom(transportToEdit, prefill));
+    const [problem, setProblem] = useState('');
+    const trip = useTripDates(itineraryId, startDate, endDate);
+    const editing = Boolean(transportToEdit);
+    const save = useBookingSubmit({
+        resource: 'transport',
+        mirror: 'transports',
+        itineraryId,
+        editId: transportToEdit?.transport_id,
+        onSaved: onTransportAdded,
+    });
+
+    const set = (key) => (value) => setValues((current) => ({ ...current, [key]: value }));
+
+    const isPlane = values.type === 'Plane';
+    const hint = {
+        Train: 'Station or city',
+        Bus: 'Bus station, stop or city',
+        Taxi: 'Address or place',
+    }[values.type] || 'Station, stop or address';
+    const where = (id, key, required) => (isPlane ? (
+        <AirportSuggest id={id} required={required} value={values[key]} onChange={set(key)} placeholder="Airport code or city (YYZ, Toronto)" />
+    ) : (
+        <PlaceInput id={id} value={values[key]} onChange={set(key)} placeholder={hint} />
+    ));
+
+    const changePickupDate = (value) => {
+        setValues((current) => ({
+            ...current,
+            pickupDate: value,
+            dropDate: !current.dropDate || current.dropDate === current.pickupDate ? value : current.dropDate,
+        }));
+    };
+
+    const handleExtracted = (data) => {
+        const pickup = data.pickupTime ? localParts(data.pickupTime) : null;
+        const drop = data.dropoffTime ? localParts(data.dropoffTime) : null;
+        setValues((current) => ({
+            ...current,
+            type: data.type ? methodFrom(data.type) : current.type,
+            from: data.pickupLocation || current.from,
+            to: data.dropoffLocation || current.to,
+            reference: data.bookingReference || current.reference,
+            pickupDate: pickup?.date || current.pickupDate,
+            pickupTime: pickup?.time || current.pickupTime,
+            dropDate: drop?.date || current.dropDate,
+            dropTime: drop?.time || current.dropTime,
+        }));
+    };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (!values.type) {
+            setProblem('Please choose how you are travelling.');
+            return;
         }
-    }, [itineraryId]);    
-
-    const handleExtractedData = (data) => {
-        setType(data.type || type);
-        setPickupLocation(data.pickupLocation || pickupLocation);
-        setDropoffLocation(data.dropoffLocation || dropoffLocation);
-        setBookingReference(data.bookingReference || bookingReference);
-        if (data.pickupTime) setPickupTime(new Date(data.pickupTime));
-        if (data.dropoffTime) setDropoffTime(new Date(data.dropoffTime));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-    
-        const updatedTransport = {
-            type,
-            pickup_time: pickupTime.toISOString(),
-            dropoff_time: dropoffTime.toISOString(),
-            pickup_location: pickupLocation,
-            dropoff_location: dropoffLocation,
-            booking_reference: bookingReference,
-            itinerary_id: itineraryId
-        };
-    
-        const itineraryStart = new Date(startDate);
-        const itineraryEnd = new Date(endDate);
-    
-        if (
-            isNaN(itineraryStart.getTime()) || isNaN(itineraryEnd.getTime()) ||
-            pickupTime < itineraryStart || pickupTime > itineraryEnd ||
-            dropoffTime < itineraryStart || dropoffTime > itineraryEnd
-        ) {
-            console.log("Warning: Pickup or dropoff time is outside the itinerary range.");
-            setPendingTransport(updatedTransport);
-            setShowWarningDialog(true);  
-        } else {
-            await saveTransport(updatedTransport);
+        if (!values.pickupDate || !values.pickupTime || !values.from.trim()) {
+            setProblem('Please add where and when you are being picked up.');
+            return;
         }
-    
-        setIsLoading(false);
-    };
-
-    const saveTransport = async (transport) => {
-        try {
-            if (transportToEdit) {
-                const response = await apiClient.put(`/itineraries/${itineraryId}/transport/${transportToEdit.transport_id}`, transport);
-                onTransportAdded(response.data);
-                await updateDoc(doc(db, 'transports', transportToEdit.id), transport);
-            } else {
-                const response = await apiClient.post(`/itineraries/${itineraryId}/transport`, transport);
-                onTransportAdded(response.data);
-                await setDoc(doc(collection(db, 'transports')), transport);
-            }
-            setIsSuccessDialogOpen(true);  
-        } catch (error) {
-            console.error('Failed to save transport:', error);
-            setError('Failed to save transport. Please try again.');
+        if (values.dropDate && values.dropTime
+            && joinLocal(values.dropDate, values.dropTime) < joinLocal(values.pickupDate, values.pickupTime)) {
+            setProblem('The arrival needs to be after the pick-up.');
+            return;
         }
-    };    
-    
-
-    const handleClear = () => {
-        setType('');
-        setPickupTime(null);
-        setDropoffTime(null);
-        setPickupLocation('');
-        setDropoffLocation('');
-        setBookingReference('');
+        setProblem('');
+        save.submit({
+            type: values.type,
+            pickup_time: joinLocal(values.pickupDate, values.pickupTime),
+            dropoff_time: values.dropDate ? joinLocal(values.dropDate, values.dropTime || values.pickupTime) : null,
+            pickup_location: values.from.trim(),
+            dropoff_location: values.to.trim(),
+            booking_reference: values.reference.trim(),
+            itinerary_id: itineraryId,
+        }, outsideTrip([values.pickupDate, values.dropDate], trip.start, trip.end));
     };
 
-    const onPickupLoad = ref => {
-        setPickupSearchBox(ref);
-    };
-
-    const onDropoffLoad = ref => {
-        setDropoffSearchBox(ref);
-    };
-
-    const onPickupPlaceChanged = () => {
-        const places = pickupSearchBox.getPlaces();
-        if (places.length > 0) {
-            const place = places[0];
-            setPickupLocation(place.formatted_address);
-        }
-    };
-
-    const onDropoffPlaceChanged = () => {
-        const places = dropoffSearchBox.getPlaces();
-        if (places.length > 0) {
-            const place = places[0];
-            setDropoffLocation(place.formatted_address);
-        }
-    };
-
-    const handleOptionsDialogOpen = () => {
-        setIsOptionsDialogOpen(true);
-    };
-
-    const handleOptionsDialogClose = () => {
-        setIsOptionsDialogOpen(false);
-    };
-
-    const handleUploadDialogOpen = () => {
-        setIsOptionsDialogOpen(false);
-        setIsUploadDialogOpen(true);
-    };
-
-    const handleUploadDialogClose = () => {
-        setIsUploadDialogOpen(false);
-    };
-
-    const handleEmailPopupOpen = () => {
-        setIsOptionsDialogOpen(false);
-        setIsEmailPopupOpen(true);
-    };
-
-    const handleEmailPopupClose = () => {
-        setIsEmailPopupOpen(false);
-    };
-
-    const handleSuccessClose = () => {
-        setIsSuccessDialogOpen(false);
-        onClose();
-    };
-
-    const handleErrorClose = () => {
-        setError('');
+    const reset = () => {
+        setValues(blank);
+        save.again();
     };
 
     return (
-        <LoadScript googleMapsApiKey={apiKey} libraries={['places']}>
-            {isLoading && <Loading />} {/* Show loading component if loading */}
-            <div className="form-container full-size">
-                <button className="back-button" onClick={onClose}>Back</button>
-                <form onSubmit={handleSubmit}>
-                    <h2 className="form-title">{transportToEdit ? 'Edit Transportation' : 'Add Transportation'}</h2>
+        <FormSheet
+            category="transport"
+            title={editing ? 'Edit Transport' : 'Add Transport'}
+            subtitle="Trains, buses, taxis and transfers."
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            submitLabel={editing ? 'Save Changes' : 'Add Transport'}
+            busy={save.busy}
+            error={problem || save.error}
+            warning={save.warning ? {
+                title: 'This Is Outside Your Trip Dates',
+                text: `Your trip runs ${prettyDate(trip.start)} to ${prettyDate(trip.end)}. Add it anyway?`,
+                onConfirm: save.confirm,
+                onCancel: save.dismissWarning,
+            } : null}
+            done={save.done ? {
+                title: editing ? 'Transport Updated' : 'Transport Added',
+                text: `${values.type} on ${prettyDate(values.pickupDate)}${values.from ? `, from ${values.from}` : ''}.`,
+            } : null}
+            onAnother={reset}
+            canAddAnother={!editing}
+            upload={editing ? null : { type: 'transport', onData: handleExtracted }}
+        >
+            <Field label="How Are You Travelling?" required>
+                <Chips options={METHODS} value={values.type} onChange={set('type')} label="Method Of Transport" />
+            </Field>
 
-                    {/* Options Button */}
-                    <div className="upload-email-section">
-                        <button type="button" onClick={handleOptionsDialogOpen} className="options-button">Select Upload Options - Coming Soon!</button>
-                    </div>
+            {isPlane && onSwitch ? (
+                <div className="bk-banner is-info">
+                    <span>Flying? The flight form also keeps your airline, flight number and seat.</span>
+                    <div><button type="button" className="bk-btn small" onClick={() => onSwitch('flight')}>Use Flight Form</button></div>
+                </div>
+            ) : null}
 
-                    {/* Divider */}
-                    <div className="or-divider">or</div>
-
-                    <label>Method of Transportation:</label>
-                    <select 
-                        value={type} 
-                        onChange={e => setType(e.target.value)} 
-                        required 
-                        style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    >
-                        <option value="" disabled>Select Method</option>
-                        <option value="Plane">Plane</option>
-                        <option value="Train">Train</option>
-                        <option value="Bus">Bus</option>
-                        <option value="Taxi">Taxi</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <div className="date-fields">
-                        <label>Pickup Time:
-                        <DatePicker
-                            selected={pickupTime}
-                            onChange={date => setPickupTime(date)}
-                            minDate={itineraryStart}
-                            maxDate={itineraryEnd}
-                            placeholderText="Pickup Date & Time"
-                            showTimeSelect
-                            dateFormat="MMMM d, yyyy h:mm aa"
-                            timeFormat="HH:mm"
-                            timeIntervals={15}
-                            timeCaption="Time"
-                        />
-                        </label>
-                        <label>Dropoff Time:
-                        <DatePicker
-                            selected={dropoffTime}
-                            onChange={date => setDropoffTime(date)}
-                            minDate={itineraryStart}
-                            maxDate={itineraryEnd}
-                            placeholderText="Dropoff Date & Time"
-                            showTimeSelect
-                            dateFormat="MMMM d, yyyy h:mm aa"
-                            timeFormat="HH:mm"
-                            timeIntervals={15}
-                            timeCaption="Time"
-                        />
-                        </label>
-                    </div>
-                    <label>Pickup Location:
-                        <StandaloneSearchBox onLoad={onPickupLoad} onPlacesChanged={onPickupPlaceChanged}>
-                            <input
-                                type="text"
-                                value={pickupLocation}
-                                onChange={e => setPickupLocation(e.target.value)}
-                                placeholder="Enter pickup location"
-                                required
-                            />
-                        </StandaloneSearchBox>
-                    </label>
-                    <label>Dropoff Location:
-                        <StandaloneSearchBox onLoad={onDropoffLoad} onPlacesChanged={onDropoffPlaceChanged}>
-                            <input
-                                type="text"
-                                value={dropoffLocation}
-                                onChange={e => setDropoffLocation(e.target.value)}
-                                placeholder="Enter dropoff location"
-                                required
-                            />
-                        </StandaloneSearchBox>
-                    </label>
-                    <label>Booking Reference:
-                        <input type="text" value={bookingReference} onChange={(e) => setBookingReference(e.target.value)} required />
-                    </label>
-                    <div className="form-buttons">
-                        <button type="submit">{transportToEdit ? 'Save Changes' : 'Add Transport'}</button>
-                        <button type="button" onClick={handleClear}>Clear</button>
-                    </div>
-                </form>
-
-                {/* Warning Dialog */}
-                <Dialog open={showWarningDialog} onClose={() => setShowWarningDialog(false)}>
-                    <DialogTitle>Warning</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            The pickup or dropoff time is outside the itinerary dates. Do you want to proceed?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setShowWarningDialog(false)} className="dialog-button">Back</Button>
-                        <Button onClick={() => {
-                            saveTransport(pendingTransport);
-                            setShowWarningDialog(false);
-                        }} className="dialog-button">
-                            Proceed
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Success Dialog */}
-                <Dialog open={isSuccessDialogOpen} onClose={handleSuccessClose}>
-                    <DialogTitle>Success</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Transport successfully {transportToEdit ? 'updated' : 'added'}!
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleSuccessClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Error Dialog */}
-                <Dialog open={Boolean(error)} onClose={handleErrorClose}>
-                    <DialogTitle>Error</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>{error}</DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleErrorClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Options Dialog */}
-                <Dialog open={isOptionsDialogOpen} onClose={handleOptionsDialogClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle style={{ textAlign: 'center' }}>Select Options</DialogTitle>
-                    <DialogContent>
-                        <Button onClick={handleUploadDialogOpen} className="dialog-button">Upload File</Button>
-                        <Button onClick={handleEmailPopupOpen} className="dialog-button">Email Us Your Booking</Button>
-                    </DialogContent>
-                </Dialog>
-
-                {/* Upload File Popup */}
-                <Dialog open={isUploadDialogOpen} onClose={handleUploadDialogClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle>Upload Your File</DialogTitle>
-                    <DialogContent>
-                        <UploadFile onExtractedData={handleExtractedData} />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleUploadDialogClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Email Us Popup */}
-                <Dialog open={isEmailPopupOpen} onClose={handleEmailPopupClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle>
-                        Forward Your Booking
-                        <IconButton onClick={handleEmailPopupClose} className="close-icon">
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText className="dialog-content-text">
-                            Please forward your booking confirmation emails to <br />
-                            <strong>bookings@yourdomain.com</strong>.
-                            <br />We will extract the details and update your itinerary automatically.
-                        </DialogContentText>
-                    </DialogContent>
-                </Dialog>
+            <div className="bk-when">
+                <strong><Glyph name="clock" size={16} /> Pick-Up</strong>
+                <Grid cols={2}>
+                    <Field label="Date" required htmlFor="tr-pd">
+                        <DateInput id="tr-pd" value={values.pickupDate} onChange={changePickupDate} />
+                    </Field>
+                    <Field label="Time" required>
+                        <TimeField value={values.pickupTime} onChange={set('pickupTime')} clearable={false} />
+                    </Field>
+                </Grid>
+                <Field label={isPlane ? 'Departure Airport' : 'From'} required htmlFor="tr-from">
+                    {where('tr-from', 'from', true)}
+                </Field>
             </div>
-        </LoadScript>
+
+            <div className="bk-when">
+                <strong><Glyph name="pin" size={16} /> Arrival</strong>
+                <Grid cols={2}>
+                    <Field label="Date" htmlFor="tr-dd">
+                        <DateInput id="tr-dd" value={values.dropDate} onChange={set('dropDate')} min={values.pickupDate} />
+                    </Field>
+                    <Field label="Time">
+                        <TimeField value={values.dropTime} onChange={set('dropTime')} />
+                    </Field>
+                </Grid>
+                <Field label={isPlane ? 'Arrival Airport' : 'To'} htmlFor="tr-to">
+                    {where('tr-to', 'to', false)}
+                </Field>
+            </div>
+
+            <More label="Booking Reference" startOpen={Boolean(values.reference)}>
+                <Field label="Booking Reference" htmlFor="tr-ref">
+                    <TextInput id="tr-ref" value={values.reference} onChange={(e) => set('reference')(e.target.value)} maxLength={80} />
+                </Field>
+            </More>
+        </FormSheet>
     );
 }
 

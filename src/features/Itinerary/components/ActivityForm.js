@@ -1,368 +1,145 @@
-import React, { useState, useEffect } from 'react';
-import "react-datepicker/dist/react-datepicker.css";
-import { doc, setDoc, updateDoc, collection } from "firebase/firestore";
-import { db } from '../../../firebaseConfig';
-import { LoadScript, StandaloneSearchBox } from '@react-google-maps/api';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, IconButton } from '@mui/material';
-import apiClient from '../../../api/apiClient';
-import DatePicker from 'react-datepicker';
-import UploadFile from '../../Upload/UploadFile'; 
-import Loading from '../Loading'; 
-import './css/Forms.css';
-import CloseIcon from '@mui/icons-material/Close';
+import React, { useState } from 'react';
+import { localDateFromField, timeValue } from './bookingFields';
+import TimeField from './formKit/TimeField';
+import {
+    DateInput, Field, FormSheet, Grid, More, PlaceInput, TextInput,
+    prettyDate, toDateField, useBookingSubmit, useTripDates, outsideTrip,
+} from './formKit/FormKit';
 
-function ActivityForm({ itineraryId, startDate, endDate, onClose, onActivityAdded, activityToEdit }) {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [location, setLocation] = useState('');
-    const [activityDate, setActivityDate] = useState(null);
-    const [startTime, setStartTime] = useState(null);
-    const [endTime, setEndTime] = useState(null);
-    const [reservationNumber, setReservationNumber] = useState('');
-    const [searchBox, setSearchBox] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
-    const [isEmailPopupOpen, setIsEmailPopupOpen] = useState(false); 
-    const [isOptionsDialogOpen, setIsOptionsDialogOpen] = useState(false); 
-    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false); 
-    const [error, setError] = useState('');
-    const [showWarningDialog, setShowWarningDialog] = useState(false);
-    const [pendingActivity, setPendingActivity] = useState(null);
+const blank = { title: '', date: '', start: '', end: '', location: '', confirmation: '', notes: '' };
 
-
-    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-
-    useEffect(() => {
-        console.log("Itinerary Start Date:", startDate);
-        console.log("Itinerary End Date:", endDate);
-
-        setIsLoading(true);
-        if (activityToEdit) {
-            setTimeout(() => {
-                setTitle(activityToEdit.title);
-                setDescription(activityToEdit.description);
-                setLocation(activityToEdit.location);
-                setActivityDate(new Date(activityToEdit.activity_date));
-                setStartTime(parseTime(activityToEdit.start_time));
-                setEndTime(activityToEdit.end_time ? parseTime(activityToEdit.end_time) : null);
-                setReservationNumber(activityToEdit.reservation_number);
-                setIsLoading(false);
-            }, 1000);
-        } else {
-            setIsLoading(false);
-        }
-    }, [activityToEdit]);    
-
-    const formatDateTime = (dateTime, includeTime = false) => {
-        if (!dateTime) return 'N/A';
-        const options = {
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long',   
-            day: 'numeric',  
+const initialFrom = (activity, prefill) => {
+    if (activity) {
+        return {
+            title: activity.title || '',
+            date: toDateField(activity.activity_date),
+            start: timeValue(activity.start_time),
+            end: timeValue(activity.end_time),
+            location: activity.location || '',
+            confirmation: activity.reservation_number || '',
+            notes: activity.description || '',
         };
-        const date = new Date(dateTime);
-        let formattedDate = date.toLocaleDateString('en-US', options);
-    
-        if (includeTime) {
-            const timeString = date.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true, 
-            });
-            formattedDate = `${formattedDate}, ${timeString}`;
-        }
-    
-        return formattedDate;
+    }
+    if (!prefill) return blank;
+    return {
+        ...blank,
+        title: prefill.title || '',
+        date: prefill.date ? toDateField(localDateFromField(prefill.date)) : '',
+        start: prefill.time ? timeValue(prefill.time) : '',
+        location: prefill.location || '',
+        notes: prefill.description || '',
     };
-    
-    const parseTime = (timeString) => {
-        if (!timeString) return null;
-        const [hours, minutes] = timeString.split(':');
-        const date = new Date();
-        date.setHours(hours, minutes, 0, 0);
-        return date;
-    };
-    
-    const handleExtractedData = (data) => {
-        setTitle(data.title || title);
-        setLocation(data.location || location);
-        setReservationNumber(data.reservationNumber || reservationNumber);
-        if (data.activityDate) setActivityDate(new Date(data.activityDate));
-        if (data.startTime) setStartTime(data.startTime);
-        if (data.endTime) setEndTime(data.endTime);
+};
+
+function ActivityForm({ itineraryId, startDate, endDate, onClose, onActivityAdded, activityToEdit, prefill }) {
+    const [values, setValues] = useState(() => initialFrom(activityToEdit, prefill));
+    const [problem, setProblem] = useState('');
+    const trip = useTripDates(itineraryId, startDate, endDate);
+    const editing = Boolean(activityToEdit);
+    const save = useBookingSubmit({
+        resource: 'activities',
+        mirror: 'activities',
+        itineraryId,
+        editId: activityToEdit?.activity_id,
+        onSaved: onActivityAdded,
+    });
+
+    const set = (key) => (value) => setValues((current) => ({ ...current, [key]: value }));
+
+    const handleExtracted = (data) => {
+        setValues((current) => ({
+            ...current,
+            title: data.title || current.title,
+            location: data.location || current.location,
+            notes: data.description || current.notes,
+            confirmation: data.reservationNumber || current.confirmation,
+            date: data.activityDate ? (toDateField(localDateFromField(data.activityDate)) || current.date) : current.date,
+            start: data.startTime ? timeValue(data.startTime) : current.start,
+            end: data.endTime ? timeValue(data.endTime) : current.end,
+        }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-    
-        const updatedActivity = {
-            title,
-            description,
-            location,
-            activity_date: activityDate.toISOString().split('T')[0], 
-            start_time: startTime ? startTime.toTimeString().split(' ')[0].substring(0, 5) : null, 
-            end_time: endTime ? endTime.toTimeString().split(' ')[0].substring(0, 5) : null, 
-            reservation_number: reservationNumber,
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (!values.title.trim() || !values.date) {
+            setProblem('Please add a name and a date.');
+            return;
+        }
+        if (values.start && values.end && values.end <= values.start) {
+            setProblem('The end time needs to be after the start time.');
+            return;
+        }
+        setProblem('');
+        save.submit({
+            title: values.title.trim(),
+            description: values.notes.trim(),
+            location: values.location.trim(),
+            activity_date: values.date,
+            start_time: values.start || null,
+            end_time: values.end || null,
+            reservation_number: values.confirmation.trim(),
             itinerary_id: itineraryId,
-        };
-    
-        if (activityDate < new Date(startDate) || activityDate > new Date(endDate)) {
-            setPendingActivity(updatedActivity);
-            setShowWarningDialog(true);
-        } else {
-            await saveActivity(updatedActivity);
-        }
-    };    
-    
-    const saveActivity = async (activity) => {
-        setIsLoading(true);
-        try {
-            let response;
-            if (activityToEdit) {
-                response = await apiClient.put(`/itineraries/${itineraryId}/activities/${activityToEdit.activity_id}`, activity);
-                await updateDoc(doc(db, 'activities', activityToEdit.id), activity);
-            } else {
-                response = await apiClient.post(`/itineraries/${itineraryId}/activities`, activity);
-                await setDoc(doc(collection(db, 'activities')), activity);
-            }
-    
-            if (onActivityAdded) {
-                onActivityAdded(response.data);
-            }
-    
-            setIsSuccessDialogOpen(true); 
-        } catch (error) {
-            console.error('Failed to save activity:', error);
-            setError('Failed to save activity. Please try again.');
-        }
-        setIsLoading(false);
-    };        
-
-    const handleClear = () => {
-        setTitle('');
-        setDescription('');
-        setLocation('');
-        setActivityDate(null);
-        setStartTime(null);
-        setEndTime(null);
-        setReservationNumber('');
+        }, outsideTrip([values.date], trip.start, trip.end));
     };
 
-    const onLoad = ref => {
-        setSearchBox(ref);
-    };
-
-    const onPlacesChanged = () => {
-        const places = searchBox.getPlaces();
-        if (places.length > 0) {
-            const place = places[0];
-            setLocation(place.formatted_address);
-        }
-    };
-
-    const handleSuccessClose = () => {
-        setIsSuccessDialogOpen(false);
-        onClose();
-    };
-
-    const handleErrorClose = () => {
-        setError('');
-    };
-
-    const handleOptionsDialogOpen = () => {
-        setIsOptionsDialogOpen(true);
-    };
-
-    const handleOptionsDialogClose = () => {
-        setIsOptionsDialogOpen(false);
-    };
-
-    const handleEmailPopupOpen = () => {
-        setIsOptionsDialogOpen(false);
-        setIsEmailPopupOpen(true);
-    };
-
-    const handleUploadDialogOpen = () => {
-        setIsOptionsDialogOpen(false);
-        setIsUploadDialogOpen(true);
-    };
-
-    const handleUploadDialogClose = () => {
-        setIsUploadDialogOpen(false);
-    };
-
-    const handleEmailPopupClose = () => {
-        setIsEmailPopupOpen(false);
+    const reset = () => {
+        setValues(blank);
+        save.again();
     };
 
     return (
-        <LoadScript googleMapsApiKey={apiKey} libraries={['places']}>
-            {isLoading && <Loading />}
-            <div className="form-container full-size" style={{ position: 'relative' }}>
-                <button className="back-button" onClick={onClose}>Back</button>
-                <form onSubmit={handleSubmit}>
-                    <h2 className="form-title">{activityToEdit ? 'Edit Activity' : 'Add Activity'}</h2>
-                    
-                    <div className="upload-email-section">
-                        <button type="button" onClick={handleOptionsDialogOpen} className="options-button">Select Upload Options - Coming Soon!</button>
-                    </div>
-                    
-                    {/* Divider positioned below the Select Options button */}
-                    <div className="or-divider">or</div>
+        <FormSheet
+            category="activity"
+            title={editing ? 'Edit Activity' : 'Add An Activity'}
+            subtitle="Tours, tickets, sights and anything fun."
+            onClose={onClose}
+            onSubmit={handleSubmit}
+            submitLabel={editing ? 'Save Changes' : 'Add Activity'}
+            busy={save.busy}
+            error={problem || save.error}
+            warning={save.warning ? {
+                title: 'This Is Outside Your Trip Dates',
+                text: `Your trip runs ${prettyDate(trip.start)} to ${prettyDate(trip.end)}. Add it anyway?`,
+                onConfirm: save.confirm,
+                onCancel: save.dismissWarning,
+            } : null}
+            done={save.done ? {
+                title: editing ? 'Activity Updated' : 'Activity Added',
+                text: `${values.title} is on your trip${values.date ? ` for ${prettyDate(values.date)}` : ''}.`,
+            } : null}
+            onAnother={reset}
+            canAddAnother={!editing}
+            upload={editing ? null : { type: 'activity', onData: handleExtracted }}
+        >
+            <Field label="What Are You Doing?" required htmlFor="act-title">
+                <TextInput id="act-title" value={values.title} onChange={(e) => set('title')(e.target.value)} maxLength={100} placeholder="Christ The Redeemer Visit" autoFocus={!prefill} />
+            </Field>
 
-                    <label>Title:
-                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={100} required />
-                    </label>
-                    <label>Location:
-                        <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={e => setLocation(e.target.value)}
-                                placeholder="Enter location"
-                                required
-                            />
-                        </StandaloneSearchBox>
-                    </label>
-                    <div className="date-fields">
-                    <label>Activity Date:
-                        <DatePicker
-                            selected={activityDate}
-                            onChange={date => setActivityDate(date)}
-                            minDate={new Date(startDate)}
-                            maxDate={new Date(endDate)}
-                            dateFormat="yyyy-MM-dd"
-                        />
-                    </label>
-                    <label>Start Time:
-                        <DatePicker
-                            selected={startTime}
-                            onChange={date => setStartTime(date)}
-                            showTimeSelect
-                            showTimeSelectOnly
-                            timeFormat="HH:mm"
-                            timeIntervals={15}
-                            dateFormat="HH:mm"
-                            timeCaption="Time"
-                        />
-                    </label>
-                    <label>End Time:
-                        <DatePicker
-                            selected={endTime}
-                            onChange={date => setEndTime(date)}
-                            showTimeSelect
-                            showTimeSelectOnly
-                            timeFormat="HH:mm"
-                            timeIntervals={15}
-                            dateFormat="HH:mm"
-                            timeCaption="Time"
-                            placeholderText="Optional" 
-                            className="time-picker"
-                        />
-                    </label>
-                    </div>
-                    <label>Reservation Number:
-                        <input type="text" value={reservationNumber} onChange={e => setReservationNumber(e.target.value)} maxLength={50} />
-                    </label>
-                    <label>Description:
-                        <textarea
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                            rows="5"
-                            maxLength={500}
-                            style={{ width: '100%' }}
-                        />
-                    </label>
-                    <div className="form-buttons">
-                        <button type="submit">{activityToEdit ? 'Save Changes' : 'Add Activity'}</button>
-                        <button type="button" onClick={handleClear}>Clear</button>
-                    </div>
-                </form>
+            <Grid cols={3}>
+                <Field label="Date" required htmlFor="act-date">
+                    <DateInput id="act-date" value={values.date} onChange={set('date')} />
+                </Field>
+                <Field label="Starts">
+                    <TimeField value={values.start} onChange={set('start')} />
+                </Field>
+                <Field label="Ends">
+                    <TimeField value={values.end} onChange={set('end')} />
+                </Field>
+            </Grid>
 
-                {/* Warning Dialog */}
-                <Dialog open={showWarningDialog} onClose={() => setShowWarningDialog(false)}>
-                    <DialogTitle>Warning</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            This activity falls outside your itinerary dates. Do you wish to proceed?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setShowWarningDialog(false)}>Back</Button>
-                        <Button onClick={() => {
-                            setShowWarningDialog(false);
-                            saveActivity(pendingActivity); 
-                        }} color="primary">
-                            Yes
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+            <Field label="Where" hint="Add an address so it shows up on the map." htmlFor="act-where">
+                <PlaceInput id="act-where" value={values.location} onChange={set('location')} placeholder="Search for a place or address" onPick={(place) => place && setValues((current) => ({ ...current, title: current.title.trim() ? current.title : place.name }))} />
+            </Field>
 
-                {/* Success Dialog */}
-                <Dialog open={isSuccessDialogOpen} onClose={handleSuccessClose}>
-                    <DialogTitle>Success</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Activity successfully {activityToEdit ? 'updated' : 'added'}!
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleSuccessClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Error Dialog */}
-                <Dialog open={Boolean(error)} onClose={handleErrorClose}>
-                    <DialogTitle>Error</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>{error}</DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleErrorClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Options Dialog */}
-                <Dialog open={isOptionsDialogOpen} onClose={handleOptionsDialogClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle style={{ textAlign: 'center' }}>Select Options</DialogTitle>
-                    <DialogContent>
-                        <Button onClick={handleUploadDialogOpen} className="dialog-button">Upload File</Button>
-                        <Button onClick={handleEmailPopupOpen} className="dialog-button">Email Us Your Booking</Button>
-                    </DialogContent>
-                </Dialog>
-
-
-                {/* Upload File Popup */}
-                <Dialog open={isUploadDialogOpen} onClose={handleUploadDialogClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle>Upload Your File</DialogTitle>
-                    <DialogContent>
-                        <UploadFile onExtractedData={handleExtractedData} />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleUploadDialogClose} className="dialog-button">Close</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Email Us Popup */}
-                <Dialog open={isEmailPopupOpen} onClose={handleEmailPopupClose} classes={{ paper: 'dialog-content-wide' }}>
-                    <DialogTitle>
-                        Forward Your Booking
-                        <IconButton onClick={handleEmailPopupClose} className="close-icon">
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-                    <DialogContent>
-                        <DialogContentText className="dialog-content-text">
-                            Please forward your booking confirmation emails to <br />
-                            <strong>bookings@yourdomain.com</strong>.
-                            <br />We will extract the details and update your itinerary automatically.
-                        </DialogContentText>
-                    </DialogContent>
-                </Dialog>
-            </div>
-        </LoadScript>
-
+            <More label="Confirmation And Notes" startOpen={Boolean(values.confirmation || values.notes)}>
+                <Field label="Confirmation Number" htmlFor="act-conf">
+                    <TextInput id="act-conf" value={values.confirmation} onChange={(e) => set('confirmation')(e.target.value)} maxLength={50} />
+                </Field>
+                <Field label="Notes" htmlFor="act-notes">
+                    <textarea id="act-notes" className="bk-input" value={values.notes} onChange={(e) => set('notes')(e.target.value)} rows={3} maxLength={500} placeholder="Meeting point, what to bring, tips" />
+                </Field>
+            </More>
+        </FormSheet>
     );
 }
 

@@ -1,24 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword, signOut, sendEmailVerification, signInWithEmailAndPassword } from 'firebase/auth';
-import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
+import { getAuth, createUserWithEmailAndPassword, signOut, sendEmailVerification, updateProfile } from 'firebase/auth';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import apiClient from '../api/apiClient'; 
-import './css/SignUp.css'; 
+import apiClient from '../api/apiClient';
+import AuthShell from '../Components/AuthShell';
+import { friendlyAuthError, skipEmailVerification } from '../utils/authErrors';
+import { socialSignIn } from '../utils/socialAuth';
+import './css/Login.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
 
-import Beach from './css/Images/Beach.jpg';
-import Hollywood from './css/Images/Hollywood.jpg';
-import London from './css/Images/London.jpg';
-import Louvre from './css/Images/Louvre.jpg';
-import Mountains from './css/Images/Mountains.jpg';
-import Paris from './css/Images/Paris.jpg';
-import Rome from './css/Images/Rome.jpg';
-import TajMahal from './css/Images/Taj Mahal.jpg';
-import Toronto from './css/Images/Toronto.jpg';
-import Vegas from './css/Images/Vegas.jpg';
-import Venice from './css/Images/Venice.jpg';
+const REQUIREMENTS = [
+  { key: 'minLength', label: '8+ Characters' },
+  { key: 'hasUpper', label: 'Uppercase Letter' },
+  { key: 'hasNumber', label: 'Number' },
+  { key: 'hasSymbol', label: 'Symbol' },
+];
 
 function SignUp() {
   const navigate = useNavigate();
@@ -28,11 +25,11 @@ function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [passwordMatchError, setPasswordMatchError] = useState(false);
-  const [resendEmail, setResendEmail] = useState(''); 
-  const [showResendDialog, setShowResendDialog] = useState(false); 
-  const [resendMessage, setResendMessage] = useState(''); 
-  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [socialBusy, setSocialBusy] = useState(false);
+  const [socialNotice, setSocialNotice] = useState('');
+  const [resendEmail, setResendEmail] = useState('');
+  const [showResendDialog, setShowResendDialog] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const [showEmailSentDialog, setShowEmailSentDialog] = useState(false);
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
@@ -41,75 +38,80 @@ function SignUp() {
     hasUpper: false,
   });
 
-  const backgroundImages = [
-    Beach,
-    Hollywood,
-    London,
-    Louvre,
-    Mountains,
-    Paris,
-    Rome,
-    TajMahal,
-    Toronto,
-    Vegas,
-    Venice,
-  ];
-
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-    document.querySelector('.background-container').style.backgroundImage = `url(${backgroundImages[randomIndex]})`;
-  }, []);
-
-  const validatePassword = (password) => {
-    const requirements = {
-      minLength: password.length >= 8,
-      hasNumber: /\d/.test(password),
-      hasSymbol: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-      hasUpper: /[A-Z]/.test(password),
-    };
-    setPasswordRequirements(requirements);
+  const validatePassword = (value) => {
+    setPasswordRequirements({
+      minLength: value.length >= 8,
+      hasNumber: /\d/.test(value),
+      hasSymbol: /[!@#$%^&*(),.?":{}|<>]/.test(value),
+      hasUpper: /[A-Z]/.test(value),
+    });
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-  
+
     if (!Object.values(passwordRequirements).every(Boolean)) {
       setPasswordError('Password does not meet requirements.');
       return;
     }
-  
+
     if (password !== confirmPassword) {
       setPasswordError('Passwords do not match.');
       return;
     }
-  
+
+    setPasswordError('');
     const auth = getAuth();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  
-      await sendEmailVerification(userCredential.user);
-  
-      await signOut(auth);
-  
-      setShowEmailSentDialog(true); 
-    } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        setPasswordError('Email already has an account. Please log in.');
-      } else {
-        setPasswordError(error.message);
+      const displayName = `${firstName} ${lastName}`.trim();
+      if (displayName) {
+        await updateProfile(userCredential.user, { displayName });
       }
+
+      if (skipEmailVerification) {
+        try {
+          await apiClient.post('/users/sync');
+        } catch (syncError) {
+          console.error('User sync failed after signup:', syncError);
+        }
+        navigate('/');
+        return;
+      }
+
+      await sendEmailVerification(userCredential.user);
+      await signOut(auth);
+      setShowEmailSentDialog(true);
+    } catch (error) {
+      setPasswordError(friendlyAuthError(error));
     }
-  };  
+  };
+
+  const handleSocialSignUp = async (provider) => {
+    if (socialBusy) return;
+    setSocialBusy(true);
+    setPasswordError('');
+    setSocialNotice('');
+    const result = await socialSignIn(provider);
+    setSocialBusy(false);
+    if (result.ok) {
+      navigate('/');
+    } else if (result.notice) {
+      setSocialNotice(result.message);
+    } else {
+      setPasswordError(result.message);
+    }
+  };
 
   const handleResendVerification = async () => {
     const auth = getAuth();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, resendEmail, 'tempPassword');
-  
+
       await sendEmailVerification(userCredential.user);
-  
+
       await auth.signOut();
-  
+
       setResendMessage(`Verification email has been sent to ${resendEmail}. Please check your inbox.`);
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
@@ -119,116 +121,135 @@ function SignUp() {
         console.error('Error resending verification email:', error);
       }
     }
-  };  
-  
+  };
+
+  const mismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
   return (
-    <div className="background-container">
-      <div className="puzzle-pieces" id="pieces1"></div>
-      <div className="puzzle-pieces" id="pieces2"></div>
-      <div className="puzzle-pieces" id="pieces3"></div>
-  
-      <div className="auth-box">
-        <h1>Sign Up and Start Planning Today!</h1>
-  
-        <form onSubmit={handleSignUp} className="auth-form">
-          {/* Form Inputs */}
-          <div className="name-fields">
+    <AuthShell wide>
+      <h1 className="auth-title">Start Planning Today!</h1>
+      <p className="auth-subtitle">Create Your Account To Build Your First Itinerary</p>
+
+      <div className="auth-social">
+        <button
+          type="button"
+          onClick={() => handleSocialSignUp('google')}
+          className="auth-social-btn is-google"
+          disabled={socialBusy}
+        >
+          <FontAwesomeIcon icon={faGoogle} /> Sign Up With Google
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSocialSignUp('apple')}
+          className="auth-social-btn is-apple"
+          disabled={socialBusy}
+        >
+          <FontAwesomeIcon icon={faApple} /> Sign Up With Apple
+        </button>
+      </div>
+
+      <div className="auth-or">Or Use Your Email</div>
+
+      <form onSubmit={handleSignUp} className="auth-form">
+        <div className="auth-row">
+          <label className="auth-field">
+            <span>First Name</span>
             <input
+              className="auth-input"
               type="text"
               placeholder="First Name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="name-input"
             />
+          </label>
+          <label className="auth-field">
+            <span>Last Name</span>
             <input
+              className="auth-input"
               type="text"
               placeholder="Last Name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="name-input"
             />
-          </div>
+          </label>
+        </div>
+
+        <label className="auth-field">
+          <span>Email</span>
           <input
+            className="auth-input"
             type="email"
-            placeholder="Email"
+            placeholder="Enter Your Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          {/* Password Fields */}
-          <div className="password-fields">
-            <div className="password-input-wrapper">
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  validatePassword(e.target.value);
-                  setShowPasswordRequirements(true);
-                }}
-                onBlur={() => setShowPasswordRequirements(false)}
-                className={passwordMatchError ? 'error-input' : ''}
-              />
-            </div>
-            <div className="password-input-wrapper">
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={passwordMatchError ? 'error-input' : ''}
-              />
-            </div>
-          </div>
-  
-          {/* Errors */}
-          {passwordError && <p className="password-error">{passwordError}</p>}
-  
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="auth-button"
-            onMouseEnter={() => setShowPasswordRequirements(false)}
-          >
-            Sign up
-          </button>
-  
-          {/* Resend Verification Button */}
+        </label>
+
+        <div className="auth-row">
+          <label className="auth-field">
+            <span>Password</span>
+            <input
+              className="auth-input"
+              type="password"
+              placeholder="Create Password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                validatePassword(e.target.value);
+              }}
+            />
+          </label>
+          <label className="auth-field">
+            <span>Confirm Password</span>
+            <input
+              className={`auth-input${mismatch ? ' is-invalid' : ''}`}
+              type="password"
+              placeholder="Repeat Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </label>
+        </div>
+
+        <ul className="auth-reqs">
+          {REQUIREMENTS.map((item) => (
+            <li key={item.key} className={passwordRequirements[item.key] ? 'is-met' : ''}>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+
+        <button type="submit" className="auth-submit">Sign Up</button>
+
+        <div className="auth-center">
           <button
             type="button"
-            className="resend-verification-button"
+            className="auth-link"
             onClick={() => setShowResendDialog(true)}
           >
             Resend Verification Email
           </button>
-        </form>
-  
-        <div className="divider"></div>
-  
-        {/* Social Signups */}
-        <div className="social-signup">
-          <button onClick={signInWithGoogle} className="auth-google-btn">
-            <FontAwesomeIcon icon={faGoogle} /> Sign up with Google
-          </button>
-          <button onClick={signInWithApple} className="auth-apple-btn">
-            <FontAwesomeIcon icon={faApple} /> Sign up with Apple
-          </button>
         </div>
-  
-        <div className="auth-footer">
-          Already have an account?{' '}
-          <button className="login-button" onClick={() => navigate('/login')}>
-            Log in
-          </button>
-        </div>
+      </form>
+
+      {passwordError && <p className="auth-error">{passwordError}</p>}
+      {socialNotice && <p className="auth-notice">{socialNotice}</p>}
+
+      <div className="auth-footer">
+        Already have an account?
+        <button type="button" className="auth-link" onClick={() => navigate('/login')}>
+          Log In
+        </button>
       </div>
-  
+
       {/* Resend Verification Popup */}
       <Dialog
         open={showResendDialog}
         onClose={() => setShowResendDialog(false)}
+        PaperProps={{ className: 'auth-dialog-paper' }}
       >
-        <DialogTitle style={{ textAlign: 'center' }}>Resend Verification Email</DialogTitle>
+        <DialogTitle>Resend Verification Email</DialogTitle>
         <DialogContent style={{ textAlign: 'center' }}>
           {!resendMessage ? (
             <>
@@ -237,10 +258,10 @@ function SignUp() {
               </DialogContentText>
               <input
                 type="email"
-                placeholder="Enter your email"
+                className="auth-dialog-input"
+                placeholder="Enter Your Email"
                 value={resendEmail}
                 onChange={(e) => setResendEmail(e.target.value)}
-                style={{ width: '100%', padding: '8px', marginTop: '10px' }}
               />
             </>
           ) : (
@@ -250,7 +271,7 @@ function SignUp() {
         <DialogActions>
           {!resendMessage ? (
             <>
-              <Button onClick={() => setShowResendDialog(false)} className="dialog-button">Cancel</Button>
+              <Button onClick={() => setShowResendDialog(false)} className="dialog-button is-outline">Cancel</Button>
               <Button onClick={handleResendVerification} className="dialog-button">Submit</Button>
             </>
           ) : (
@@ -263,8 +284,9 @@ function SignUp() {
       <Dialog
         open={showEmailSentDialog}
         onClose={() => setShowEmailSentDialog(false)}
+        PaperProps={{ className: 'auth-dialog-paper' }}
       >
-        <DialogTitle style={{ textAlign: 'center' }}>Email Sent</DialogTitle>
+        <DialogTitle>Email Sent</DialogTitle>
         <DialogContent style={{ textAlign: 'center' }}>
           <DialogContentText>
             A verification email has been sent to <strong>{email}</strong>. Please check your inbox and follow the instructions to verify your email.
@@ -282,9 +304,8 @@ function SignUp() {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
-  );  
-
+    </AuthShell>
+  );
 }
 
 export default SignUp;

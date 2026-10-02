@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../../api/apiClient';
 import './css/ItineraryForm.css';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import AutoComplete from './AutoComplete';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { randomLocalSceneryIndex, sceneryImages, useHeldCrossfade } from '../../../utils/scenery';
 
 const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
     const [itinerary, setItinerary] = useState({
@@ -15,17 +16,33 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
         end_date: ''
     });
 
-    const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+    const [createdItinerary, setCreatedItinerary] = useState(null);
     const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
     const [error, setError] = useState('');
     const [isDestinationValid, setIsDestinationValid] = useState(false);
+    const [startSlide] = useState(() => randomLocalSceneryIndex());
+    const scenery = useHeldCrossfade({ initialIndex: startSlide, intervalMs: 16000 });
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        if (itineraryToEdit) return;
+        const destination = (searchParams.get('destination') || '').trim();
+        const title = (searchParams.get('title') || '').trim();
+        if (!destination && !title) return;
+        setItinerary((prev) => ({
+            ...prev,
+            destination: destination || prev.destination,
+            title: title || prev.title,
+        }));
+        if (destination) setIsDestinationValid(true);
+    }, [itineraryToEdit, searchParams]);
 
     useEffect(() => {
         if (itineraryToEdit) {
             setItinerary({
                 title: itineraryToEdit.title,
-                destination: itineraryToEdit.destinations ? itineraryToEdit.destinations.trim() : '',
+                destination: (itineraryToEdit.destinations || itineraryToEdit.fullDestination || '').trim(),
                 start_date: itineraryToEdit.start_date,
                 end_date: itineraryToEdit.end_date
             });
@@ -62,33 +79,60 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
         }));
     };
 
+    const parseLocalDate = (value) => {
+        if (!value) return null;
+        if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+        const isoDay = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (isoDay) {
+            return new Date(Number(isoDay[1]), Number(isoDay[2]) - 1, Number(isoDay[3]));
+        }
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date;
+    };
+
+    const toDateValue = (value) => {
+        if (!value) return null;
+        const text = String(value);
+        const isoDay = text.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (isoDay) return isoDay[1];
+        const date = parseLocalDate(value);
+        if (!date) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!isDestinationValid) {
-            setError('Please select a valid destination from the suggestions.');
+        if (!itineraryToEdit && !isDestinationValid) {
+            setError('Please select a city from the suggestions.');
             return;
         }
-        if (itineraryToEdit) {
-            setIsSaveDialogOpen(true);
-        } else {
-            handleSave();
-        }
+        handleSave();
     };
 
     const handleSave = async () => {
         try {
+            setError('');
             const { title, start_date, end_date, destination } = itinerary;
             const payload = {
-                title,
-                start_date,
-                end_date,
-                destinations: destination 
+                title: String(title || '').trim(),
+                start_date: toDateValue(start_date),
+                end_date: toDateValue(end_date),
+                destinations: String(destination || itineraryToEdit?.destinations || itineraryToEdit?.fullDestination || '').trim()
             };
+
+            if (!payload.title || !payload.start_date || !payload.end_date || !payload.destinations) {
+                setError('Title, city, and dates are required.');
+                return;
+            }
 
             if (itineraryToEdit) {
                 await apiClient.put(`/itineraries/${itineraryToEdit.itinerary_id}`, payload);
             } else {
-                await apiClient.post('/itineraries', payload);
+                const response = await apiClient.post('/itineraries', payload);
+                setCreatedItinerary(response.data);
                 setIsSuccessDialogOpen(true);
             }
 
@@ -96,13 +140,12 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                 onItinerarySaved();
             }
 
-            setIsSaveDialogOpen(false);
-            if (onClose) {
+            if (itineraryToEdit && onClose) {
                 onClose();
             }
         } catch (error) {
             console.error('Failed to save itinerary:', error);
-            setError('Failed to save itinerary. Please try again.');
+            setError(error.response?.data?.error || 'Failed to save itinerary. Please try again.');
         }
     };
 
@@ -121,10 +164,22 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
         if (onClose) {
             onClose();
         }
-        navigate('/itineraries-View'); 
+        navigate('/itineraries-view');
     };
     
     return (
+        <div className={itineraryToEdit ? 'edit-itinerary-wrap' : 'create-itinerary-page'}>
+            {!itineraryToEdit ? (
+                <div className="create-carousel" style={{ backgroundImage: `url(${sceneryImages[scenery.base]})` }}>
+                    {sceneryImages.map((image, index) => (
+                        <div
+                            key={image}
+                            className={`create-carousel-slide${index === scenery.base ? ' is-base' : ''}${index === scenery.incoming ? ' is-incoming' : ''}`}
+                            style={{ backgroundImage: `url(${image})` }}
+                        />
+                    ))}
+                </div>
+            ) : null}
         <div className="popup-form">
             <form onSubmit={handleSubmit} noValidate>
                 <h2>{itineraryToEdit ? 'Edit Itinerary' : 'Create New Itinerary'}</h2>
@@ -137,7 +192,7 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                     onChange={handleChange}
                     required
                 />
-                <label htmlFor="destination">Destination</label>
+                <label htmlFor="destination">City</label>
                 <div className="destination-input">
                     {itineraryToEdit ? (
                         <input
@@ -161,9 +216,9 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
 
                 <label htmlFor="start_date">Start Date</label>
                 <DatePicker
-                    selected={itinerary.start_date ? new Date(itinerary.start_date) : null}
+                    selected={parseLocalDate(itinerary.start_date)}
                     onChange={handleStartDateChange}
-                    minDate={new Date()}
+                    minDate={itineraryToEdit ? undefined : new Date()}
                     dateFormat="yyyy-MM-dd"
                     placeholderText="yyyy-mm-dd"
                     required
@@ -171,9 +226,9 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
 
                 <label htmlFor="end_date">End Date</label>
                 <DatePicker
-                    selected={itinerary.end_date ? new Date(itinerary.end_date) : null}
+                    selected={parseLocalDate(itinerary.end_date)}
                     onChange={handleEndDateChange}
-                    minDate={itinerary.start_date ? new Date(itinerary.start_date) : new Date()}
+                    minDate={parseLocalDate(itinerary.start_date) || (itineraryToEdit ? undefined : new Date())}
                     dateFormat="yyyy-MM-dd"
                     placeholderText="yyyy-mm-dd"
                     required
@@ -185,32 +240,14 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                 </div>
             </form>
             <Dialog
-                open={isSaveDialogOpen}
-                onClose={() => setIsSaveDialogOpen(false)}
-            >
-                <DialogTitle>Confirm Save</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to save changes? This may affect the itinerary plan.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsSaveDialogOpen(false)} className="dialog-button">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} className="dialog-button">
-                        Save
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Dialog
                 open={isSuccessDialogOpen}
                 onClose={handleSuccessClose}
+                disableEnforceFocus
             >
-                <DialogTitle>Success</DialogTitle>
+                <DialogTitle>Success!</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Itinerary successfully created!
+                        {createdItinerary?.title || 'Your trip'} is ready and can be viewed in View Itineraries.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -237,6 +274,7 @@ const ItineraryForm = ({ itineraryToEdit, onClose, onItinerarySaved }) => {
                     </DialogActions>
                 </Dialog>
             )}
+        </div>
         </div>
     );
 };

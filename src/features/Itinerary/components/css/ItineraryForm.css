@@ -1,148 +1,250 @@
-input:invalid {
-    border: 2px solid red;
+.create-itinerary-page {
+    position: relative;
+    min-height: calc(100vh - 93px);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 28px;
+    box-sizing: border-box;
+    background: #222946;
 }
 
-input:invalid:focus {
-    outline: none;
-    box-shadow: 0 0 5px red;
+.create-carousel {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: #222946;
+    background-size: cover;
+    background-position: center;
 }
 
-form {
+.create-carousel-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    z-index: 0;
+}
+
+.create-carousel-slide.is-base {
+    opacity: 1;
+}
+
+.create-carousel-slide.is-incoming {
+    z-index: 1;
+    animation: scenery-fade-in 2.8s ease forwards;
+}
+
+@keyframes scenery-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.create-carousel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(16, 20, 38, 0.5), rgba(16, 20, 38, 0.68));
+}
+
+.create-itinerary-page .popup-form,
+.edit-itinerary-wrap .popup-form {
+    position: relative;
+    z-index: 1;
+    width: min(680px, 92%);
+    box-sizing: border-box;
+    overflow: visible;
+    padding: 0;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1.5px solid rgba(243, 171, 3, 0.72);
+    box-shadow:
+        0 0 0 1px rgba(34, 41, 70, 0.22),
+        0 22px 48px rgba(8, 12, 28, 0.32);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.edit-itinerary-wrap .popup-form {
+    width: 100%;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.create-itinerary-page form,
+.edit-itinerary-wrap form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 20px;
-    background: #f5f5f5;
-    border-radius: 8px;
+    gap: 6px;
+    margin: 0;
+    padding: 32px 36px 28px;
+    background: transparent;
+    border-radius: 24px;
     position: relative;
 }
 
-.popup-form {
-    z-index: 3000; /* Ensure it appears above the navbar */
-    overflow-y: auto; /* Allow scrolling within the form if content overflows */
-}
-
-/* Ensure the Google Places Autocomplete dropdown is visible */
-.pac-container {
-    z-index: 3000 !important; 
-}
-
-/* Navbar styling */
-.navbar {
-    z-index: 1000; 
-}
-
-h2 {
-    margin-bottom: 10px;
+.create-itinerary-page h2,
+.edit-itinerary-wrap h2 {
+    margin: 0 0 14px;
     color: #222946;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-align: center;
 }
 
-button {
-    padding: 8px 16px;
-    border: none;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
+.create-itinerary-page label,
+.edit-itinerary-wrap label {
+    margin: 8px 0 0;
+    color: #222946;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
-button:hover {
-    background-color: #f3ab03;
+.create-itinerary-page input[type="text"],
+.create-itinerary-page input[type="date"],
+.create-itinerary-page .react-datepicker__input-container input,
+.edit-itinerary-wrap input[type="text"],
+.edit-itinerary-wrap .react-datepicker__input-container input,
+.create-itinerary-page .destination-input input,
+.edit-itinerary-wrap .destination-input input {
+    width: 100%;
+    height: 52px;
+    margin: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
+    border: 1.5px solid rgba(34, 41, 70, 0.45) !important;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.72);
+    color: #111111;
+    font-size: 16px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
-.primary-button {
-    background-color: #222946;
+.create-itinerary-page input:hover,
+.create-itinerary-page .react-datepicker__input-container input:hover,
+.edit-itinerary-wrap input:hover,
+.edit-itinerary-wrap .react-datepicker__input-container input:hover,
+.create-itinerary-page .destination-input input:hover,
+.edit-itinerary-wrap .destination-input input:hover {
+    border-color: #222946 !important;
+    background: rgba(255, 255, 255, 0.92);
 }
 
-.secondary-button {
-    background-color: #222946;
+.create-itinerary-page input:disabled,
+.edit-itinerary-wrap input:disabled {
+    background: rgba(244, 245, 248, 0.8);
+    color: #5c647c;
 }
 
-.close-icon {
-    background-color: transparent;
-    border: none;
-    color: #333;
-    font-size: 20px;
-    position: absolute;
-    top: 10px;
-    right: 50px;
-    cursor: pointer;
+.create-itinerary-page input:focus,
+.create-itinerary-page .react-datepicker__input-container input:focus,
+.edit-itinerary-wrap input:focus,
+.edit-itinerary-wrap .react-datepicker__input-container input:focus,
+.create-itinerary-page .destination-input input:focus,
+.edit-itinerary-wrap .destination-input input:focus {
+    outline: none;
+    border-color: #f3ab03 !important;
+    box-shadow: 0 0 0 3px rgba(243, 171, 3, 0.28) !important;
+    background: #ffffff;
 }
 
-.close-icon:hover {
-    transform: scale(1.4);
-    font-weight: bold;
+.create-itinerary-page .react-datepicker-wrapper,
+.edit-itinerary-wrap .react-datepicker-wrapper,
+.create-itinerary-page .react-datepicker__input-container,
+.edit-itinerary-wrap .react-datepicker__input-container,
+.create-itinerary-page .destination-input,
+.edit-itinerary-wrap .destination-input {
+    display: block;
+    width: 100%;
 }
 
-label {
-    font-weight: bold;
+.create-itinerary-page .error-message,
+.edit-itinerary-wrap .error-message {
+    margin: 4px 0 0;
+    color: #8a1f1f;
+    font-size: 14px;
+    font-weight: 700;
 }
 
-input[type="text"],
-input[type="date"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-input[type="text"]:focus,
-input[type="date"]:focus {
-    border-color: #007BFF;
-    box-shadow: 0 0 5px rgba(0,123,255,0.5);
-}
-
-.destination-field {
+.create-itinerary-page .form-buttons,
+.edit-itinerary-wrap .form-buttons {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-}
-
-.destination-input {
-    display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
+    margin-top: 22px;
 }
 
-.add-destination,
-.remove-destination {
-    background-color: #222946;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    font-size: 18px;
+.create-itinerary-page .form-buttons button,
+.edit-itinerary-wrap .form-buttons button {
+    width: 100% !important;
+    height: 48px;
+    min-height: 48px;
+    margin: 0;
+    padding: 0 18px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.create-itinerary-page .primary-button,
+.edit-itinerary-wrap .primary-button {
+    border: none !important;
+    background: #f3ab03 !important;
+    color: #222946 !important;
+}
+
+.create-itinerary-page .primary-button:hover,
+.edit-itinerary-wrap .primary-button:hover {
+    background: #ffc437 !important;
+    color: #222946 !important;
+    opacity: 1;
+}
+
+.create-itinerary-page .secondary-button,
+.edit-itinerary-wrap .secondary-button {
+    border: 1px solid rgba(34, 41, 70, 0.55) !important;
+    background: transparent !important;
+    color: #222946 !important;
+}
+
+.create-itinerary-page .secondary-button:hover,
+.edit-itinerary-wrap .secondary-button:hover {
+    border-color: #f3ab03 !important;
+    background: transparent !important;
+    color: #f3ab03 !important;
+    opacity: 1;
+}
+
+.create-itinerary-page .dialog-button,
+.edit-itinerary-wrap .dialog-button {
+    background: #222946;
+    color: #ffffff;
     border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    cursor: pointer;
 }
 
-.remove-destination {
-    background-color: red;
+.pac-container {
+    z-index: 3000 !important;
+    border-radius: 12px;
 }
 
-.add-destination:hover,
-.remove-destination:hover {
-    background-color: #f3ab03;
+.react-datepicker-popper {
+    z-index: 3000;
 }
-
-.form-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.form-buttons button {
-    flex: 1;
-}
-
-.dialog-button {
-    background-color: #222946;
-    color: white;
-}
-
-.dialog-button:hover {
-    background-color: #f3ab03;
-}
-
-/* --------------------------------------------------- */
-

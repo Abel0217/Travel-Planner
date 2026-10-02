@@ -1,0 +1,270 @@
+/* Shared emoji / GIF popovers used by Live Chat and Notes */
+.apple-emoji {
+  display: inline-block;
+  width: 1.25em;
+  height: 1.25em;
+  margin: 0 0.04em;
+  vertical-align: -0.25em;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.soc-pop {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  z-index: 60;
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+  overflow: hidden;
+  border: 1px solid rgba(34, 41, 70, 0.12);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(20, 26, 52, 0.28);
+  animation: soc-pop-in 0.16s ease-out;
+}
+
+.soc-pop.is-left { left: 0; }
+.soc-pop.is-right { right: 0; }
+.soc-pop.is-below { bottom: auto; top: calc(100% + 10px); }
+
+@keyframes soc-pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.soc-pop aside.EmojiPickerReact,
+.soc-pop .EmojiPickerReact {
+  border: 0 !important;
+  border-radius: 18px !important;
+  font-family: inherit;
+}
+
+.soc-pop-loading {
+  padding: 40px 20px;
+  color: #6b7186;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* GIF picker (search + categories + two-column grid) */
+.soc-gif {
+  width: 400px;
+  padding: 14px 14px 10px;
+}
+
+.soc-gif-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.soc-gif-search svg {
+  position: absolute;
+  left: 14px;
+  color: #8b91a6;
+  pointer-events: none;
+}
+
+.soc-gif-search input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  margin: 0;
+  padding: 0 40px 0 40px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background: #eef0f6;
+  color: #222946;
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+.soc-gif-search input:focus {
+  border-color: #f3ab03;
+  background: #ffffff;
+}
+
+.soc-gif-search button {
+  position: absolute;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #c9cde0;
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.soc-gif-cats {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 7px;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 2px 0 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-x;
+}
+
+.soc-gif-cats.is-drag { cursor: grabbing; }
+.soc-gif-cats::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+.soc-gif-cats button {
+  flex: none;
+  width: auto !important;
+  margin: 0;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #eef0f6;
+  color: #3b4468;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.soc-gif-cats button:hover { background: #fff1cc; }
+.soc-gif-cats button.is-on { background: #222946; color: #f3ab03; }
+
+.soc-gif-grid {
+  display: flex;
+  gap: 6px;
+  height: min(300px, calc(100vh - 460px));
+  min-height: 160px;
+  margin-top: 10px;
+  overflow-y: auto;
+  position: relative;
+  align-items: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 41, 70, 0.28) transparent;
+}
+
+.soc-gif-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.soc-gif-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: #eceef5;
+  cursor: pointer;
+}
+
+.soc-gif-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.2s;
+}
+
+.soc-gif-item:hover img { transform: scale(1.05); }
+
+.soc-gif-note {
+  position: absolute;
+  right: 0;
+  left: 0;
+  margin: 110px 0 0;
+  color: #6b7186;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.soc-gif-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 2px 0;
+  color: #9aa0b4;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.soc-gif-foot button {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #9aa0b4;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.soc-gif-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px;
+}
+
+.soc-gif-setup h4 { margin: 0; color: #222946; font-size: 19px; font-weight: 800; }
+.soc-gif-setup p { margin: 0; color: #5b6178; font-size: 13.5px; line-height: 1.5; }
+.soc-gif-setup ol { margin: 0; padding-left: 20px; color: #3b4468; font-size: 13.5px; line-height: 1.7; }
+.soc-gif-setup a { color: #2a56c6; font-weight: 700; }
+
+.soc-gif-setup input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1.5px solid #e3e6f0;
+  border-radius: 12px;
+  background: #f5f6fa;
+  color: #222946;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.soc-gif-setup input:focus { border-color: #f3ab03; background: #ffffff; }
+
+.soc-gif-setup button {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #222946;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.soc-gif-setup button:disabled { opacity: 0.45; cursor: default; }
+.soc-gif-setup button:not(:disabled):hover { background: #2e3763; }
+.soc-gif-setup small { color: #8b91a6; font-size: 11px; line-height: 1.4; }
+.soc-gif-error { color: #c0392b; font-size: 12.5px; font-weight: 700; }
+
+@media (max-width: 520px) {
+  .soc-gif { width: calc(100vw - 24px); }
+}

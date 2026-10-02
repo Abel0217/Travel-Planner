@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useLayoutEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import NavBar from './Components/NavBar';
+import Footer from './Components/Footer';
 import ItineraryView from './features/ItineraryView'; 
 import ItineraryForm from './features/Itinerary/components/ItineraryForm';
 import ItineraryDetails from './features/Itinerary/components/ItineraryDetails';
@@ -17,7 +18,9 @@ import SignUp from './Pages/SignUp';
 import Reminders from './features/Notifications';
 import Expense from './features/Expense';
 import FriendsPage from './features/Friends/FriendsPage';
-import { AuthContextProvider, AuthContext } from './Contexts/AuthContext';
+import TravelGuidePage from './features/TravelGuide/TravelGuidePage';
+import GoogleMapsProvider from './Components/GoogleMapsProvider';
+import { AuthContext, AuthContextProvider } from './Contexts/AuthContext';
 import './App.css';
 
 // Private Wrapper for Authenticated Routes
@@ -32,21 +35,32 @@ function PrivateWrapper({ children }) {
   return <>{children}</>;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <AuthContextProvider>
       <Router>
+        <ScrollToTop />
         <NavBar />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-
           {/* Private Routes */}
           <Route
             path="/*"
             element={
               <PrivateWrapper>
+                <GoogleMapsProvider>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/itineraries-view" element={<ItineraryView />} />
@@ -61,12 +75,17 @@ function App() {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/notifications" element={<Reminders />} />
                   <Route path="/friends" element={<FriendsPage />} />
+                  <Route path="/travel-guide" element={<TravelGuidePage />} />
+                  <Route path="/travel-guide/:country/:city" element={<TravelGuidePage />} />
                   <Route path="/expenses" element={<Expense />} />
+                  <Route path="/expenses/:itineraryId" element={<Expense />} />
                 </Routes>
+                </GoogleMapsProvider>
               </PrivateWrapper>
             }
           />
         </Routes>
+        <Footer />
       </Router>
     </AuthContextProvider>
   );

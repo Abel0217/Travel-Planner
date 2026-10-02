@@ -53,18 +53,13 @@ router.post('/sync', async (req, res) => {
 router.put('/profile', async (req, res) => {
     try {
         const { uid } = req.user; 
-        const { first_name, last_name } = req.body; 
+        const { first_name, last_name, date_of_birth } = req.body; 
 
-        console.log('Incoming UID:', uid);
-        console.log('Incoming Data:', req.body);
-
-        // Update only the first_name and last_name for now
         const updatedUser = await db.updateUserDetails({
             uid,
             first_name,
             last_name,
-            date_of_birth: null, 
-            profile_picture: null,
+            date_of_birth: date_of_birth || null,
         });
 
         if (updatedUser) {
@@ -105,6 +100,72 @@ router.get('/name', verifyToken, async (req, res) => {
     } catch (error) {
         console.error('Error fetching user name:', error);
         res.status(500).json({ error: 'Internal server error while fetching user name.' });
+    }
+});
+
+const EMAIL_PREF_KEYS = ['trip_reminder', 'booking_added', 'expense_added', 'trip_wrap', 'friend_request', 'trip_invite', 'chat_message'];
+
+router.get('/email-preferences', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT trip_reminder, booking_added, expense_added, trip_wrap, friend_request, trip_invite, chat_message
+             FROM core.email_preferences
+             WHERE user_uid = $1`,
+            [req.user.uid]
+        );
+        res.json(rows[0] || {
+            trip_reminder: true,
+            booking_added: true,
+            expense_added: true,
+            trip_wrap: true,
+            friend_request: true,
+            trip_invite: true,
+            chat_message: true,
+        });
+    } catch (error) {
+        console.error('Error fetching email preferences:', error);
+        res.status(500).json({ error: 'Failed to load email preferences.' });
+    }
+});
+
+router.put('/email-preferences', async (req, res) => {
+    try {
+        const existing = await pool.query(
+            `SELECT trip_reminder, booking_added, expense_added, trip_wrap, friend_request, trip_invite, chat_message
+             FROM core.email_preferences WHERE user_uid = $1`,
+            [req.user.uid]
+        );
+        const current = existing.rows[0] || {
+            trip_reminder: true,
+            booking_added: true,
+            expense_added: true,
+            trip_wrap: true,
+            friend_request: true,
+            trip_invite: true,
+            chat_message: true,
+        };
+        EMAIL_PREF_KEYS.forEach((key) => {
+            if (typeof req.body[key] === 'boolean') current[key] = req.body[key];
+        });
+        const { rows } = await pool.query(
+            `INSERT INTO core.email_preferences (user_uid, trip_reminder, booking_added, expense_added, trip_wrap, friend_request, trip_invite, chat_message, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+             ON CONFLICT (user_uid) DO UPDATE SET
+                trip_reminder = EXCLUDED.trip_reminder,
+                booking_added = EXCLUDED.booking_added,
+                expense_added = EXCLUDED.expense_added,
+                trip_wrap = EXCLUDED.trip_wrap,
+                friend_request = EXCLUDED.friend_request,
+                trip_invite = EXCLUDED.trip_invite,
+                chat_message = EXCLUDED.chat_message,
+                updated_at = NOW()
+             RETURNING trip_reminder, booking_added, expense_added, trip_wrap, friend_request, trip_invite, chat_message`,
+            [req.user.uid, current.trip_reminder, current.booking_added, current.expense_added, current.trip_wrap, current.friend_request, current.trip_invite, current.chat_message !== false]
+        );
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Error saving email preferences:', error);
+        res.status(500).json({ error: 'Failed to save email preferences.' });
     }
 });
 

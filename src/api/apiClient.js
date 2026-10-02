@@ -12,8 +12,6 @@ apiClient.interceptors.request.use(async (config) => {
     if (currentUser) {
         const token = await currentUser.getIdToken(true);
 
-        console.log('Firebase ID Token:', token);
-
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }

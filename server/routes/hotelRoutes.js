@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true });
 const db = require('../database/dbOperations');
 const firestoreDb = require('../firebaseAdmin'); 
 const verifyToken = require('../FirebaseToken'); // Firebase token verification
+const { notifyBookingAdded } = require('../services/tripMail');
 
 // Apply token verification middleware to all hotel routes
 router.use(verifyToken);
@@ -49,6 +50,13 @@ router.post('/', async (req, res) => {
             booking_confirmation
         );
 
+        notifyBookingAdded({
+            itineraryId: req.params.itineraryId,
+            actorUid: owner_id,
+            bookingType: 'Stay',
+            summary: hotel_name || 'a stay',
+            refKey: `hotel:${newHotel.hotel_id || newHotel.id || hotel_name}`,
+        });
         res.status(201).json(newHotel);
     } catch (error) {
         console.error('Error adding hotel:', error);

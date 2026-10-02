@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const db = require('../database/dbOperations');
 const verifyToken = require('../FirebaseToken'); // Import the Firebase token middleware
+const { notifyBookingAdded } = require('../services/tripMail');
 
 // Apply the token verification middleware to all routes
 router.use(verifyToken);
@@ -53,6 +54,13 @@ router.post('/', async (req, res) => {
             end_time,
             reservation_number
         );
+        notifyBookingAdded({
+            itineraryId: itinerary_id,
+            actorUid: owner_id,
+            bookingType: 'Activity',
+            summary: title || 'an activity',
+            refKey: `activity:${newActivity.activity_id || newActivity.id || title}`,
+        });
         res.status(201).json(newActivity);
     } catch (error) {
         console.error('Failed to add activity:', error);

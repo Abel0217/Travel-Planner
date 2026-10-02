@@ -1,88 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
-import { signInWithGoogle, signInWithApple } from '../firebaseConfig';
 import apiClient from '../api/apiClient';
+import AuthShell from '../Components/AuthShell';
+import { friendlyAuthError, skipEmailVerification } from '../utils/authErrors';
+import { socialSignIn } from '../utils/socialAuth';
 import './css/Login.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 
-import Beach from './css/Images/Beach.jpg';
-import Hollywood from './css/Images/Hollywood.jpg';
-import London from './css/Images/London.jpg';
-import Louvre from './css/Images/Louvre.jpg';
-import Mountains from './css/Images/Mountains.jpg';
-import Paris from './css/Images/Paris.jpg';
-import Rome from './css/Images/Rome.jpg';
-import TajMahal from './css/Images/Taj Mahal.jpg';
-import Toronto from './css/Images/Toronto.jpg';
-import Vegas from './css/Images/Vegas.jpg';
-import Venice from './css/Images/Venice.jpg';
-
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [showPasswordResetPopup, setShowPasswordResetPopup] = useState(false); 
-  const [resetEmail, setResetEmail] = useState(''); 
-  const [resetMessage, setResetMessage] = useState(''); 
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false); 
+  const [loginNotice, setLoginNotice] = useState('');
+  const [socialBusy, setSocialBusy] = useState(false);
+  const [showPasswordResetPopup, setShowPasswordResetPopup] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const navigate = useNavigate();
-
-  const backgroundImages = [
-    Beach, Hollywood, London, Louvre, Mountains, Paris, Rome,
-    TajMahal, Toronto, Vegas, Venice,
-  ];
-
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-    document.querySelector('.background-container').style.backgroundImage = `url(${backgroundImages[randomIndex]})`;
-  }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();
+    setLoginError('');
     const auth = getAuth();
-  
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  
+
       const user = userCredential.user;
-      if (!user.emailVerified) {
-        await signOut(auth); 
+      if (!skipEmailVerification && !user.emailVerified) {
+        await signOut(auth);
         setLoginError('Your email is not verified. Please check your inbox and verify your email.');
         return;
       }
-  
-      await apiClient.post('/users/sync');
+
+      try {
+        await apiClient.post('/users/sync');
+      } catch (syncError) {
+        console.error('User sync failed after login:', syncError);
+      }
       navigate('/');
     } catch (error) {
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        setLoginError('Incorrect email or password.');
-      } else {
-        setLoginError(error.message);
-      }
+      setLoginError(friendlyAuthError(error));
     }
   };
-
-  const resendVerificationEmail = async () => {
-    const auth = getAuth();
-  
-    try {
-      const user = auth.currentUser;
-  
-      if (user && !user.emailVerified) {
-        await user.sendEmailVerification();
-        setResetMessage('Verification email resent. Please check your inbox.');
-        setShowSuccessPopup(true); 
-      } else {
-        setResetMessage('Your email is already verified.');
-      }
-    } catch (error) {
-      console.error('Error resending verification email:', error);
-      setResetMessage('Failed to resend verification email. Please try again later.');
-    }
-  };  
 
   const handlePasswordReset = async () => {
     const auth = getAuth();
@@ -90,89 +54,103 @@ function Login() {
       await sendPasswordResetEmail(auth, resetEmail);
       setResetMessage(`Password reset email has been sent to ${resetEmail}. Please check your inbox.`);
       setShowPasswordResetPopup(false);
-      setShowSuccessPopup(true); 
+      setShowSuccessPopup(true);
     } catch (error) {
       setResetMessage('Failed to send password reset email. Please check the email address.');
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      await signInWithGoogle();
-      await apiClient.post('/users/sync');
+  const handleSocialLogin = async (provider) => {
+    if (socialBusy) return;
+    setSocialBusy(true);
+    setLoginError('');
+    setLoginNotice('');
+    const result = await socialSignIn(provider);
+    setSocialBusy(false);
+    if (result.ok) {
       navigate('/');
-    } catch (error) {
-      setLoginError(error.message);
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    try {
-      await signInWithApple();
-      navigate('/');
-    } catch (error) {
-      setLoginError(error.message);
+    } else if (result.notice) {
+      setLoginNotice(result.message);
+    } else {
+      setLoginError(result.message);
     }
   };
 
   return (
-    <div className="background-container">
-      <div className="puzzle-piece" id="piece1"></div>
-      <div className="puzzle-piece" id="piece2"></div>
-      <div className="puzzle-piece" id="piece3"></div>
+    <AuthShell>
+      <h1 className="auth-title">Welcome Back!</h1>
+      <p className="auth-subtitle">Your Adventures Await</p>
 
-      <div className="auth-box">
-        <h1>Welcome Back! Your Adventures Await</h1>
+      <div className="auth-social">
+        <button
+          type="button"
+          onClick={() => handleSocialLogin('google')}
+          className="auth-social-btn is-google"
+          disabled={socialBusy}
+        >
+          <FontAwesomeIcon icon={faGoogle} /> Log In With Google
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSocialLogin('apple')}
+          className="auth-social-btn is-apple"
+          disabled={socialBusy}
+        >
+          <FontAwesomeIcon icon={faApple} /> Log In With Apple
+        </button>
+      </div>
 
-        <div className="social-login">
-          <button onClick={handleGoogleLogin} className="auth-google-btn">
-            <FontAwesomeIcon icon={faGoogle} /> Log in with Google
-          </button>
-          <button onClick={handleAppleLogin} className="auth-apple-btn">
-            <FontAwesomeIcon icon={faApple} /> Log in with Apple
-          </button>
-        </div>
+      <div className="auth-or">Or Use Your Email</div>
 
-        <div className="divider"></div>
-
-        <form onSubmit={handleLogin} className="auth-form">
+      <form onSubmit={handleLogin} className="auth-form">
+        <label className="auth-field">
+          <span>Email</span>
           <input
+            className="auth-input"
             type="email"
-            placeholder="Email"
+            placeholder="Enter Your Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+        </label>
+        <label className="auth-field">
+          <span>Password</span>
           <input
+            className="auth-input"
             type="password"
-            placeholder="Password"
+            placeholder="Enter Your Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="auth-button">Log in</button>
-          <div className="forgot-password">
-            <button
-              className="forgot-password-button"
-              onClick={() => setShowPasswordResetPopup(true)}
-            >
-              Forgot Your Password?
-            </button>
-          </div>
-        </form>
-
-        {loginError && <p className="auth-error">{loginError}</p>}
-
-        <div className="auth-footer">
-          Don't have an account yet? <button className="signup-button" onClick={() => navigate('/signup')}>Sign up</button>
+        </label>
+        <button type="submit" className="auth-submit">Log In</button>
+        <div className="auth-center">
+          <button
+            type="button"
+            className="auth-link"
+            onClick={() => setShowPasswordResetPopup(true)}
+          >
+            Forgot Your Password?
+          </button>
         </div>
+      </form>
+
+      {loginError && <p className="auth-error">{loginError}</p>}
+      {loginNotice && <p className="auth-notice">{loginNotice}</p>}
+
+      <div className="auth-footer">
+        Don't have an account yet?
+        <button type="button" className="auth-link" onClick={() => navigate('/signup')}>Sign Up</button>
       </div>
 
       {/* Password Reset Popup */}
       <Dialog
         open={showPasswordResetPopup}
         onClose={() => setShowPasswordResetPopup(false)}
+        PaperProps={{ className: 'auth-dialog-paper' }}
       >
         <DialogTitle>Password Reset</DialogTitle>
-        <DialogContent style={{ textAlign: 'center' }}> 
+        <DialogContent style={{ textAlign: 'center' }}>
           {!resetMessage ? (
             <>
               <DialogContentText>
@@ -180,10 +158,10 @@ function Login() {
               </DialogContentText>
               <input
                 type="email"
-                placeholder="Enter your email"
+                className="auth-dialog-input"
+                placeholder="Enter Your Email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                style={{ width: '100%', padding: '8px', marginTop: '10px' }}
               />
             </>
           ) : (
@@ -193,7 +171,7 @@ function Login() {
         <DialogActions>
           {!resetMessage ? (
             <>
-              <Button onClick={() => setShowPasswordResetPopup(false)} className="dialog-button">Cancel</Button>
+              <Button onClick={() => setShowPasswordResetPopup(false)} className="dialog-button is-outline">Cancel</Button>
               <Button onClick={handlePasswordReset} className="dialog-button">Submit</Button>
             </>
           ) : (
@@ -206,9 +184,10 @@ function Login() {
       <Dialog
         open={showSuccessPopup}
         onClose={() => setShowSuccessPopup(false)}
+        PaperProps={{ className: 'auth-dialog-paper' }}
       >
-        <DialogTitle>Email Sent</DialogTitle> {/* Changed title */}
-        <DialogContent style={{ textAlign: 'center' }}> {/* Centering content */}
+        <DialogTitle>Email Sent</DialogTitle>
+        <DialogContent style={{ textAlign: 'center' }}>
           <DialogContentText>
             Password reset email has been sent to <strong>{resetEmail}</strong>. Please check your inbox and follow the instructions.
           </DialogContentText>
@@ -217,7 +196,7 @@ function Login() {
           <Button onClick={() => setShowSuccessPopup(false)} className="dialog-button">Close</Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </AuthShell>
   );
 }
 

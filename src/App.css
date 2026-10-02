@@ -28,6 +28,35 @@
   color: #61dafb;
 }
 
+.MuiDialog-root,
+.MuiModal-root,
+.MuiPopover-root,
+.friends-modal,
+.invite-modal,
+.participant-modal,
+.friend-popup,
+.pay-backdrop,
+.crop-modal-backdrop,
+.avatar-selection-modal {
+  z-index: 50000 !important;
+}
+
+.pac-container {
+  z-index: 51000 !important;
+}
+
+body:has(.MuiDialog-root),
+body:has(.MuiModal-root),
+body:has(.friends-modal),
+body:has(.invite-modal),
+body:has(.participant-modal),
+body:has(.friend-popup),
+body:has(.pay-backdrop),
+body:has(.crop-modal-backdrop),
+body:has(.avatar-selection-modal) {
+  overflow: hidden;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

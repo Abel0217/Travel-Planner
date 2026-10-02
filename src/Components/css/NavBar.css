@@ -6,18 +6,31 @@
   padding: 0.5rem 1rem;
   background-color: #222946;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 20000;
+  min-height: 56px;
 }
 
-/* Center the logo specifically */
 .navbar-logo-container {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  z-index: 1;
 }
 
 /* Profile image stays on the right */
 .navbar-item.profile-container {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 77px;
+  padding: 8px 14px;
+  line-height: 0;
 }
 
 .navbar-logo {
@@ -27,7 +40,9 @@
 }
 
 .logo-img {
-  height: 40px;
+  height: 46px;
+  width: auto;
+  display: block;
 }
 
 .navbar-links {
@@ -79,46 +94,108 @@
 /* Profile Image Styles */
 .profile-img {
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
+  box-sizing: border-box;
   object-fit: cover;
+  object-position: center;
+  display: block;
+  border: none;
+}
+
+/* Profile photo: gold circle on hover / while the menu is open.
+   The ring is a shadow so the navbar height never changes. */
+.navbar-item.profile-container:hover,
+.navbar-item.profile-container:focus,
+.navbar-item.profile-container.is-open {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.profile-img {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.profile-container:hover .profile-img,
+.profile-container.is-open .profile-img {
+  box-shadow: 0 0 0 3px #f3ab03;
 }
 
 /* Dropdown Menu Styling */
-.dropdown-menu {
+.navbar .dropdown-menu {
   position: absolute;
-  top: 100%;
-  right: -1px;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px 0;
+  top: calc(100% + 14px);
+  right: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid rgba(243, 171, 3, 0.7);
+  border-radius: 16px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
+  gap: 2px;
   z-index: 100;
-  min-width: 120px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 190px;
+  box-shadow: 0 14px 34px rgba(34, 41, 70, 0.28);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  line-height: 1.2;
+  animation: profile-menu-in 0.16s ease-out;
+}
+
+@keyframes profile-menu-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Dropdown items */
-.dropdown-menu a,
-.dropdown-menu button {
-  padding: 10px 15px;
+.navbar .dropdown-menu a,
+.navbar .dropdown-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100% !important;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px 14px;
   border: none;
-  background: none;
+  border-radius: 10px;
+  background: transparent;
   text-align: left;
   cursor: pointer;
-  color: #333;
-  font-size: 16px;
+  color: #222946;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  opacity: 1;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.navbar .dropdown-menu svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Hover effect for dropdown items */
-.dropdown-menu button:hover,
-.dropdown-menu a:hover {
-  background-color: #f3f3f3;
+.navbar .dropdown-menu a:hover,
+.navbar .dropdown-menu button:hover {
+  background-color: #f3ab03;
   color: #222946;
+  opacity: 1;
+}
+
+/* Log out sits apart from the main link */
+.navbar .dropdown-menu .dropdown-logout {
+  margin-top: 6px;
+  border-top: 1px solid rgba(34, 41, 70, 0.12);
+  border-radius: 0 0 10px 10px;
+  padding-top: 14px;
 }
 
 .navbar-item {
@@ -144,7 +221,7 @@
 
 .navbar {
   position: relative;
-  z-index: 9999;
+  z-index: 20000;
 }
 
 
@@ -161,7 +238,7 @@
   flex-direction: column;
   padding-top: 60px;
   transition: left 0.3s ease;
-  z-index: 1000;
+  z-index: 20001;
 }
 
 .show-sidebar {
@@ -169,18 +246,25 @@
 }
 
 .menu-icon {
-  font-size: 22px;
+  font-size: 24px;
   color: white;
   font-weight: bold;
   cursor: pointer;
-  margin-right: 20px;
-  position: absolute;
-  top: 20px;
-  left: 10px;
-  z-index: 1100; 
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
+  margin: 0;
+  z-index: 1100;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
 }
 
-/* Sidebar items */
 .sidebar a,
 .sidebar-item {
   padding: 10px 15px;
@@ -189,6 +273,17 @@
   font-size: 18px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-caret {
+  font-size: 12px;
+  opacity: 0.85;
 }
 
 .sidebar a:hover,
@@ -270,16 +365,72 @@ body.navbar-login {
 }
 
 /* Not logged-in navbar */
-.navbar-login-buttons {
-  margin-left: auto;
-  display: flex;
-}
-
-.navbar-login-buttons .navbar-item {
-  margin-right: 10px;
-}
-
-.navbar-logged-out-logo {
+/* Logged-out bar matches the logged-in one: same 93px height, logo on the left. */
+.navbar-logo-container.navbar-logged-out-logo {
   position: relative;
-  left: 20px; 
+  left: auto;
+  transform: none;
+  margin-left: 4px;
+}
+
+.navbar-login-buttons {
+  box-sizing: border-box;
+  margin-left: auto;
+  height: 77px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.navbar-login-buttons .navbar-item,
+.navbar-login-buttons .navbar-item-signup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 44px;
+  margin: 0;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 1;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Log in: outline pill, like the secondary buttons on the sign-up page */
+.navbar-login-buttons .navbar-item {
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+.navbar-login-buttons .navbar-item:hover,
+.navbar-login-buttons .navbar-item:focus-visible {
+  background: transparent;
+  border-color: #f3ab03;
+  color: #f3ab03;
+  outline: none;
+  opacity: 1;
+}
+
+/* Sign Up: gold pill, like Add Expense / Sign Up */
+.navbar-login-buttons .navbar-item-signup {
+  border: 1.5px solid #f3ab03;
+  background: #f3ab03;
+  color: #222946;
+  font-weight: 700;
+}
+
+.navbar-login-buttons .navbar-item-signup:hover,
+.navbar-login-buttons .navbar-item-signup:focus-visible {
+  background: #ffc437;
+  border-color: #ffc437;
+  color: #222946;
+  outline: none;
+  opacity: 1;
 }

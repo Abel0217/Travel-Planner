@@ -6,9 +6,21 @@
     padding: 10px; /* Adds some padding for spacing */
 }
 
-.upload-header {
-    font-size: 16px;
-    font-weight: bold;
+.upload-hint {
+    font-size: 12px;
+    color: #667;
+    margin: 0 0 8px;
+}
+
+.upload-container.compact {
+    padding: 0;
+    margin: 8px 0 12px;
+    align-items: center;
+}
+
+.upload-container.compact .upload-button-container {
+    justify-content: center;
+    width: 100%;
 }
 
 .upload-container input[type="file"] {
@@ -68,7 +80,8 @@
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.upload-status {
+  color: #222946;
+  font-size: 14px;
+  margin-top: 8px;
 }

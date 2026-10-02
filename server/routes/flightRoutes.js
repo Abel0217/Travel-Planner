@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const db = require('../database/dbOperations');
-const verifyToken = require('../FirebaseToken'); 
+const verifyToken = require('../FirebaseToken');
+const { notifyBookingAdded } = require('../services/tripMail'); 
 
 // Apply the token verification middleware to all routes
 router.use(verifyToken);
@@ -55,6 +56,13 @@ router.post('/', async (req, res) => {
             passenger_name,
             seat_number
         );
+        notifyBookingAdded({
+            itineraryId: req.params.itineraryId || itinerary_id,
+            actorUid: owner_id,
+            bookingType: 'Flight',
+            summary: `${airline || 'A flight'} ${flight_number || ''}`.trim(),
+            refKey: `flight:${newFlight.flight_id || newFlight.id || `${airline}-${flight_number}-${departure_time}`}`,
+        });
         res.status(201).json(newFlight);
     } catch (error) {
         console.error('Failed to add flight:', error);

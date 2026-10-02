@@ -1,195 +1,594 @@
-/* HomePage.css */
 .homepage {
-    min-height: 100vh; 
-    width: 100vw;  
     position: relative;
-    overflow-x: hidden; 
+    min-height: calc(100vh - 56px);
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 32px 32px 110px 28px;
+    box-sizing: border-box;
+    gap: 18px;
 }
 
-html, body {
-    overflow-x: hidden; 
-    width: 100%; 
-    margin: 0; 
-    padding: 0; 
-}
-
-
-/* Full-screen background below the welcome box */
 .homepage-background {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh; /* Full-screen height */
-    background-size: cover;
-    background-position: center;
-    overflow-x: hidden; 
-    z-index: 1; 
-}
-
-/* Welcome box styling */
-.welcome-box {
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%); 
-    background-color: rgba(255, 255, 255, 0.85); 
-    padding: 10px 20px;
-    border-radius: 12px; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    font-size: 14px; 
-    color: black;
-    text-align: center;
-    font-weight: bold;
-    z-index: 10; 
-    transition: transform 0.3s ease; 
-}
-
-/* Bounce effect on hover */
-.welcome-box:hover {
-    transform: translateX(-50%) translateY(-10px); 
-}
-
-/* Fixed Upcoming Trip Card with hover bounce */
-.upcoming-trip {
-    position: fixed;
-    bottom: 20px;
-    right: 15px;
-    background-color: rgba(255, 255, 255, 0.85); 
-    padding: 10px 20px;
-    border-radius: 8px; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    font-size: 14px;
-    color: #333;
-    z-index: 20; 
-    transition: transform 0.3s ease; 
-}
-
-/* Bounce effect for the upcoming trip card */
-.upcoming-trip:hover {
-    transform: translateY(-5px); 
-}
-
-/* Floating View My Trips button */
-.trips-box {
-    position: fixed; 
-    bottom: 100px;
-    right: 15px;
-    background-color: rgba(255, 255, 255, 0.85); 
-    padding: 10px 20px;
-    border-radius: 8px; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    font-size: 12px;
-    color: #333;
-    font-weight: bold;
-    z-index: 20; 
-    cursor: pointer;
-    transition: transform 0.3s ease; 
-}
-
-/* Bounce effect for the trips box */
-.trips-box:hover {
-    transform: translateY(-5px); 
-}
-
-/* Weather Widget */
-.weather-widget {
-    position: fixed;
-    bottom: 150px;
-    left: 15px;
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 10px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    z-index: 20;
-    transition: transform 0.3s ease;
-}
-
-/* Hover effect for the weather widget */
-.weather-widget:hover {
-    transform: translateY(-5px); 
-}
-
-/* Destination Inspiration Section */
-.destination-inspiration {
-    position: relative;
-    padding: 20px;
-    text-align: center;
-}
-
-.destination-cards {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.destination-card {
-    width: 150px;
-    height: 100px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: flex-end;
-    padding: 10px;
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease;
-}
-
-/* Hover effect for destination cards */
-.destination-card:hover {
-    transform: translateY(-5px); 
-}
-
-/* Action Buttons Container */
-.action-buttons {
-    position: absolute;
-    bottom: 20px; /* Adjust the vertical positioning */
-    left: 50%;
-    transform: translateX(-50%); /* Center horizontally */
-    display: flex;
-    gap: 15px; /* Space between buttons */
-    z-index: 20; /* Above background */
-}
-
-/* Individual Action Buttons */
-.action-button {
-    background-color: rgba(255, 255, 255, 0.85); /* White background */
-    color: black;
-    font-weight: bold;
-    font-size: 16px;
-    padding: 15px 25px;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    text-align: center;
-    white-space: nowrap; /* Prevents text wrapping */
-    transition: transform 0.3s ease, background-color 0.3s ease;
-    display: inline-block; /* Ensures inline alignment */
-}
-
-
-/* Bounce Animation on Hover */
-.action-button:hover {
-    transform: translateY(-5px);
+    inset: 0;
+    z-index: 0;
     background-color: #222946;
-    color: white;
+    background-size: cover;
+    background-position: center;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .action-buttons {
-        flex-direction: column; /* Stack buttons vertically on smaller screens */
-        gap: 10px;
+.homepage-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    z-index: 0;
+}
+
+.homepage-slide.is-base {
+    opacity: 1;
+}
+
+.homepage-slide.is-incoming {
+    z-index: 1;
+    animation: scenery-fade-in 2.8s ease forwards;
+}
+
+.homepage-background::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(16, 20, 38, 0.28) 0%, rgba(16, 20, 38, 0.62) 100%);
+}
+
+.welcome-box,
+.home-dashboard {
+    position: relative;
+    z-index: 2;
+    margin-left: 0;
+}
+
+.welcome-box {
+    width: min(1060px, 100%);
+}
+
+.home-dashboard {
+    width: 100%;
+}
+
+.welcome-box {
+    background: none;
+    padding: 0;
+    text-align: left;
+}
+
+.welcome-box h1 {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    color: #ffffff;
+    font-size: 36px;
+    font-weight: 700;
+    text-align: left;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.9),
+        0 2px 10px rgba(0, 0, 0, 0.65),
+        0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.home-dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr);
+    gap: 14px;
+    align-items: stretch;
+}
+
+.home-rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.9fr);
+    gap: 12px;
+    min-height: 448px;
+}
+
+.home-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 448px;
+}
+
+.home-card {
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 18px 40px rgba(16, 20, 38, 0.32);
+    border: none;
+    position: relative;
+}
+
+.home-create {
+    min-height: 448px;
+    height: auto;
+    background-color: #222946;
+    background-size: cover;
+    background-position: center;
+}
+
+.home-pair .home-card {
+    flex: 1;
+    width: auto;
+    height: auto;
+    min-height: 200px;
+}
+
+.home-photo {
+    background-size: cover;
+    background-position: center;
+}
+
+.home-card-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    z-index: 0;
+}
+
+.home-card-slide.is-base {
+    opacity: 1;
+}
+
+.home-card-slide.is-incoming {
+    z-index: 1;
+    animation: scenery-fade-in 2.8s ease forwards;
+}
+
+@keyframes scenery-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.home-photo::after,
+.home-create::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(17, 22, 40, 0.2) 0%, rgba(17, 22, 40, 0.78) 100%);
+}
+
+.home-card-copy {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 18px 16px;
+    box-sizing: border-box;
+}
+
+.home-create .home-card-copy {
+    min-height: 448px;
+    height: 100%;
+}
+
+.home-kicker {
+    display: block;
+    margin-bottom: 6px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.home-card.home-notifications,
+.home-card.home-expenses {
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    backdrop-filter: blur(16px) saturate(1.25);
+    -webkit-backdrop-filter: blur(16px) saturate(1.25);
+    box-shadow: 0 12px 28px rgba(16, 20, 38, 0.18);
+}
+
+.home-card.home-notifications {
+    background: rgba(243, 171, 3, 0.22);
+}
+
+.home-card.home-notifications h2,
+.home-card.home-notifications p {
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.home-card.home-expenses {
+    background: rgba(34, 41, 70, 0.28);
+}
+
+.home-card.home-expenses h2,
+.home-card.home-expenses p {
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.home-card.home-expenses h2 {
+    color: #f3ab03;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.home-card.home-notifications .home-card-copy {
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 18px 14px 14px;
+    height: 100%;
+    min-height: 448px;
+    box-sizing: border-box;
+    gap: 0;
+}
+
+.home-card.home-notifications.is-empty {
+    cursor: pointer;
+}
+
+.home-card.home-notifications.has-notes {
+    cursor: default;
+}
+
+.home-card.home-notifications.is-empty p {
+    margin-top: 4px;
+    text-align: left;
+}
+
+.home-card.home-notifications h2 {
+    text-align: left;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 14px;
+    width: 100%;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.home-note-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    overflow: auto;
+    width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.home-card.home-notifications:hover .home-note-list {
+    scrollbar-color: rgba(243, 171, 3, 0.7) transparent;
+}
+
+.home-note-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.home-note-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.home-note-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: transparent;
+}
+
+.home-card.home-notifications:hover .home-note-list::-webkit-scrollbar-thumb {
+    background: rgba(243, 171, 3, 0.7);
+}
+
+.home-note-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    border-radius: 14px;
+    background: rgba(34, 41, 70, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.35;
+    text-shadow: none;
+    cursor: default;
+}
+
+.home-note-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.home-note-copy strong,
+.home-note-body {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-note-copy strong {
+    white-space: nowrap;
+}
+
+.home-note-body {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.35;
+    max-height: 2.7em;
+}
+
+.home-note-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.home-card.home-notifications button.home-note-send,
+.home-card.home-notifications button.home-note-dismiss {
+    width: 28px;
+    height: 28px;
+    margin: 0;
+    padding: 0;
+    flex: 0 0 28px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 50%;
+    background: transparent !important;
+    color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.home-card.home-notifications button.home-note-send:hover,
+.home-card.home-notifications button.home-note-dismiss:hover {
+    background: transparent !important;
+    color: #f3ab03 !important;
+    border-color: #f3ab03 !important;
+    opacity: 1;
+    transform: none;
+}
+
+.home-note-list li.is-unread {
+    border-color: rgba(243, 171, 3, 0.85);
+}
+
+.home-note-dot {
+    width: 8px;
+    height: 8px;
+    margin-top: 0;
+    border-radius: 50%;
+    background: transparent;
+    flex: 0 0 8px;
+    transition: opacity 0.45s ease, transform 0.45s ease, width 0.45s ease, flex-basis 0.45s ease, margin-right 0.45s ease;
+}
+
+.home-note-list li:not(.is-unread) .home-note-dot {
+    width: 0;
+    flex-basis: 0;
+    min-width: 0;
+    margin-right: -10px;
+    opacity: 0;
+    transform: scale(0.4);
+}
+
+.home-note-list li.is-unread .home-note-dot {
+    background: #f3ab03;
+    box-shadow: 0 0 8px #f3ab03;
+}
+
+.home-note-list strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13px;
+    text-align: left;
+}
+
+.home-card.home-notifications button.home-note-go {
+    margin-top: auto;
+    width: 100%;
+    flex: 0 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    padding: 11px 16px;
+    background: transparent !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow: none;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.home-card.home-notifications button.home-note-go:hover {
+    background: transparent !important;
+    color: #f3ab03 !important;
+    border-color: #f3ab03 !important;
+    opacity: 1;
+    transform: none;
+}
+
+.home-card h2,
+.home-card p {
+    margin: 0;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.home-card h2 {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.home-create h2 {
+    font-size: 28px;
+}
+
+.home-pair .home-card h2 {
+    font-size: 20px;
+}
+
+.home-pair .home-card p,
+.home-pair .home-kicker {
+    font-size: 13px;
+}
+
+.home-ai-widget {
+    position: fixed;
+    right: 26px;
+    bottom: 26px;
+    z-index: 20;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(243, 171, 3, 0.9);
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 48%),
+        #222946;
+    color: #f3ab03;
+    box-shadow:
+        0 12px 26px rgba(16, 20, 38, 0.34),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 10px;
+    overflow: hidden;
+    transform: none;
+    transform-origin: center center;
+    transition: width 0.22s ease, height 0.22s ease, padding 0.22s ease;
+}
+
+.home-ai-widget span,
+.home-ai-widget em {
+    display: block;
+    text-align: center;
+    background: transparent;
+}
+
+.home-ai-widget span {
+    color: #f3ab03;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+}
+
+.home-ai-widget em {
+    color: #ffffff;
+    font-style: normal;
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 1.25;
+    max-width: 68px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    transition: opacity 0.2s ease, max-height 0.2s ease, margin 0.2s ease;
+}
+
+.home-ai-widget:hover {
+    width: 104px;
+    height: 104px;
+    padding: 16px;
+    background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 48%),
+        #222946;
+    color: #f3ab03;
+}
+
+.home-ai-widget:hover span {
+    color: #f3ab03;
+    font-size: 10px;
+}
+
+.home-ai-widget:hover em {
+    max-height: 42px;
+    max-width: 72px;
+    opacity: 1;
+    margin-top: 6px;
+    color: #ffffff;
+    font-size: 8px;
+}
+
+@media (max-width: 860px) {
+    .homepage {
+        padding: 24px 16px 110px;
     }
 
-    .action-button {
-        width: 80%; /* Make buttons wider on smaller screens */
-        margin: 0 auto; /* Center align buttons */
+    .welcome-box,
+    .home-dashboard {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .home-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .home-create,
+    .home-create .home-card-copy {
+        height: auto;
+        min-height: 280px;
+    }
+
+    .home-rail,
+    .home-pair {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .home-pair .home-card,
+    .home-card.home-notifications .home-card-copy {
+        width: 100%;
+        min-height: 160px;
+    }
+
+    .welcome-box h1 {
+        font-size: 26px;
     }
 }

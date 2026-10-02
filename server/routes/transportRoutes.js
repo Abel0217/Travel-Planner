@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true }); // Use mergeParams to acce
 const db = require('../database/dbOperations');
 const firestoreDb = require('../firebaseAdmin');
 const verifyToken = require('../FirebaseToken'); // Firebase token verification
+const { notifyBookingAdded } = require('../services/tripMail');
 
 // Apply token verification middleware to all transport routes
 router.use(verifyToken);
@@ -48,6 +49,13 @@ router.post('/', async (req, res) => {
             dropoff_location,
             booking_reference
         );
+        notifyBookingAdded({
+            itineraryId: itinerary_id,
+            actorUid: owner_id,
+            bookingType: 'Ride',
+            summary: type || 'a ride',
+            refKey: `transport:${newTransport.transport_id || newTransport.id || type}`,
+        });
         res.status(201).json(newTransport);
     } catch (error) {
         console.error('Failed to add transport:', error);

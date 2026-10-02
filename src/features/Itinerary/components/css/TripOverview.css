@@ -1,0 +1,2195 @@
+/* Trip Overview: the hub of an itinerary.
+   Everything is scoped under .trip-overview so global form/button styles can't leak in. */
+
+.trip-overview {
+  --navy: #222946;
+  --navy-deep: #141a33;
+  --gold: #f3ab03;
+  --ink: #1b2038;
+  --muted: #6b7390;
+  --line: rgba(34, 41, 70, 0.1);
+  max-width: 1280px;
+  margin: 0 auto;
+  color: var(--ink);
+  text-align: left;
+}
+
+.trip-overview h2,
+.trip-overview h3,
+.trip-overview p,
+.trip-overview dl,
+.trip-overview dd,
+.trip-overview ol {
+  margin: 0;
+  text-align: left;
+}
+
+.trip-overview button,
+.trip-overview a {
+  font-family: inherit;
+}
+
+/* Beat the app-wide button rules (full width, blue, fading on hover). */
+.trip-overview button {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  text-align: left;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.trip-overview button:hover {
+  opacity: 1;
+}
+
+.trip-overview .ov-icon {
+  flex: none;
+}
+
+/* ---------- Hero ---------- */
+
+.ov-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 26px 30px;
+  overflow: hidden;
+  color: #ffffff;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(243, 171, 3, 0.22), rgba(243, 171, 3, 0) 46%),
+    linear-gradient(135deg, #222946 0%, #141a33 100%);
+  box-shadow: 0 18px 40px rgba(20, 26, 51, 0.24);
+}
+
+.ov-eyebrow {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.trip-overview .ov-hero h2 {
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.ov-hero-main > p {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 15px;
+}
+
+.ov-progress {
+  height: 6px;
+  margin: 18px 0 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.ov-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f3ab03, #ffd166);
+  transition: width 0.6s ease;
+}
+
+.ov-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.trip-overview .ov-hero-weather {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px 0 16px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ov-hero-weather img {
+  width: 30px;
+  height: 30px;
+}
+
+/* Trip tracker */
+.trip-overview .ov-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.ov-stat:hover {
+  background: rgba(255, 255, 255, 0.11);
+  transform: translateY(-1px);
+}
+
+.ov-stat-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+}
+
+.ov-stat-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--pin);
+  color: var(--on, #ffffff);
+}
+
+.ov-stat-label {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.ov-stat strong {
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ov-stat em {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ov-stat.is-alert {
+  border-color: rgba(243, 171, 3, 0.55);
+  background: rgba(243, 171, 3, 0.14);
+}
+
+.ov-stat.is-alert strong {
+  color: var(--gold);
+}
+
+/* ---------- Next up: one slim banner across the whole strip ---------- */
+
+
+
+.trip-overview .ov-next {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px 16px;
+
+  margin-bottom: 18px;
+
+  padding: 10px 14px 10px 12px;
+
+  border: 1px solid var(--line);
+
+  border-left: 5px solid var(--pin);
+
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow: 0 6px 18px rgba(34, 41, 70, 0.06);
+
+}
+
+
+
+.ov-card-eyebrow {
+
+  color: var(--muted);
+
+  font-size: 10.5px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+
+}
+
+
+
+.ov-next-icon {
+
+  display: inline-flex;
+
+  flex: none;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 38px;
+
+  height: 38px;
+
+  border-radius: 12px;
+
+  background: var(--tint);
+
+  color: var(--pin);
+
+}
+
+
+
+.ov-next-text {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 1px;
+
+  min-width: 0;
+
+}
+
+
+
+.ov-next-text strong {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: var(--navy);
+
+  font-size: 16px;
+
+  line-height: 1.2;
+
+}
+
+
+
+.ov-next-text strong em {
+
+  padding: 1px 8px;
+
+  border-radius: 999px;
+
+  background: var(--tint);
+
+  color: var(--pin);
+
+  font-size: 10.5px;
+
+  font-style: normal;
+
+  font-weight: 800;
+
+  letter-spacing: 0.04em;
+
+  text-transform: uppercase;
+
+}
+
+
+
+.ov-next-when {
+
+  color: var(--ink);
+
+  font-size: 13.5px;
+
+  font-weight: 700;
+
+}
+
+
+
+.ov-next-addr {
+
+  display: inline-flex;
+
+  flex: 1 1 200px;
+
+  align-items: center;
+
+  gap: 5px;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: var(--muted);
+
+  font-size: 12.5px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+}
+
+
+
+.ov-next-actions {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-left: auto;
+
+}
+
+/* ---------- Buttons ---------- */
+
+.trip-overview .ov-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1.5px solid rgba(34, 41, 70, 0.18);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.trip-overview .ov-btn:hover {
+  border-color: var(--gold);
+  color: var(--navy);
+  transform: translateY(-1px);
+}
+
+.trip-overview .ov-btn.is-primary {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.trip-overview .ov-btn.is-primary:hover {
+  border-color: #ffc437;
+  background: #ffc437;
+}
+
+.trip-overview .ov-btn.is-small {
+  height: 32px;
+  padding: 0 13px;
+  font-size: 12.5px;
+}
+
+.trip-overview .ov-btn.is-ghost {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: #ffffff;
+}
+
+.trip-overview .ov-btn.is-ghost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ---------- Layout ---------- */
+
+.ov-grid {
+  display: grid;
+  grid-template-columns: minmax(380px, 5fr) minmax(0, 6fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.ov-map-panel {
+  position: sticky;
+  top: 14px;
+  height: min(780px, calc(100vh - 28px));
+  min-height: 420px;
+}
+
+.ov-loading {
+  padding: 60px 0;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ---------- Day chips ---------- */
+
+/* One tidy row that scrolls sideways, so a long trip never wraps or crowds the map. */
+/* A real, visible scroller for long trips: drag it, or use the wheel / trackpad. */
+
+.ov-chipbar {
+
+  position: relative;
+
+  margin: 0 0 14px;
+
+}
+
+
+
+.ov-day-chips {
+
+  display: flex;
+
+  flex-wrap: nowrap;
+
+  gap: 8px;
+
+  padding: 3px 2px 12px;
+
+  overflow-x: auto;
+
+  scrollbar-width: thin;
+
+  scrollbar-color: var(--gold) #e8ebf4;
+
+}
+
+
+
+.ov-day-chips::-webkit-scrollbar {
+
+  height: 8px;
+
+}
+
+
+
+.ov-day-chips::-webkit-scrollbar-track {
+
+  border-radius: 999px;
+
+  background: #e8ebf4;
+
+}
+
+
+
+.ov-day-chips::-webkit-scrollbar-thumb {
+
+  border-radius: 999px;
+
+  background: var(--gold);
+
+}
+
+
+
+.ov-day-chips::-webkit-scrollbar-thumb:hover {
+
+  background: #d99700;
+
+}
+
+.trip-overview .ov-day-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* tiny dots show what kind of bookings the day has (same colours as the map) */
+.ov-chip-kinds {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.ov-chip-kinds i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px #ffffff;
+}
+
+.trip-overview .ov-day-chip:hover {
+  border-color: var(--day, var(--gold));
+}
+
+.trip-overview .ov-day-chip.is-on {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.trip-overview .ov-day-chip.is-on .ov-chip-kinds i {
+  box-shadow: 0 0 0 1.5px var(--navy);
+}
+
+/* ---------- Day cards ---------- */
+
+.ov-day {
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--day);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(34, 41, 70, 0.06);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.ov-day.is-focus,
+.ov-day.is-open {
+  box-shadow: 0 12px 28px rgba(34, 41, 70, 0.12);
+}
+
+.ov-day.is-past {
+  background: #f8f9fc;
+}
+
+.ov-day.is-past .ov-day-head {
+  opacity: 0.78;
+}
+
+.trip-overview .ov-day-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+}
+
+.trip-overview .ov-day-head:hover {
+  background: rgba(34, 41, 70, 0.03);
+}
+
+.ov-day-num {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--navy);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ov-day-num small {
+  margin-bottom: 3px;
+  color: var(--gold);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ov-day-title {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ov-day-title strong {
+  color: var(--navy);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ov-day-title > span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-day-title b {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ov-day-title b.ov-daytag {
+  background: rgba(34, 41, 70, 0.08);
+  color: var(--navy);
+}
+
+.ov-today {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.ov-done {
+  background: #e8ebf4;
+  color: var(--muted);
+}
+
+.ov-weather {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 999px;
+  background: #f3f5fa;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ov-weather img {
+  width: 28px;
+  height: 28px;
+}
+
+.ov-chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.25s ease;
+}
+
+.ov-day.is-open .ov-chevron {
+  transform: rotate(180deg);
+}
+
+.ov-day-body {
+  padding: 2px 16px 16px;
+  animation: ov-in 0.25s ease;
+}
+
+@keyframes ov-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.ov-stay {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: #e7f0fd;
+  color: #1a4fa8;
+  font-size: 13px;
+}
+
+.ov-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ov-summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ov-insights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ov-insights span {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff4d6;
+  color: #8a5a00;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- Items ---------- */
+
+.ov-items {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ov-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.ov-item:hover {
+  background: #f6f7fb;
+}
+
+.ov-item.is-selected {
+  border-color: var(--pin);
+  background: var(--tint);
+}
+
+.trip-overview .ov-item-main {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 64px 30px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 6px 10px 8px;
+}
+
+.ov-item-time {
+  padding-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.ov-item-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pin);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 0 0 3px var(--tint);
+}
+
+.ov-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ov-item-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ov-item-title em {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--tint);
+  color: var(--pin);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ov-item-title .ov-state {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.ov-item-title .ov-state.is-done {
+  background: #eceef3;
+  color: #6d7388;
+}
+
+.ov-item-title .ov-state.is-live {
+  background: #e5f6ea;
+  color: #1c7a3a;
+}
+
+.ov-item-title .ov-done {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #c5c9d6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #6d7388;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ov-item-title .ov-done:hover {
+  border-color: #6d7388;
+  background: #e6e8ef;
+}
+
+.ov-item-sub {
+  color: #444b66;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.ov-item-addr {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.ov-item-addr svg {
+  margin-top: 1px;
+}
+
+.ov-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.ov-chips:empty {
+  display: none;
+}
+
+.ov-chip {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #eef0f6;
+  color: #394058;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.ov-chip.is-soft {
+  background: #e7f0fd;
+  color: #1a4fa8;
+}
+
+.ov-chip.is-warn {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.trip-overview .ov-item-go {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid var(--line);
+  color: var(--navy);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.trip-overview .ov-item-go:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* Distance between two stops */
+.ov-hop {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 0 82px;
+  padding: 3px 0 3px 22px;
+  border-left: 2px dashed rgba(34, 41, 70, 0.22);
+  color: var(--muted);
+  font-size: 12px;
+  list-style: none;
+}
+
+.ov-hop span {
+  font-weight: 800;
+  color: #2b8a3e;
+}
+
+.ov-hop em {
+  font-style: normal;
+}
+
+.ov-hop b {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fde8e0;
+  color: #b3380a;
+  font-size: 11px;
+}
+
+.ov-hop.is-mid span {
+  color: #b87500;
+}
+
+.ov-hop.is-far span {
+  color: #d9480f;
+}
+
+.ov-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1.5px dashed rgba(34, 41, 70, 0.22);
+  border-radius: 14px;
+  background: #fafbfd;
+  color: var(--navy);
+}
+
+.ov-empty svg {
+  color: var(--gold);
+}
+
+.ov-empty div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ov-empty span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.ov-empty.is-large {
+  padding: 30px;
+}
+
+.ov-day-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ov-day-actions::-webkit-scrollbar { display: none; }
+
+.trip-overview .ov-day-actions .ov-btn.is-nearby {
+  flex: none;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+/* ---------- Map ---------- */
+
+.ov-map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #e8ebf4;
+  box-shadow: 0 14px 34px rgba(34, 41, 70, 0.16);
+}
+
+.ov-map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ov-map-switch {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 12px rgba(20, 26, 51, 0.18);
+}
+
+.trip-overview .ov-map-switch button {
+  height: 30px;
+  padding: 0 12px;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trip-overview .ov-map-switch button.is-on {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+/* Legend and filter: a slim column down the right edge, away from the top of the map. */
+.ov-map-legend {
+  position: absolute;
+  top: 52px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 12px rgba(20, 26, 51, 0.18);
+}
+
+.trip-overview .ov-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px 0 4px;
+  border-radius: 999px;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.trip-overview .ov-filter:hover {
+  background: #f1f3f9;
+}
+
+.ov-filter-dot {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--pin);
+  color: #ffffff;
+}
+
+.trip-overview .ov-filter.is-off {
+  opacity: 0.5;
+}
+
+.trip-overview .ov-filter.is-off .ov-filter-dot {
+  background: #b9bfd0;
+}
+
+.ov-map-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(300px, 80%);
+  padding: 16px 18px;
+  transform: translate(-50%, -50%);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 28px rgba(20, 26, 51, 0.2);
+  color: var(--navy);
+  text-align: center;
+}
+
+.ov-map-empty span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.ov-map-note {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff4d6;
+  color: #8a5a00;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(20, 26, 51, 0.18);
+}
+
+.ov-map-card {
+  position: absolute;
+  left: 12px;
+  right: 140px;
+  top: 12px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 440px;
+  padding: 14px 16px 14px 18px;
+  border-left: 5px solid var(--pin);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(20, 26, 51, 0.3);
+  animation: ov-in 0.2s ease;
+}
+
+.ov-map-card strong {
+  padding-right: 24px;
+  color: var(--navy);
+  font-size: 17px;
+}
+
+.ov-map-card p {
+  color: #444b66;
+  font-size: 13px;
+}
+
+.ov-map-card .ov-map-card-address {
+  color: var(--muted);
+}
+
+.ov-map-card .ov-map-card-hotel {
+  color: #1a4fa8;
+  font-weight: 700;
+}
+
+.ov-map-card-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pin);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trip-overview .ov-map-card-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  text-align: center;
+}
+
+.trip-overview .ov-map-card-close:hover {
+  background: #eef0f6;
+}
+
+.ov-map-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.trip-overview .ov-map-card-actions a {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.trip-overview .ov-map-card-actions a:hover {
+  background: #ffc437;
+}
+
+.trip-overview .ov-map-card-actions a.is-quiet {
+  border: 1.5px solid var(--line);
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.trip-overview .ov-map-card-actions a.is-quiet:hover {
+  border-color: var(--gold);
+}
+
+/* ---------- Add dialog ---------- */
+
+.ov-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(14, 18, 36, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.ov-dialog {
+  width: min(460px, 100%);
+  padding: 24px 24px 18px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(8, 12, 30, 0.4);
+  text-align: left;
+  animation: ov-in 0.2s ease;
+}
+
+.trip-overview .ov-dialog h3 {
+  color: var(--navy);
+  font-size: 20px;
+}
+
+.trip-overview .ov-dialog p {
+  margin: 4px 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.ov-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trip-overview .ov-dialog-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 6px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.ov-dialog-option span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--tint);
+  color: var(--pin);
+}
+
+.trip-overview .ov-dialog-option:hover {
+  border-color: var(--pin);
+  background: var(--tint);
+  transform: translateY(-2px);
+}
+
+.trip-overview .ov-dialog-close {
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px 18px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.trip-overview .ov-dialog-close:hover {
+  color: var(--navy);
+}
+
+/* ---------- Smaller screens ---------- */
+
+@media (max-width: 1100px) {
+  .ov-hero {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 960px) {
+  .ov-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ov-map-panel {
+    position: relative;
+    top: 0;
+    order: -1;
+    height: 380px;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .ov-hero {
+    padding: 20px 18px;
+  }
+
+  .ov-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trip-overview .ov-item-main {
+    grid-template-columns: 54px 28px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .ov-hop {
+    margin-left: 66px;
+  }
+
+  .ov-dialog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Refinements ---------- */
+
+/* Longer values (a date, a distance) get a smaller size so they never overflow the tile. */
+.ov-stat.is-compact strong {
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+/* Forecast: icon, high temperature and the word for the weather, as it first appeared on each day. */
+.ov-weather {
+  padding: 3px 12px 3px 6px;
+}
+
+.ov-weather-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.ov-weather-text b {
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ov-weather-text em {
+  max-width: 130px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Add-to-this-day dialog: everything centred. */
+.trip-overview .ov-dialog,
+.trip-overview .ov-dialog h3,
+.trip-overview .ov-dialog p {
+  text-align: center;
+}
+
+.trip-overview .ov-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.trip-overview .ov-dialog-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.trip-overview .ov-dialog-option {
+  flex: 0 1 calc(33.333% - 10px);
+  min-width: 108px;
+}
+
+/* Free map (OpenStreetMap) used when Google Maps is unavailable. */
+.ov-osm {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.ov-map .ov-osm-pin {
+  border: 0;
+  background: none;
+}
+
+.ov-map .ov-osm-pin svg {
+  display: block;
+  filter: drop-shadow(0 3px 3px rgba(20, 26, 51, 0.35));
+}
+
+.ov-map .leaflet-top.leaflet-left {
+  top: auto;
+  bottom: 0;
+}
+
+.ov-map .ov-map-switch,
+.ov-map .ov-map-legend,
+.ov-map .ov-map-card,
+.ov-map .ov-map-empty,
+.ov-map .ov-map-note {
+  z-index: 1100;
+}
+
+@media (max-width: 760px) {
+  .trip-overview .ov-next {
+    align-items: flex-start;
+  }
+
+  .ov-next-actions {
+    margin-left: 0;
+  }
+}
+
+.ov-map .ov-map-note {
+  left: 64px;
+}
+
+.trip-map-block {
+  margin: 0 auto 18px;
+}
+
+.trip-map-frame {
+  height: 460px;
+  border-radius: 22px;
+}
+
+/* =====================================================================
+   Round 3: stat grid, thicker Next Up, quiet scroller, trip legs, directions
+   ===================================================================== */
+
+/* ---------- Tracker: four cards and one wide expenses card ---------- */
+.trip-overview .ov-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.trip-overview .ov-stat.is-wide {
+  grid-column: span 2;
+}
+
+.trip-overview .ov-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  align-items: center;
+}
+
+.trip-overview .ov-split > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 16px;
+}
+
+.trip-overview .ov-split > div:first-child {
+  padding-left: 2px;
+  border-right: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.trip-overview .ov-split strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 26px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-overview .ov-split > div:last-child strong {
+  color: var(--gold);
+}
+
+.trip-overview .ov-split em {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Next Up: a thicker, evenly aligned strip ---------- */
+.trip-overview .ov-next {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.1fr) minmax(0, 1.5fr) auto;
+  align-items: center;
+  gap: 8px 20px;
+  box-sizing: border-box;
+  min-height: 82px;
+  padding: 14px 20px 14px 18px;
+}
+
+.trip-overview .ov-next-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+}
+
+.trip-overview .ov-next-text {
+  justify-content: center;
+  gap: 5px;
+}
+
+.trip-overview .ov-next-text strong {
+  flex-wrap: nowrap;
+  gap: 10px;
+  min-width: 0;
+  font-size: 17px;
+}
+
+.trip-overview .ov-next-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-overview .ov-next-text strong em {
+  flex: none;
+}
+
+.trip-overview .ov-next-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.trip-overview .ov-next-when,
+.trip-overview .ov-next-addr {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-overview .ov-next-when {
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.trip-overview .ov-next-addr {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.trip-overview .ov-next-when svg,
+.trip-overview .ov-next-addr svg {
+  flex: none;
+  color: var(--pin);
+}
+
+.trip-overview .ov-next-actions {
+  margin-left: 0;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 980px) {
+  .trip-overview .ov-next {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .trip-overview .ov-next-meta,
+  .trip-overview .ov-next-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Day chips: the scroller stays out of sight until you reach for it ---------- */
+.ov-day-chips {
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.ov-chipbar:hover .ov-day-chips {
+  scrollbar-color: rgba(34, 41, 70, 0.28) transparent;
+}
+
+.ov-day-chips::-webkit-scrollbar {
+  height: 5px;
+}
+
+.ov-day-chips::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ov-day-chips::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.ov-chipbar:hover .ov-day-chips::-webkit-scrollbar-thumb {
+  background: rgba(34, 41, 70, 0.28);
+}
+
+/* One small marker when a day has anything booked; a number when it has more than one. */
+.ov-chip-dot {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 7px;
+  height: 7px;
+  margin-left: 7px;
+  border-radius: 50%;
+  background: var(--day, var(--gold));
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ov-chip-dot.is-many {
+  width: 17px;
+  height: 17px;
+}
+
+.trip-overview .ov-day-chip.is-on .ov-chip-dot {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+/* ---------- Trip legs: distance with walking, transit and driving times ---------- */
+.ov-hop {
+  flex-wrap: wrap;
+  gap: 5px 10px;
+}
+
+.ov-hop .ov-hop-dist {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.ov-hop .ov-hop-modes {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: 2px;
+  border-radius: 999px;
+  background: #f1f3f9;
+  white-space: nowrap;
+}
+
+.ov-hop .ov-hop-modes span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  color: var(--navy);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.ov-hop .ov-hop-modes span + span {
+  border-left: 1px solid rgba(34, 41, 70, 0.14);
+}
+
+.ov-hop .ov-hop-modes svg {
+  color: var(--muted);
+}
+
+.ov-hop b {
+  flex: none;
+  white-space: nowrap;
+}
+
+.trip-overview .ov-hop-go {
+  display: inline-flex;
+  flex: 1 1 130px;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.trip-overview .ov-hop-go em {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.trip-overview .ov-hop-go svg {
+  flex: none;
+  transform: rotate(-90deg);
+}
+
+.trip-overview .ov-hop-go:hover {
+  color: var(--navy);
+  background: transparent;
+}
+
+.trip-overview button.ov-item-go {
+  padding: 0;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.trip-overview .ov-map-card-actions .ov-map-card-go {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  height: 32px;
+  margin: 0;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.trip-overview .ov-map-card-actions .ov-map-card-go:hover {
+  background: #ffc437;
+}
+
+/* ---------- Directions, right on the map ---------- */
+.ov-map-panel .ov-dir-open {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1150;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: auto;
+  height: 38px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(20, 26, 51, 0.3);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.ov-map-panel .ov-dir-open:hover {
+  background: #2f3a66;
+}
+
+.ov-map-panel:has(.ov-map-card) .ov-dir-open,
+.ov-map-panel:has(.dir-panel) .ov-map-card {
+  display: none;
+}
+
+.dir-panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  width: min(360px, calc(100% - 150px));
+  max-height: calc(100% - 24px);
+  padding: 14px;
+  overflow-y: auto;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 18px 44px rgba(20, 26, 51, 0.34);
+  color: var(--ink);
+}
+
+.dir-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dir-head strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.dir-panel button {
+  width: auto;
+  margin: 0;
+  opacity: 1;
+}
+
+.dir-panel .dir-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f3f9;
+  color: var(--navy);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dir-panel .dir-close:hover {
+  background: var(--gold);
+}
+
+.dir-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dir-endpoint {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dir-label {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dir-endpoint input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 42px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #fafbfd;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.dir-endpoint input:focus {
+  border-color: var(--navy);
+  outline: none;
+  background: #ffffff;
+}
+
+.dir-busy {
+  position: absolute;
+  right: 12px;
+  bottom: 13px;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(34, 41, 70, 0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: dir-spin 0.7s linear infinite;
+}
+
+@keyframes dir-spin {
+  to { transform: rotate(360deg); }
+}
+
+.dir-panel .dir-swap {
+  align-self: center;
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dir-panel .dir-swap:hover {
+  border-color: var(--gold);
+}
+
+.dir-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fafbfd;
+}
+
+.dir-menu-title {
+  margin: 4px 8px 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dir-menu-empty {
+  margin: 6px 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dir-panel .dir-option,
+.dir-panel .dir-chosen {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dir-panel .dir-option:hover {
+  background: #eef1f8;
+}
+
+.dir-panel .dir-chosen {
+  border: 1.5px solid var(--line);
+  background: #fafbfd;
+}
+
+.dir-panel .dir-chosen:hover {
+  border-color: var(--pin);
+}
+
+.dir-chosen-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--pin);
+  color: #ffffff;
+}
+
+.dir-chosen-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dir-chosen-text strong {
+  overflow: hidden;
+  color: var(--navy);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dir-chosen-text em {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dir-chosen-x {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.dir-modes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.dir-panel .dir-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 4px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.dir-panel .dir-mode b {
+  font-size: 15px;
+}
+
+.dir-panel .dir-mode em {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-style: normal;
+}
+
+.dir-panel .dir-mode:hover {
+  border-color: var(--gold);
+}
+
+.dir-panel .dir-mode.is-on {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.dir-panel .dir-mode.is-on em {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.dir-note,
+.dir-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.dir-external {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  color: var(--navy);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .dir-panel {
+    width: calc(100% - 24px);
+  }
+}

@@ -1,0 +1,152 @@
+/* "Add To Trip" from Ask Leo. The sheet itself uses the shared booking-form look (.bk-form). */
+
+.atd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4vh 16px;
+  overflow-y: auto;
+  background: rgba(16, 20, 38, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+/* The page scrolls, never the sheet, so nothing is ever cut off. */
+.atd-overlay .atd-sheet {
+  width: min(520px, 100%);
+  margin: auto 0;
+}
+
+.atd-overlay .atd-sheet .bk-body {
+  padding-top: 20px;
+}
+
+.atd-sheet .bk-head h2 {
+  font-size: 21px;
+  overflow-wrap: anywhere;
+}
+
+.atd-sheet .atd-muted {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.atd-sheet .atd-trip {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.atd-sheet .atd-fit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  margin: -4px 0 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--cat-tint);
+  color: #2b3350;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.atd-sheet .atd-fit svg {
+  flex: none;
+  color: var(--cat);
+}
+
+.atd-sheet .atd-have {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1.5px solid color-mix(in srgb, var(--cat) 35%, transparent);
+  border-radius: 18px;
+  background: var(--cat-tint);
+}
+
+.atd-sheet .atd-have > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.atd-sheet .atd-have strong {
+  color: var(--navy);
+  font-size: 16px;
+}
+
+.atd-sheet .atd-have span:not(.atd-have-mark) {
+  color: #394058;
+  font-size: 13.5px;
+}
+
+.atd-sheet .atd-have-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cat);
+  color: #ffffff;
+}
+
+/* Native dropdowns get the same rounded look as the other fields. */
+.bk-form select.bk-input {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7390' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='m6 9 6 6 6-6'/></svg>");
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* Small confirmation toast on the guide page */
+.guide-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 30001;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px 12px 18px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #222946;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 16px 36px rgba(8, 12, 30, 0.4);
+  animation: guide-toast-in 0.25s ease;
+}
+
+.guide-toast button {
+  width: auto;
+  margin: 0;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #f3ab03;
+  color: #222946;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.guide-toast button:hover {
+  background: #ffc437;
+  opacity: 1;
+}
+
+@keyframes guide-toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}

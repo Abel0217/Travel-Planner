@@ -1,3 +1,8 @@
+.itinerary-view-page {
+    min-height: calc(100vh - 56px);
+    background-color: #f9f9f9;
+}
+
 .itinerary-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr); 
@@ -10,13 +15,149 @@
 }
 
 .itinerary-card {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(34, 41, 70, 0.14);
     transition: transform 0.2s;
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
     cursor: pointer;
     background-color: white;
-    position: relative; 
+    position: relative;
+}
+
+.itinerary-card.photo-card {
+    height: 280px;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-overlay {
+    height: 100%;
+    background: linear-gradient(180deg, rgba(17, 22, 40, 0.15) 0%, rgba(17, 22, 40, 0.78) 100%);
+    color: white;
+    position: relative;
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.itinerary-card.photo-card.completed {
+    filter: grayscale(1);
+}
+
+.itinerary-card.photo-card.completed .card-overlay {
+    background: linear-gradient(180deg, rgba(70, 70, 70, 0.35) 0%, rgba(40, 40, 40, 0.86) 100%);
+}
+
+.card-status-row {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 52px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.role-chip {
+    position: static;
+    font-weight: 700;
+    font-size: 11px;
+    border-radius: 999px;
+    padding: 5px 10px;
+    letter-spacing: 0.04em;
+}
+
+.role-chip.host {
+    background: rgba(243, 171, 3, 0.95);
+    color: #222946;
+}
+
+.role-chip.guest {
+    background: rgba(255, 255, 255, 0.86);
+    color: #222946;
+}
+
+.countdown-badge {
+    position: static;
+    background: rgba(255, 255, 255, 0.94);
+    color: #222946;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 6px 10px;
+}
+
+.countdown-badge.ended {
+    background: rgba(90, 90, 90, 0.92);
+    color: white;
+}
+
+.card-copy h3,
+.card-copy p {
+    margin: 0 0 4px;
+    color: white;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+.dropdown {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+}
+
+.dropdown-button {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #222946;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 36px;
+    background-color: white;
+    box-shadow: 0 8px 20px rgba(34, 41, 70, 0.18);
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 8;
+    min-width: 160px;
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    color: #222946;
+    border: none;
+}
+
+.dropdown-content button:hover {
+    background-color: #f3ab03;
+    color: #222946;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.gray-out,
+.itinerary-image.grayscale {
+    filter: none;
+    background-color: transparent;
 }
 
 .itinerary-card:hover {
@@ -65,10 +206,43 @@
 /* Greeting and filter section */
 .header-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    padding: 10x;
-    background-color: #f4f4f4; 
+    padding: 28px 28px 12px;
+    background-color: transparent;
+    position: relative;
+    min-height: 92px;
+}
+
+.header-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    text-align: center;
+    padding: 0;
+}
+
+.header-title h1 {
+    font-size: 44px;
+    font-weight: 750;
+    letter-spacing: -0.04em;
+    margin: 0;
+    color: #222946;
+    background: linear-gradient(180deg, #222946 0%, #4a5684 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-title h1::after {
+    content: '';
+    display: block;
+    width: 84px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, #f3ab03, transparent);
 }
 
 .greeting {
@@ -91,55 +265,76 @@
 /* Dropdown button and menu */
 .dropdown {
     position: absolute;
-    top: -5px;
-    right: 5px;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
 }
 
 .dropdown-button {
-    background-color: transparent; 
-    color: black;
+    background-color: rgba(255, 255, 255, 0.92);
+    color: #222946;
     border: none;
-    padding: 3px 6px;
-    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 18px; 
+    font-size: 18px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.dropdown-button:hover {
-    transform: scale(1.4); 
-    color: #f3ab03;
-    background-color: transparent;
+.photo-card .dropdown-button {
+  background: transparent;
+  background-color: transparent;
+  color: #ffffff;
+  width: auto !important;
+  height: auto;
+  min-width: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 2px;
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.photo-card .dropdown-button:hover {
+  background: transparent;
+  background-color: transparent;
+  color: #f3ab03;
+  transform: scale(1.15);
+  opacity: 1;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     right: 0;
+    top: 36px;
     background-color: white;
-    box-shadow: 0 5px 10px rgba(73, 72, 72, 0.331);
-    border-radius: 4px;
+    box-shadow: 0 8px 20px rgba(34, 41, 70, 0.18);
+    border-radius: 10px;
     overflow: hidden;
-    z-index: 1;
-    color: black; 
-    border: 1px solid #ccc; 
+    z-index: 8;
+    min-width: 160px;
 }
 
 .dropdown-content button {
     display: block;
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
     background: none;
     cursor: pointer;
     text-align: left;
-    color: black;
+    color: #222946;
+    border: none;
 }
 
 .dropdown-content button:hover {
-    background-color: #f3ab03; 
-    color: white;
+    background-color: #f3ab03;
+    color: #222946;
 }
 
 .dropdown-content.show {
@@ -182,29 +377,16 @@
     background-color: #c48800;
 }
 
-.header-title {
-    padding-left: 40px; 
-    margin-top: -5px; 
-    margin-bottom: -5px; 
-}
-
-.header-title h1 {
-    font-size: 24px;
-    font-weight: bold;
-    color: black;
-}
-
 /* Styles for the Create Itinerary Card */
 .create-card {
-    height: 390px; 
+    height: 280px;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f0f0f0;
+    background-color: #f7f8fb;
     border: 2px dashed #222946;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(34, 41, 70, 0.08);
 }
 
 .create-card:hover {
@@ -222,11 +404,26 @@
     width: 100%;  
 }
 
-.create-plus {
-    font-size: 48px; 
-    color: #222946;  
-    font-weight: bold; 
-    transition: color 0.3s ease; 
+.create-plus.plus-mark {
+    font-size: 48px;
+}
+
+.past-trips-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1.15;
+    color: #222946;
+}
+
+.past-trips-label b {
+    font-weight: 800;
 }
 
 .create-card:hover .create-plus {
@@ -283,7 +480,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2000; /* Increase this value to ensure the popup overlays other elements */
+    z-index: 50000;
 }
 
 .invite-modal-content {
@@ -418,7 +615,7 @@
 }
 
 .MuiDialog-root {
-    z-index: 2000 !important; 
+    z-index: 50000 !important;
 }
 
 .dialog-content {
@@ -471,6 +668,33 @@
     cursor: default;
 }
 
+.participant-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 10, 20, 0.72);
+    padding: 24px;
+}
+
+.participant-modal-content {
+    position: relative;
+    width: min(420px, 100%);
+    max-height: 80vh;
+    overflow: auto;
+    background: #222946;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 28px 22px 22px;
+}
+
+.participant-modal-content h3 {
+    margin: 0 0 12px;
+    color: #ffffff;
+}
+
 .participants-list {
     list-style: none;
     padding: 0;
@@ -494,5 +718,174 @@
     font-size: 16px;
     font-weight: 500;
     color: #222946;
+}
+
+.photo-card .dropdown {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 4;
+}
+
+.invite-modal-content {
+    width: min(480px, calc(100vw - 32px));
+    min-height: 0;
+    padding: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    text-align: left;
+    box-shadow: 0 24px 60px rgba(16, 20, 38, 0.28);
+}
+
+.invite-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #222946;
+    padding: 16px 18px;
+}
+
+.invite-modal-header h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.invite-modal .invite-close {
+    position: static;
+    width: 32px !important;
+    height: 32px;
+    min-width: 32px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.invite-modal .invite-close:hover {
+    background: #f3ab03;
+    color: #222946;
+}
+
+.invite-modal-body {
+    padding: 18px 18px 22px;
+}
+
+.invite-modal .invite-friends-list,
+.invite-modal .participants-list {
+    width: 100%;
+    margin: 0;
+}
+
+.invite-modal .invite-friend-item,
+.invite-modal .participant-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(34, 41, 70, 0.08);
+    border-radius: 14px;
+    background: #f7f8fc;
+    box-shadow: none;
+    transform: none;
+}
+
+.invite-modal .invite-friend-item:hover,
+.invite-modal .participant-item:hover {
+    background: #f3f5fb;
+    transform: none;
+}
+
+.invite-modal .profile-pic.small,
+.invite-modal .participant-item .profile-pic {
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.invite-modal .friend-name,
+.invite-modal .participant-name {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    color: #222946;
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.invite-modal .add-button {
+    width: auto !important;
+    min-width: 76px;
+    height: 34px;
+    margin: 0;
+    padding: 0 14px;
+    position: static;
+    right: auto !important;
+    border: none;
+    border-radius: 999px;
+    background: #222946 !important;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.invite-modal .add-button:hover:not(.pending) {
+    background: #f3ab03 !important;
+    color: #222946;
+}
+
+.invite-modal .add-button.pending {
+    background: #8b90a3 !important;
+    color: #ffffff;
+    cursor: not-allowed;
+}
+
+.invite-section-label {
+    margin: 18px 0 12px;
+    padding: 0 0 8px;
+    display: block;
+    width: auto;
+    background: transparent;
+    color: #222946;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 2px solid #f3ab03;
+}
+
+.invite-section-label:hover {
+    transform: none;
+    cursor: default;
+}
+
+.invite-empty {
+    margin: 4px 0 0;
+    padding: 14px 12px;
+    border-radius: 12px;
+    background: #f7f8fc;
+    color: rgba(34, 41, 70, 0.72);
+    font-size: 14px;
+    text-align: center;
 }
 

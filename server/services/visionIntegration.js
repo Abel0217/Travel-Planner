@@ -1,20 +1,32 @@
 const vision = require('@google-cloud/vision');
-const client = new vision.ImageAnnotatorClient({
-    keyFilename: './visionServiceAccount.json' 
-});
+const path = require('path');
 
-// Function to extract text from an image
-async function extractTextFromImage(imagePath) {
-    const [result] = await client.textDetection(imagePath);
-    const detections = result.textAnnotations;
-    return detections[0] ? detections[0].description : '';
+let client;
+function getClient() {
+  if (!client) {
+    client = new vision.ImageAnnotatorClient({
+      keyFilename: path.join(__dirname, '../credentials/visionServiceAccount.json'),
+    });
+  }
+  return client;
 }
 
-// Function to extract text from a PDF
-async function extractTextFromPdf(pdfPath) {
-    const [result] = await client.documentTextDetection(pdfPath);
-    const fullText = result.fullTextAnnotation ? result.fullTextAnnotation.text : '';
-    return fullText;
+function toRequest(input) {
+  if (Buffer.isBuffer(input)) {
+    return { image: { content: input.toString('base64') } };
+  }
+  return { image: { source: { filename: input } } };
+}
+
+async function extractTextFromImage(input) {
+  const [result] = await getClient().textDetection(toRequest(input));
+  const detections = result.textAnnotations;
+  return detections && detections[0] ? detections[0].description : '';
+}
+
+async function extractTextFromPdf(input) {
+  const [result] = await getClient().documentTextDetection(toRequest(input));
+  return result.fullTextAnnotation ? result.fullTextAnnotation.text : '';
 }
 
 module.exports = { extractTextFromImage, extractTextFromPdf };

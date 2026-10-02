@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import apiClient from '../api/apiClient'; 
+import { mediaUrl } from '../utils/mediaUrl';
 
 export const AuthContext = React.createContext();
 
@@ -16,25 +17,37 @@ export const AuthContextProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        const googleProvider = user.providerData?.find((provider) => provider.providerId === 'google.com');
         setCurrentUser({
           name: user.displayName,
           email: user.email,
           uid: user.uid,
           photoURL: user.photoURL,
+          googlePhotoURL: googleProvider?.photoURL || '',
         });
 
-        try {
+          try {
           const token = await user.getIdToken();
-
           await apiClient.post('/users/sync', {}, {
             headers: {
               Authorization: `Bearer ${token}`
             }
           });
-
-          console.log('User synced successfully with PostgreSQL');
         } catch (error) {
           console.error('Error syncing user data:', error);
+        }
+
+        try {
+          const profile = await apiClient.get('/users/profile');
+          if (profile.data?.profile_picture) {
+            setCurrentUser((prev) => (
+              prev && prev.uid === user.uid
+                ? { ...prev, photoURL: mediaUrl(profile.data.profile_picture) }
+                : prev
+            ));
+          }
+        } catch (profileError) {
+          console.error('Could not load profile photo:', profileError);
         }
 
       } else {
@@ -48,6 +61,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    updateCurrentUser: (patch) => setCurrentUser((prev) => (prev ? { ...prev, ...patch } : prev)),
   };
 
   return (

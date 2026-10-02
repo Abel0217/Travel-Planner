@@ -1,28 +1,18 @@
-// parsers/HotelParser.js
+const { isoDate, afterLabel, confirmationCode, allIsoDates } = require('./fieldUtils');
+
 function extractHotelDetails(text) {
-    const details = {};
+  const source = text || '';
+  const dates = allIsoDates(source);
+  const named = source.match(/\b((?:The\s+)?[A-Z][\w'&.-]*(?:\s+[A-Z][\w'&.-]*){0,5}\s+(?:Hotel|Inn|Resort|Suites|Lodge))\b/);
+  const details = {};
 
-    // Extract Hotel Name (common patterns like "Hotel XYZ" or "Booking at Hotel XYZ")
-    const hotelNameMatch = text.match(/(?:Hotel\s+|Booking\s+at\s+)([\w\s]+)/i);
-    details.hotelName = hotelNameMatch ? hotelNameMatch[1].trim() : undefined;
+  details.hotelName = afterLabel(source, ['Hotel Name', 'Property', 'Accommodation']) || (named && named[1]);
+  details.checkInDate = isoDate(afterLabel(source, ['Check-in Date', 'Check in', 'Check-in', 'Arrival'])) || dates[0];
+  details.checkOutDate = isoDate(afterLabel(source, ['Check-out Date', 'Check out', 'Check-out', 'Departure'])) || dates[1];
+  details.address = afterLabel(source, ['Address', 'Location']);
+  details.bookingConfirmation = confirmationCode(source);
 
-    // Extract Check-In Date
-    const checkInMatch = text.match(/Check-in\s+Date:\s*([\w\s,]+)/i) || text.match(/Arrival\s+Date:\s*([\w\s,]+)/i);
-    details.checkInDate = checkInMatch ? new Date(checkInMatch[1].trim()).toISOString().split('T')[0] : undefined;
-
-    // Extract Check-Out Date
-    const checkOutMatch = text.match(/Check-out\s+Date:\s*([\w\s,]+)/i) || text.match(/Departure\s+Date:\s*([\w\s,]+)/i);
-    details.checkOutDate = checkOutMatch ? new Date(checkOutMatch[1].trim()).toISOString().split('T')[0] : undefined;
-
-    // Extract Address (look for typical address patterns)
-    const addressMatch = text.match(/Address:\s*([\w\s,]+)/i) || text.match(/Location:\s*([\w\s,]+)/i);
-    details.address = addressMatch ? addressMatch[1].trim() : undefined;
-
-    // Extract Booking Confirmation Number
-    const bookingConfirmationMatch = text.match(/Confirmation\s+Number:\s*([\w\d-]+)/i) || text.match(/Booking\s+ID:\s*([\w\d-]+)/i);
-    details.bookingConfirmation = bookingConfirmationMatch ? bookingConfirmationMatch[1].trim() : undefined;
-
-    return details;
+  return details;
 }
 
 module.exports = { extractHotelDetails };

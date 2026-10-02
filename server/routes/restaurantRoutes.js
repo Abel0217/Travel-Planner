@@ -3,6 +3,7 @@ const router = express.Router({ mergeParams: true }); // Use mergeParams to acce
 const db = require('../database/dbOperations');
 const firestoreDb = require('../firebaseAdmin'); 
 const verifyToken = require('../FirebaseToken'); // Firebase token verification
+const { notifyBookingAdded } = require('../services/tripMail');
 
 // Apply token verification middleware to all restaurant routes
 router.use(verifyToken);
@@ -39,6 +40,13 @@ router.post('/', async (req, res) => {
     const itinerary_id = req.params.itineraryId;
     try {
         const newRestaurant = await db.addRestaurant(itinerary_id, owner_id, restaurant_name, reservation_date, reservation_time, guest_number, address, booking_confirmation);
+        notifyBookingAdded({
+            itineraryId: itinerary_id,
+            actorUid: owner_id,
+            bookingType: 'Restaurant',
+            summary: restaurant_name || 'a restaurant',
+            refKey: `restaurant:${newRestaurant.reservation_id || newRestaurant.id || restaurant_name}`,
+        });
         res.status(201).json(newRestaurant);
     } catch (error) {
         res.status(500).json({ error: error.message });

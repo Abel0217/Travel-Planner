@@ -1,0 +1,30 @@
+.bfm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4vh 16px;
+  overflow-y: auto;
+  background: rgba(16, 20, 38, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.bfm-sheet {
+  position: relative;
+  width: min(640px, 100%);
+  margin: auto 0;
+}
+
+.bfm-note {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fff6dc;
+  border: 1px solid rgba(243, 171, 3, 0.45);
+  color: #222946;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}

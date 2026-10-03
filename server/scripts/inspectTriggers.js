@@ -1,4 +1,4 @@
-const pool = require('./database/db');
+const pool = require('../database/db');
 
 (async () => {
   const tables = await pool.query(
@@ -12,7 +12,7 @@ const pool = require('./database/db');
   );
   console.log(JSON.stringify({ tables: tables.rows, sharedCols: cols.rows, triggers: triggers.rows }, null, 2));
   await pool.end();
-})().catch(async (error) => {
+})().catch((error) => {
   console.error(error);
   process.exit(1);
 });

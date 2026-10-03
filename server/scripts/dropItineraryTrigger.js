@@ -1,4 +1,4 @@
-const pool = require('./database/db');
+const pool = require('../database/db');
 
 (async () => {
   await pool.query('DROP TRIGGER IF EXISTS itinerary_update_trigger ON core.itineraries');

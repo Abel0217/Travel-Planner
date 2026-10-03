@@ -8,7 +8,7 @@
 
 The **Travel Planner Web App** is a comprehensive platform designed to simplify planning and managing trips. From creating itineraries to collaborating with friends, the app offers all the tools you need to organize your travels seamlessly. It’s perfect for solo travelers, group planners, and frequent flyers, providing an intuitive and feature-rich experience.
 
-With collaborative tools like a live chat feature and shared itineraries, this app helps you stay connected with your travel companions. The interface uses a navy (`#222946`) and gold (`#f3ab03`) theme across navigation, forms, chat, and the travel guide.
+With collaborative tools like a live chat feature and shared itineraries, this app helps you stay connected with your travel companions.
 
 ---
 
